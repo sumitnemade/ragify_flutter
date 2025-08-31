@@ -1,0 +1,69 @@
+---
+description: RAGify Flutter Smart Context for LLM-Powered Applications
+globs:
+  - "**/*.dart"
+  - "**/*.yaml"
+  - "**/*.yml"
+  - "**/*.md"
+  - "**/*.txt"
+  - "**/*.json"
+alwaysApply: true
+---
+
+# Development Rules
+- Do not use mocks, stubs, or placeholder implementations in production source code
+- Mocks and test doubles should only be used in test files (test/**/*.dart)
+- All production code should have real, functional implementations
+- Avoid TODO comments with placeholder code in source files
+- Ensure all functions and methods have complete implementations
+
+# Quality Standards
+- This project must be robust, production-ready, and issue-free
+- All features and functionality should work out of the box without configuration
+- Implement comprehensive error handling and edge case coverage
+- Write defensive code that gracefully handles unexpected inputs and failures
+- Ensure all public APIs are well-documented and have clear usage examples
+- Prioritize reliability and stability over clever or experimental implementations
+- Test all code paths and handle failure scenarios gracefully
+- Provide meaningful error messages and logging for debugging
+
+# Generic Plugin Architecture
+- RAGify Flutter is a generic, framework-agnostic plugin that should work with any Flutter project
+- Avoid hardcoding dependencies on specific frameworks, databases, or technologies
+- Design interfaces that are abstract and can be implemented by various backends
+- Use dependency injection and configuration to support different project setups
+- Ensure the core functionality is independent of external project structures
+- Provide adapters and connectors for common frameworks and databases
+- Make all integrations optional and configurable
+- Support both simple and complex project architectures without assumptions
+
+# Cross-Platform Compatibility
+- RAGify Flutter must work seamlessly across all Flutter platforms (iOS, Android, Web, Desktop)
+- Use platform-agnostic libraries and avoid platform-specific dependencies
+- Handle file paths with proper cross-platform path separators (use path package)
+- Ensure file operations work on different file systems and platforms
+- Test on multiple platforms to verify compatibility
+- Avoid hardcoded paths, platform-specific commands, or OS-specific file locations
+- Use Flutter's built-in cross-platform libraries (path_provider, shared_preferences)
+- Handle different line endings and text encodings appropriately
+- Ensure database connections work across different platform environments
+- Support both case-sensitive and case-insensitive file systems
+
+# Honesty and Accuracy
+- No false claims please
+- All documentation, comments, and code descriptions must be accurate and truthful
+- Avoid exaggerating capabilities or features that don't exist
+- Ensure all examples and demonstrations are real and functional
+- Be transparent about limitations and requirements
+- Verify all claims before documenting them
+
+# Example and Demo Rules
+- No simulations of RAGify Flutter APIs - use actual RAGify Flutter APIs, classes, and methods in examples
+- All examples must demonstrate real functionality, not mock implementations
+- Avoid creating mock classes, simulated responses, or fake data in example code
+- Use real service connections (APIs, databases, WebSockets) in examples when possible
+- If external services aren't available, use real RAGify Flutter methods with appropriate error handling
+- Examples should be production-ready and show developers exactly how to use RAGify Flutter
+- Replace any hardcoded values with actual calculations or real API responses
+- Ensure examples follow the same patterns developers would use in real applications
+

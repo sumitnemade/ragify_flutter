@@ -1,0 +1,70 @@
+name: ragify_flutter
+description: "Intelligent Context Orchestration Framework for Flutter - Smart Context for LLM-Powered Applications"
+version: 0.0.1
+homepage: https://github.com/sumitnemade/ragify_flutter
+
+environment:
+  sdk: ^3.8.1
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Core dependencies
+  http: ^1.1.0
+  dio: ^5.3.2
+  json_annotation: ^4.8.1
+  
+  # Async and concurrency
+  async: ^2.11.0
+  
+  # Cross-platform ML and vector operations
+  # Using AI Model APIs only - no local models
+  
+  # Cross-platform database and storage
+  # Mobile: sqflite + shared_preferences, Web: localStorage (placeholder), Desktop: sqflite + file_system
+  sqflite: ^2.3.0
+  path_provider: ^2.1.1
+  shared_preferences: ^2.2.2
+  
+  # Cross-platform database drivers
+  postgres: ^2.6.3
+  mysql1: ^0.20.0
+  mongo_dart: ^0.10.3
+  
+  # Cross-platform document processing
+  path: ^1.8.3
+  
+  # Cross-platform security and encryption
+  crypto: ^3.0.3
+  encrypt: ^5.0.3
+  
+  # Cross-platform real-time communication
+  web_socket_channel: ^2.4.0
+  
+  # Logging and debugging
+  logger: ^2.0.2+1
+  
+  # State management
+  provider: ^6.1.1
+  
+  # Utilities
+  uuid: ^4.0.0
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  mockito: ^5.4.2
+  test: ^1.24.3
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter packages.
+flutter:
+  # No UI components - this is a pure logic package
