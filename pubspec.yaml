@@ -6,17 +6,13 @@ repository: https://github.com/sumitnemade/ragify_flutter
 issue_tracker: https://github.com/sumitnemade/ragify_flutter/issues
 documentation: https://github.com/sumitnemade/ragify_flutter/blob/main/README.md
 
-# Package topics for better discoverability
+# Package topics for better discoverability (max 5 allowed by pub.dev)
 topics:
   - ai
-  - machine-learning
   - context-management
   - data-fusion
   - privacy
-  - security
-  - cross-platform
   - flutter
-  - dart
 
 environment:
   sdk: ^3.8.1
