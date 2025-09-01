@@ -1,4 +1,7 @@
 include: package:flutter_lints/flutter.yaml
 
+# Dart lints are already included in flutter_lints, but we can add additional Dart-specific rules
+# For more information about Dart lints, see: https://pub.dev/packages/lints
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

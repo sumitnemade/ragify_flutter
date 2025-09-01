@@ -107,18 +107,25 @@ void main() {
     });
 
     group('Error Handling Tests', () {
-      test('should handle inactive source gracefully', () {
+      test('should handle inactive source gracefully', () async {
         // Test that inactive source throws appropriate error
-        expect(() => documentSource.getChunks(query: 'test'), returnsNormally);
+        await documentSource.close();
+
+        expect(
+          () => documentSource.getChunks(query: 'test'),
+          throwsA(isA<StateError>()),
+        );
       });
 
-      test('should handle configuration errors gracefully', () {
+      test('should handle configuration errors gracefully', () async {
         final source = DocumentSource(
           name: 'Error Source',
           documentPath: '/nonexistent/path',
         );
 
-        expect(() => source.getChunks(query: 'test'), returnsNormally);
+        // The method should not throw for non-existent paths, just return empty results
+        final chunks = await source.getChunks(query: 'test');
+        expect(chunks, isEmpty);
       });
     });
 

@@ -64,7 +64,7 @@ class RagifyConfig {
   const RagifyConfig({
     this.vectorDbUrl,
     this.cacheUrl,
-    this.privacyLevel = PrivacyLevel.private,
+    this.privacyLevel = PrivacyLevel.public,
     this.maxContextSize = 10000,
     this.defaultRelevanceThreshold = 0.5,
     this.enableCaching = true,

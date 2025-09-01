@@ -7,7 +7,6 @@ coverage/
 # Build artifacts
 build/
 .dart_tool/
-*.g.dart
 
 # IDE and editor files
 .idea/

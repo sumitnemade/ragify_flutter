@@ -83,7 +83,7 @@ void main() {
 
     test('RagifyConfig creation', () {
       final config = RagifyConfig.defaultConfig();
-      expect(config.privacyLevel, equals(PrivacyLevel.private));
+      expect(config.privacyLevel, equals(PrivacyLevel.public));
       expect(config.maxContextSize, equals(10000));
       expect(config.enableCaching, isTrue);
     });

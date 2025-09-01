@@ -10,22 +10,8 @@ void main() {
   setupTestMocks();
 
   group('AdvancedFusionEngine Tests', () {
-    late AdvancedFusionEngine fusionEngine;
-    late CacheManager cacheManager;
-    late VectorDatabase vectorDatabase;
-
-    setUp(() {
-      cacheManager = CacheManager();
-      vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
-      fusionEngine = AdvancedFusionEngine(
-        cacheManager: cacheManager,
-        vectorDatabase: vectorDatabase,
-      );
-    });
-
-    tearDown(() async {
-      await vectorDatabase.close();
-    });
+    // Remove shared setup to avoid test isolation issues
+    // Each test will create its own instances
 
     group('FusionStrategyConfig Tests', () {
       test('should create FusionStrategyConfig', () {
@@ -261,10 +247,27 @@ void main() {
 
     group('AdvancedFusionEngine Core Tests', () {
       test('should create AdvancedFusionEngine instance', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         expect(fusionEngine, isNotNull);
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
       test('should initialize with default strategies', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final strategies = fusionEngine.getStrategies();
         expect(strategies.length, equals(5));
         expect(strategies.containsKey('semantic_similarity'), isTrue);
@@ -272,21 +275,51 @@ void main() {
         expect(strategies.containsKey('freshness'), isTrue);
         expect(strategies.containsKey('content_quality'), isTrue);
         expect(strategies.containsKey('user_preference'), isTrue);
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
-      test('should set similarity threshold', () {
+      test('should set similarity threshold', () async {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         fusionEngine.setSimilarityThreshold(0.8);
         final stats = fusionEngine.getStats();
         expect(stats['similarity_threshold'], equals(0.8));
+
+        // Cleanup
+        await vectorDatabase.close();
       });
 
-      test('should set max group size', () {
+      test('should set max group size', () async {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         fusionEngine.setMaxGroupSize(15);
         final stats = fusionEngine.getStats();
         expect(stats['max_group_size'], equals(15));
+
+        // Cleanup
+        await vectorDatabase.close();
       });
 
       test('should update fusion strategy', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final newConfig = FusionStrategyConfig(
           name: 'custom_strategy',
           weight: 0.5,
@@ -297,18 +330,41 @@ void main() {
         final strategies = fusionEngine.getStrategies();
         expect(strategies.containsKey('custom_strategy'), isTrue);
         expect(strategies['custom_strategy']!.weight, equals(0.5));
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
       test('should enable/disable strategy', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         fusionEngine.setStrategyEnabled('semantic_similarity', false);
         final strategy = fusionEngine.getStrategy('semantic_similarity');
         expect(strategy!.enabled, isFalse);
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
       test('should update strategy weight', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         fusionEngine.setStrategyWeight('semantic_similarity', 0.4);
         final strategy = fusionEngine.getStrategy('semantic_similarity');
         expect(strategy!.weight, equals(0.4));
+
+        // Cleanup
+        vectorDatabase.close();
       });
     });
 
@@ -366,6 +422,13 @@ void main() {
       });
 
       test('should perform advanced fusion on chunks', () async {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final fusedChunks = await fusionEngine.performAdvancedFusion(
           chunks: testChunks,
           query: 'How to build Flutter applications?',
@@ -380,18 +443,38 @@ void main() {
           expect(chunk.metadata.containsKey('quality_score'), isTrue);
           expect(chunk.metadata.containsKey('group_size'), isTrue);
         }
+
+        // Cleanup
+        await vectorDatabase.close();
       });
 
       test('should handle empty chunk list', () async {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final fusedChunks = await fusionEngine.performAdvancedFusion(
           chunks: [],
           query: 'test query',
         );
 
         expect(fusedChunks, isEmpty);
+
+        // Cleanup
+        await vectorDatabase.close();
       });
 
       test('should use enabled strategies only', () async {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         // Disable some strategies
         fusionEngine.setStrategyEnabled('freshness', false);
         fusionEngine.setStrategyEnabled('user_preference', false);
@@ -410,11 +493,21 @@ void main() {
           expect(strategies.contains('freshness'), isFalse);
           expect(strategies.contains('user_preference'), isFalse);
         }
+
+        // Cleanup
+        await vectorDatabase.close();
       });
     });
 
     group('Engine Statistics Tests', () {
       test('should get engine statistics', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final stats = fusionEngine.getStats();
 
         expect(stats['total_strategies'], equals(5));
@@ -424,18 +517,41 @@ void main() {
         expect(stats['conflict_strategies'], isA<List>());
         expect(stats['cache_stats'], isA<Map>());
         expect(stats['vector_db_stats'], isA<Map>());
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
       test('should get specific strategy', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final strategy = fusionEngine.getStrategy('semantic_similarity');
         expect(strategy, isNotNull);
         expect(strategy!.name, equals('semantic_similarity'));
         expect(strategy.weight, equals(0.3));
+
+        // Cleanup
+        vectorDatabase.close();
       });
 
       test('should return null for non-existent strategy', () {
+        final cacheManager = CacheManager();
+        final vectorDatabase = VectorDatabase(vectorDbUrl: 'memory://');
+        final fusionEngine = AdvancedFusionEngine(
+          cacheManager: cacheManager,
+          vectorDatabase: vectorDatabase,
+        );
+
         final strategy = fusionEngine.getStrategy('non_existent');
         expect(strategy, isNull);
+
+        // Cleanup
+        vectorDatabase.close();
       });
     });
   });

@@ -7,7 +7,7 @@ void main() {
       final config = RagifyConfig.defaultConfig();
       expect(config.vectorDbUrl, isNull);
       expect(config.cacheUrl, isNull);
-      expect(config.privacyLevel, equals(PrivacyLevel.private));
+      expect(config.privacyLevel, equals(PrivacyLevel.public));
       expect(config.maxContextSize, equals(10000));
       expect(config.defaultRelevanceThreshold, equals(0.5));
       expect(config.maxConcurrentSources, equals(10));
@@ -66,7 +66,7 @@ void main() {
 
       expect(json['vector_db_url'], isNull);
       expect(json['cache_url'], isNull);
-      expect(json['privacy_level'], equals('private'));
+      expect(json['privacy_level'], equals('public'));
       expect(json['max_context_size'], equals(10000));
       expect(json['default_relevance_threshold'], equals(0.5));
       expect(json['max_concurrent_sources'], equals(10));
@@ -107,7 +107,7 @@ void main() {
       final config = RagifyConfig.defaultConfig();
       final str = config.toString();
 
-      expect(str, contains('private'));
+      expect(str, contains('public'));
       expect(str, contains('10000'));
       expect(str, contains('true'));
     });

@@ -11,7 +11,7 @@ RagifyConfig _$RagifyConfigFromJson(Map<String, dynamic> json) => RagifyConfig(
   cacheUrl: json['cache_url'] as String?,
   privacyLevel:
       $enumDecodeNullable(_$PrivacyLevelEnumMap, json['privacy_level']) ??
-      PrivacyLevel.private,
+      PrivacyLevel.public,
   maxContextSize: (json['max_context_size'] as num?)?.toInt() ?? 10000,
   defaultRelevanceThreshold:
       (json['default_relevance_threshold'] as num?)?.toDouble() ?? 0.5,

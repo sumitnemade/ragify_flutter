@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'dart:collection';
 import 'package:logger/logger.dart';
 // SQLite only available on mobile and desktop platforms
-import 'package:sqflite/sqflite.dart' if (dart.library.html) 'dart:html' as sqflite_stub;
+import 'package:sqflite/sqflite.dart'
+    if (dart.library.html) 'dart:html'
+    as sqflite_stub;
 import 'package:postgres/postgres.dart' as postgres;
 import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:mongo_dart/mongo_dart.dart';
@@ -1221,15 +1223,19 @@ class DatabaseSource implements BaseDataSource {
     final batch = db.batch();
 
     for (final chunk in chunks) {
-      batch.insert('context_chunks', {
-        'id': chunk.id,
-        'content': chunk.content,
-        'metadata': jsonEncode(chunk.metadata),
-        'source_name': chunk.source.name,
-        'privacy_level': chunk.source.privacyLevel.value,
-        'created_at': chunk.createdAt.millisecondsSinceEpoch,
-        'updated_at': chunk.updatedAt.millisecondsSinceEpoch,
-      }, conflictAlgorithm: sqflite_stub.ConflictAlgorithm.replace);
+      batch.insert(
+        'context_chunks',
+        {
+          'id': chunk.id,
+          'content': chunk.content,
+          'metadata': jsonEncode(chunk.metadata),
+          'source_name': chunk.source.name,
+          'privacy_level': chunk.source.privacyLevel.value,
+          'created_at': chunk.createdAt.millisecondsSinceEpoch,
+          'updated_at': chunk.updatedAt.millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: sqflite_stub.ConflictAlgorithm.replace,
+      );
     }
 
     await batch.commit(noResult: true);
