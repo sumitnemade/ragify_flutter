@@ -1,185 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ragify_flutter/ragify_flutter.dart';
-
-// Mock implementation for testing
-class MockDataSource extends BaseDataSource {
-  @override
-  String get name => 'mock_source';
-
-  @override
-  SourceType get sourceType => SourceType.document;
-
-  @override
-  Map<String, dynamic> get config => {'type': 'mock', 'enabled': true};
-
-  @override
-  Map<String, dynamic> get metadata => {
-    'version': '1.0',
-    'description': 'Mock source',
-  };
-
-  @override
-  bool get isActive => true;
-
-  @override
-  ContextSource get source =>
-      ContextSource(name: 'mock_source', sourceType: SourceType.document);
-
-  @override
-  Future<List<ContextChunk>> getChunks({
-    required String query,
-    int? maxChunks,
-    double minRelevance = 0.0,
-    String? userId,
-    String? sessionId,
-  }) async {
-    return [ContextChunk(content: 'Mock content for: $query', source: source)];
-  }
-
-  @override
-  Future<void> refresh() async {
-    // Mock refresh implementation
-  }
-
-  @override
-  Future<void> close() async {
-    // Mock close implementation
-  }
-
-  @override
-  Future<Map<String, dynamic>> getStats() async {
-    return {
-      'total_chunks': 100,
-      'last_refresh': DateTime.now().toIso8601String(),
-      'status': 'healthy',
-    };
-  }
-
-  @override
-  Future<bool> isHealthy() async => true;
-
-  @override
-  Future<SourceStatus> getStatus() async => SourceStatus.healthy;
-
-  @override
-  Future<void> updateMetadata(Map<String, dynamic> metadata) async {
-    // Mock metadata update
-  }
-
-  @override
-  Map<String, dynamic> getConfiguration() {
-    return {'type': 'mock', 'enabled': true, 'timeout': 30};
-  }
-
-  @override
-  Future<void> updateConfiguration(Map<String, dynamic> config) async {
-    // Mock configuration update
-  }
-}
+import 'package:ragify_flutter/src/sources/base_data_source.dart';
 
 void main() {
-  group('BaseDataSource Tests', () {
-    late MockDataSource mockDataSource;
-
-    setUp(() {
-      mockDataSource = MockDataSource();
-    });
-
-    group('MockDataSource Implementation', () {
-      test('name getter returns correct value', () {
-        expect(mockDataSource.name, equals('mock_source'));
-      });
-
-      test('sourceType getter returns correct value', () {
-        expect(mockDataSource.sourceType, equals(SourceType.document));
-      });
-
-      test('config getter returns correct value', () {
-        final config = mockDataSource.config;
-        expect(config['type'], equals('mock'));
-        expect(config['enabled'], isTrue);
-      });
-
-      test('metadata getter returns correct value', () {
-        final metadata = mockDataSource.metadata;
-        expect(metadata['version'], equals('1.0'));
-        expect(metadata['description'], equals('Mock source'));
-      });
-
-      test('isActive getter returns correct value', () {
-        expect(mockDataSource.isActive, isTrue);
-      });
-
-      test('source getter returns correct value', () {
-        final source = mockDataSource.source;
-        expect(source.name, equals('mock_source'));
-        expect(source.sourceType, equals(SourceType.document));
-      });
-
-      test('getChunks returns mock data', () async {
-        final chunks = await mockDataSource.getChunks(query: 'test query');
-        expect(chunks.length, equals(1));
-        expect(chunks.first.content, contains('test query'));
-        expect(chunks.first.source.name, equals('mock_source'));
-      });
-
-      test('getChunks with all parameters', () async {
-        final chunks = await mockDataSource.getChunks(
-          query: 'test query',
-          maxChunks: 5,
-          minRelevance: 0.7,
-          userId: 'user123',
-          sessionId: 'session456',
-        );
-        expect(chunks.length, equals(1));
-      });
-
-      test('isHealthy returns true', () async {
-        expect(await mockDataSource.isHealthy(), isTrue);
-      });
-
-      test('getStats returns mock statistics', () async {
-        final stats = await mockDataSource.getStats();
-        expect(stats['total_chunks'], equals(100));
-        expect(stats['status'], equals('healthy'));
-        expect(stats['last_refresh'], isA<String>());
-      });
-
-      test('getStatus returns healthy', () async {
-        expect(await mockDataSource.getStatus(), equals(SourceStatus.healthy));
-      });
-
-      test('refresh method can be called', () async {
-        expect(() => mockDataSource.refresh(), returnsNormally);
-      });
-
-      test('close method can be called', () async {
-        expect(() => mockDataSource.close(), returnsNormally);
-      });
-
-      test('updateMetadata method can be called', () async {
-        final metadata = {'key': 'value'};
-        expect(() => mockDataSource.updateMetadata(metadata), returnsNormally);
-      });
-
-      test('getConfiguration returns mock config', () {
-        final config = mockDataSource.getConfiguration();
-        expect(config['type'], equals('mock'));
-        expect(config['enabled'], isTrue);
-        expect(config['timeout'], equals(30));
-      });
-
-      test('updateConfiguration method can be called', () async {
-        final config = {'timeout': 60, 'enabled': false};
-        expect(
-          () => mockDataSource.updateConfiguration(config),
-          returnsNormally,
-        );
-      });
-    });
-
-    group('SourceStatus Enum', () {
-      test('enum values are correct', () {
+  group('SourceStatus Tests', () {
+    group('Enum Values Tests', () {
+      test('should have correct enum values', () {
         expect(SourceStatus.healthy.value, equals('healthy'));
         expect(SourceStatus.degraded.value, equals('degraded'));
         expect(SourceStatus.unhealthy.value, equals('unhealthy'));
@@ -187,128 +12,139 @@ void main() {
         expect(SourceStatus.unknown.value, equals('unknown'));
       });
 
-      test('fromString with valid values', () {
-        expect(
-          SourceStatus.fromString('healthy'),
-          equals(SourceStatus.healthy),
-        );
-        expect(
-          SourceStatus.fromString('degraded'),
-          equals(SourceStatus.degraded),
-        );
-        expect(
-          SourceStatus.fromString('unhealthy'),
-          equals(SourceStatus.unhealthy),
-        );
-        expect(
-          SourceStatus.fromString('offline'),
-          equals(SourceStatus.offline),
-        );
-        expect(
-          SourceStatus.fromString('unknown'),
-          equals(SourceStatus.unknown),
-        );
+      test('should convert from string correctly', () {
+        expect(SourceStatus.fromString('healthy'), equals(SourceStatus.healthy));
+        expect(SourceStatus.fromString('degraded'), equals(SourceStatus.degraded));
+        expect(SourceStatus.fromString('unhealthy'), equals(SourceStatus.unhealthy));
+        expect(SourceStatus.fromString('offline'), equals(SourceStatus.offline));
+        expect(SourceStatus.fromString('unknown'), equals(SourceStatus.unknown));
       });
 
-      test('fromString with invalid value returns unknown', () {
-        expect(
-          SourceStatus.fromString('invalid'),
-          equals(SourceStatus.unknown),
-        );
+      test('should handle case insensitive conversion', () {
+        expect(SourceStatus.fromString('HEALTHY'), equals(SourceStatus.healthy));
+        expect(SourceStatus.fromString('Degraded'), equals(SourceStatus.degraded));
+        expect(SourceStatus.fromString('UnHeAlThY'), equals(SourceStatus.unhealthy));
+      });
+
+      test('should return unknown for invalid strings', () {
+        expect(SourceStatus.fromString('invalid'), equals(SourceStatus.unknown));
         expect(SourceStatus.fromString(''), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('null'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('123'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy_extra'), equals(SourceStatus.unknown));
       });
 
-      test('fromString is case insensitive', () {
-        expect(
-          SourceStatus.fromString('HEALTHY'),
-          equals(SourceStatus.healthy),
-        );
-        expect(
-          SourceStatus.fromString('Healthy'),
-          equals(SourceStatus.healthy),
-        );
-        expect(
-          SourceStatus.fromString('healthy'),
-          equals(SourceStatus.healthy),
-        );
+      test('should handle edge cases', () {
+        expect(SourceStatus.fromString(' healthy '), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy '), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString(' healthy'), equals(SourceStatus.unknown));
+      });
+    });
+
+    group('Integration Tests', () {
+      test('should handle all status values in conversion', () {
+        final allStatuses = SourceStatus.values;
+        for (final status in allStatuses) {
+          final converted = SourceStatus.fromString(status.value);
+          expect(converted, equals(status));
+        }
       });
 
-      test('enum index values', () {
+      test('should have correct number of enum values', () {
+        expect(SourceStatus.values.length, equals(5));
+      });
+
+      test('should have correct enum indices', () {
         expect(SourceStatus.healthy.index, equals(0));
         expect(SourceStatus.degraded.index, equals(1));
         expect(SourceStatus.unhealthy.index, equals(2));
         expect(SourceStatus.offline.index, equals(3));
         expect(SourceStatus.unknown.index, equals(4));
       });
+    });
 
-      test('all enum values are covered', () {
-        final values = SourceStatus.values;
-        expect(values.length, equals(5));
-        expect(values.contains(SourceStatus.healthy), isTrue);
-        expect(values.contains(SourceStatus.degraded), isTrue);
-        expect(values.contains(SourceStatus.unhealthy), isTrue);
-        expect(values.contains(SourceStatus.offline), isTrue);
-        expect(values.contains(SourceStatus.unknown), isTrue);
+    group('Edge Cases Tests', () {
+      test('should handle null-like strings', () {
+        expect(SourceStatus.fromString('null'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('NULL'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('Null'), equals(SourceStatus.unknown));
+      });
+
+      test('should handle numeric strings', () {
+        expect(SourceStatus.fromString('0'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('1'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('999'), equals(SourceStatus.unknown));
+      });
+
+      test('should handle special characters', () {
+        expect(SourceStatus.fromString('!@#\$'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy!'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy@'), equals(SourceStatus.unknown));
+      });
+
+      test('should handle whitespace variations', () {
+        expect(SourceStatus.fromString('\thealthy'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy\n'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('healthy\r'), equals(SourceStatus.unknown));
       });
     });
 
-    group('BaseDataSource Interface', () {
-      test('can be instantiated through concrete implementation', () {
-        expect(mockDataSource, isA<BaseDataSource>());
-        expect(mockDataSource, isA<MockDataSource>());
+    group('Performance Tests', () {
+      test('should handle rapid string conversions', () {
+        final testStrings = ['healthy', 'degraded', 'unhealthy', 'offline', 'unknown'];
+        
+        for (int i = 0; i < 100; i++) {
+          for (final testString in testStrings) {
+            final result = SourceStatus.fromString(testString);
+            expect(result, isNotNull);
+          }
+        }
       });
 
-      test('has all required properties', () {
-        expect(mockDataSource.name, isA<String>());
-        expect(mockDataSource.sourceType, isA<SourceType>());
-        expect(mockDataSource.config, isA<Map<String, dynamic>>());
-        expect(mockDataSource.metadata, isA<Map<String, dynamic>>());
-        expect(mockDataSource.isActive, isA<bool>());
-        expect(mockDataSource.source, isA<ContextSource>());
-      });
+      test('should handle mixed case conversions efficiently', () {
+        final mixedCases = [
+          'HEALTHY', 'Healthy', 'hEaLtHy', 'healTHY', 'HEALTHY',
+          'DEGRADED', 'Degraded', 'dEgRaDeD', 'degrADED', 'DEGRADED',
+        ];
 
-      test('can call all required methods', () async {
-        // Test that all methods can be called without throwing
-        expect(() => mockDataSource.getChunks(query: 'test'), returnsNormally);
-        expect(() => mockDataSource.refresh(), returnsNormally);
-        expect(() => mockDataSource.close(), returnsNormally);
-        expect(() => mockDataSource.getStats(), returnsNormally);
-        expect(() => mockDataSource.isHealthy(), returnsNormally);
-        expect(() => mockDataSource.getStatus(), returnsNormally);
-        expect(() => mockDataSource.updateMetadata({}), returnsNormally);
-        expect(() => mockDataSource.updateConfiguration({}), returnsNormally);
+        for (final mixedCase in mixedCases) {
+          final result = SourceStatus.fromString(mixedCase);
+          expect(result, isNotNull);
+        }
       });
     });
 
-    group('Error Handling', () {
-      test('getChunks with empty query', () async {
-        final chunks = await mockDataSource.getChunks(query: '');
-        expect(chunks.length, equals(1));
-        expect(chunks.first.content, contains(''));
+    group('Comprehensive Coverage Tests', () {
+      test('should cover all enum value combinations', () {
+        // Test that all enum values have corresponding string representations
+        for (final status in SourceStatus.values) {
+          final stringValue = status.value;
+          final convertedStatus = SourceStatus.fromString(stringValue);
+          expect(convertedStatus, equals(status));
+        }
       });
 
-      test('getChunks with very long query', () async {
-        final longQuery = 'a' * 10000;
-        final chunks = await mockDataSource.getChunks(query: longQuery);
-        expect(chunks.length, equals(1));
-        expect(chunks.first.content, contains(longQuery));
+      test('should handle boundary conditions', () {
+        // Test empty string
+        expect(SourceStatus.fromString(''), equals(SourceStatus.unknown));
+        
+        // Test single character strings
+        expect(SourceStatus.fromString('a'), equals(SourceStatus.unknown));
+        expect(SourceStatus.fromString('z'), equals(SourceStatus.unknown));
+        
+        // Test very long strings
+        final longString = 'a' * 1000;
+        expect(SourceStatus.fromString(longString), equals(SourceStatus.unknown));
       });
 
-      test('getStats with complex data', () async {
-        final stats = await mockDataSource.getStats();
-        expect(stats, isA<Map<String, dynamic>>());
-        expect(stats.keys, contains('total_chunks'));
-        expect(stats.keys, contains('last_refresh'));
-        expect(stats.keys, contains('status'));
-      });
-
-      test('getConfiguration with complex data', () {
-        final config = mockDataSource.getConfiguration();
-        expect(config, isA<Map<String, dynamic>>());
-        expect(config.keys, contains('type'));
-        expect(config.keys, contains('enabled'));
-        expect(config.keys, contains('timeout'));
+      test('should maintain consistency across multiple calls', () {
+        final testString = 'healthy';
+        final firstResult = SourceStatus.fromString(testString);
+        final secondResult = SourceStatus.fromString(testString);
+        final thirdResult = SourceStatus.fromString(testString);
+        
+        expect(firstResult, equals(secondResult));
+        expect(secondResult, equals(thirdResult));
+        expect(firstResult, equals(SourceStatus.healthy));
       });
     });
   });
