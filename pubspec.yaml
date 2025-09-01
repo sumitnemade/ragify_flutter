@@ -1,6 +1,6 @@
 name: ragify_flutter
 description: "Intelligent Context Orchestration Framework for Flutter - Smart Context for LLM-Powered Applications"
-version: 0.0.2
+version: 0.0.3
 homepage: https://github.com/sumitnemade/ragify_flutter
 repository: https://github.com/sumitnemade/ragify_flutter
 issue_tracker: https://github.com/sumitnemade/ragify_flutter/issues
