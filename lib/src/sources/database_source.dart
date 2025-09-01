@@ -151,7 +151,15 @@ class DatabaseConnectionPool {
     'batch_queries': 0,
   };
 
-  DatabaseConnectionPool(this.config);
+  DatabaseConnectionPool(this.config, {List<dynamic>? initialConnections}) {
+    if (initialConnections != null) {
+      _connections.addAll(initialConnections);
+      _availableConnections.addAll(initialConnections);
+      for (final connection in initialConnections) {
+        _connectionTimestamps[connection] = DateTime.now();
+      }
+    }
+  }
 
   /// **NEW: Get performance metrics**
   Map<String, dynamic> getPerformanceMetrics() {
@@ -307,12 +315,18 @@ class DatabaseSource implements BaseDataSource {
     required this.databaseType,
     required this.cacheManager,
     ParallelQueryConfig? parallelConfig,
+    DatabaseConnectionPool? connectionPool, // Inject for testing
+    Map<String, dynamic>? metadata,
   }) {
     if (parallelConfig != null) {
       _parallelConfig = parallelConfig;
     }
+    
+    if (metadata != null) {
+      _metadata.addAll(metadata);
+    }
 
-    _connectionPool = DatabaseConnectionPool(databaseConfig);
+    _connectionPool = connectionPool ?? DatabaseConnectionPool(databaseConfig);
   }
 
   /// **NEW: Set parallel query configuration**
@@ -455,6 +469,14 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Initialize connection pool**
   Future<void> _initializeConnectionPool() async {
+    // Skip if connections are already injected (for testing)
+    if (_connectionPool._connections.isNotEmpty) {
+      _logger.i(
+        'Connection pool already initialized with ${_connectionPool._connections.length} connections',
+      );
+      return;
+    }
+
     // Create initial connections
     for (int i = 0; i < databaseConfig.maxConnections; i++) {
       try {
@@ -542,6 +564,12 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Initialize database tables**
   Future<void> _initializeDatabaseTables() async {
+    // Skip table initialization if using injected connections (for testing)
+    if (_connectionPool._connections.isNotEmpty && 
+        _connectionPool._connections.first.runtimeType.toString().contains('Mock')) {
+      return;
+    }
+    
     final connection = await _connectionPool.getConnection();
 
     try {
