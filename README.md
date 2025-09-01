@@ -4,17 +4,18 @@
 
 A Flutter package that combines data from multiple sources (documents, APIs, databases, real-time) and resolves conflicts intelligently. Built specifically for **LLM-powered Flutter applications** that need accurate, current information.
 
-## 🎯 What is RAGify Flutter?
+## 🎯 Why RAGify Flutter?
 
-RAGify Flutter is a Flutter/Dart implementation of the RAGify framework that provides intelligent context orchestration for mobile and web applications. It helps Flutter developers build AI-powered apps that can:
+Building AI-powered Flutter apps is challenging because:
+- **Multiple data sources** need to be combined intelligently
+- **Conflicting information** between sources must be resolved
+- **Real-time updates** require efficient context management
+- **Privacy and security** need to be built-in, not bolted-on
+- **Performance** must be optimized for mobile and web
 
-- **Combine information** from multiple data sources
-- **Detect and resolve conflicts** between data sources
-- **Manage privacy** with configurable security levels
-- **Process sources concurrently** for better performance
-- **Score relevance** intelligently for better context selection
+RAGify Flutter solves these problems with a unified, production-ready framework.
 
-## 🌟 Key Features
+## 🌟 What You Get
 
 ### **Core Capabilities**
 - **Multi-Source Context Fusion** - Combine data from documents, APIs, databases, and real-time sources
@@ -27,25 +28,7 @@ RAGify Flutter is a Flutter/Dart implementation of the RAGify framework that pro
 - **Cross-Platform Support** - Works on iOS, Android, Web, and Desktop
 - **Async/Await Support** - Full async support for non-blocking operations
 - **State Management Integration** - Works with Provider, Bloc, Riverpod, and other state management solutions
-- **Material Design Ready** - Includes example UI components
 - **Performance Optimized** - Efficient memory usage and processing
-
-## 📱 Use Cases
-
-### **AI Chatbots & Assistants**
-- Multi-source context management
-- Conflict detection in responses
-- Source tracking for transparency
-
-### **Knowledge Management Apps**
-- Company knowledge bases
-- Research assistants
-- Educational content aggregation
-
-### **Enterprise Applications**
-- Multi-database search
-- Document processing
-- Real-time data integration
 
 ## 🚀 Quick Start
 
@@ -65,21 +48,21 @@ import 'package:ragify_flutter/ragify_flutter.dart';
 ### **3. Basic Usage**
 
 ```dart
-// Create orchestrator
-final orchestrator = ContextOrchestrator(
-  config: RagifyConfig.defaultConfig(),
-);
+// Create RAGify instance
+final ragify = RAGify();
 
 // Initialize
-await orchestrator.initialize();
+await ragify.initialize();
 
 // Add data sources
-orchestrator.addSource(DocumentSource('./docs'));
-orchestrator.addSource(APISource('https://api.company.com/data'));
+ragify.addDataSource(DocumentSource(
+  name: 'docs',
+  documentPath: './documents',
+));
 
 // Get context
-final context = await orchestrator.getContext(
-  query: 'Latest sales and trends?',
+final context = await ragify.getContext(
+  query: 'What are the latest features?',
   maxChunks: 10,
   minRelevance: 0.7,
 );
@@ -122,109 +105,21 @@ for (final chunk in context.chunks) {
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 📚 API Reference
+## 📱 Examples
 
-### **ContextOrchestrator**
+The package includes complete example applications:
 
-The main class for orchestrating context operations.
+- **Basic Usage** - Simple context retrieval
+- **Advanced Features** - Complex integration patterns
+- **Full Integration** - Complete application examples
 
-```dart
-class ContextOrchestrator {
-  // Configuration
-  final RagifyConfig config;
-  
-  // Add data source
-  void addSource(BaseDataSource source);
-  
-  // Remove data source
-  void removeSource(String sourceName);
-  
-  // Get context
-  Future<ContextResponse> getContext({
-    required String query,
-    String? userId,
-    String? sessionId,
-    int? maxTokens,
-    int? maxChunks,
-    double? minRelevance,
-    PrivacyLevel? privacyLevel,
-    bool includeMetadata = true,
-    List<String>? sources,
-    List<String>? excludeSources,
-  });
-  
-  // Health check
-  Future<bool> isHealthy();
-  
-  // Get statistics
-  Map<String, dynamic> getStats();
-  
-  // Close and cleanup
-  Future<void> close();
-}
-```
-
-### **Data Sources**
-
-Implement `BaseDataSource` to create custom data sources.
-
-```dart
-abstract class BaseDataSource {
-  String get name;
-  SourceType get sourceType;
-  bool get isActive;
-  
-  Future<List<ContextChunk>> getChunks({
-    required String query,
-    int? maxChunks,
-    double minRelevance = 0.0,
-    String? userId,
-    String? sessionId,
-  });
-  
-  Future<void> refresh();
-  Future<void> close();
-  Future<bool> isHealthy();
-}
-```
-
-### **Models**
-
-Core data models for the framework.
-
-```dart
-// Context chunk
-class ContextChunk {
-  final String id;
-  final String content;
-  final ContextSource source;
-  final RelevanceScore? relevanceScore;
-  final Map<String, dynamic> metadata;
-}
-
-// Context response
-class ContextResponse {
-  final String id;
-  final String query;
-  final List<ContextChunk> chunks;
-  final PrivacyLevel privacyLevel;
-  final Map<String, dynamic> metadata;
-}
-
-// Privacy levels
-enum PrivacyLevel {
-  public,      // No restrictions
-  private,     // User-specific restrictions
-  enterprise,  // Organization-level restrictions
-  restricted,  // Highest security level
-}
+Run examples:
+```bash
+cd example/basic_usage
+flutter run
 ```
 
 ## 🔧 Configuration
-
-### **RagifyConfig**
-
-Configure the orchestrator behavior.
 
 ```dart
 final config = RagifyConfig(
@@ -233,133 +128,73 @@ final config = RagifyConfig(
   defaultRelevanceThreshold: 0.7,
   enableCaching: true,
   cacheTtl: 7200,
-  enableAnalytics: true,
-  logLevel: 'WARNING',
   conflictDetectionThreshold: 0.8,
   sourceTimeout: 60.0,
   maxConcurrentSources: 20,
 );
 
-// Or use predefined configurations
-final config = RagifyConfig.production();
-final config = RagifyConfig.minimal();
-```
-
-## 📱 Example App
-
-The package includes a complete example app demonstrating:
-
-- Basic context retrieval
-- Data source integration
-- UI state management
-- Error handling
-
-Run the example:
-
-```bash
-cd example
-flutter run
+final ragify = RAGify(config: config);
 ```
 
 ## 🧪 Testing
 
-Run the test suite:
-
 ```bash
+# Run all tests
 flutter test
+
+# Run with coverage
+flutter test --coverage
+
+# Current coverage: 40.92%
 ```
 
 ## 🔒 Privacy & Security
 
-### **Privacy Levels**
-- **Public**: No restrictions, suitable for general information
-- **Private**: User-specific restrictions, personal data
-- **Enterprise**: Organization-level restrictions, company data
-- **Restricted**: Highest security, sensitive information
-
-### **Security Features**
-- Multi-level encryption support
-- Role-based access control
-- Audit logging
-- Compliance frameworks (GDPR, HIPAA, SOX)
+- **4 Privacy Levels**: Public, Private, Enterprise, Restricted
+- **Encryption**: AES-256, RSA-2048, ChaCha20 support
+- **Access Control**: Role-based permissions (Guest to Superuser)
+- **Audit Logging**: Complete operation tracking
+- **Compliance**: GDPR, HIPAA, SOX ready
 
 ## 🚀 Performance
 
-### **Optimizations**
-- Concurrent source processing
-- Intelligent caching
-- Memory-efficient chunking
-- Async/await throughout
+- **Response Time**: Optimized for <200ms typical queries
+- **Concurrent Processing**: Multi-isolate parallel processing
+- **Memory Efficient**: Intelligent caching and chunking
+- **Cross-Platform**: Platform-specific optimizations
 
-### **Benchmarks**
-- **Response Time**: < 200ms for typical queries
-- **Concurrent Requests**: 1000+ simultaneous
-- **Memory Usage**: < 100MB for large contexts
-- **Throughput**: 1000+ requests/minute
+## 🔌 Data Sources
 
-## 🔌 Integrations
-
-### **Vector Databases**
-- ChromaDB (local)
-- Pinecone (cloud)
-- Weaviate (local/cloud)
-- FAISS (local)
-
-### **Cache Systems**
-- In-memory cache
-- Redis
-- Memcached
-
-### **Document Formats**
-- PDF
-- DOCX
-- TXT
-- Markdown
-
-### **APIs**
-- REST APIs
-- GraphQL
-- WebSocket streams
-- MQTT
-- Kafka
+- **Documents**: PDF, DOCX, TXT, Markdown
+- **APIs**: REST, GraphQL with rate limiting
+- **Databases**: PostgreSQL, MySQL, MongoDB, SQLite
+- **Real-time**: WebSocket, MQTT, Redis, Kafka
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
-
-### **Development Setup**
+We welcome contributions! See [Contributing Guide](CONTRIBUTING.md) for details.
 
 ```bash
-# Clone the repository
+# Development setup
 git clone https://github.com/sumitnemade/ragify_flutter.git
 cd ragify_flutter
-
-# Install dependencies
 flutter pub get
-
-# Run tests
 flutter test
-
-# Generate code
-flutter packages pub run build_runner build
 ```
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+BSD 3-Clause License - see [LICENSE](LICENSE) file for details.
+
+## 🔗 Related Projects
+
+- **Python Version**: [RAGify Python](https://github.com/sumitnemade/ragify) - The original 
 
 ## 🆘 Support
 
-- **Documentation**: [https://ragify.readthedocs.io](https://ragify.readthedocs.io)
 - **Issues**: [GitHub Issues](https://github.com/sumitnemade/ragify_flutter/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/sumitnemade/ragify_flutter/discussions)
 
-## 🙏 Acknowledgments
-
-- Built on the foundation of the Python RAGify framework
-- Inspired by modern RAG (Retrieval-Augmented Generation) systems
-- Designed for the Flutter community
-
 ---
 
-**Made with ❤️ for the Flutter community**
+**Built with ❤️ for the Flutter community**
