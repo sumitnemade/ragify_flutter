@@ -39,7 +39,7 @@ RAGify Flutter solves these problems with a unified, production-ready framework.
 
 ```yaml
 dependencies:
-  ragify_flutter: ^0.0.2
+  ragify_flutter: ^0.0.4
 ```
 
 ### **2. Import Package**
