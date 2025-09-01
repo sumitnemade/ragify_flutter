@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-08-31 16:45:42</td>
+            <td class="headerValue">2025-09-01 09:11:41</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -76,9 +76,9 @@
 <a name="14"><span class="lineNum">      14 </span>            :   vector,</a>
 <a name="15"><span class="lineNum">      15 </span>            :   cache;</a>
 <a name="16"><span class="lineNum">      16 </span>            : </a>
-<a name="17"><span class="lineNum">      17 </span><span class="lineCov">          2 :   String get value {</span></a>
+<a name="17"><span class="lineNum">      17 </span><span class="lineCov">          1 :   String get value {</span></a>
 <a name="18"><span class="lineNum">      18 </span>            :     switch (this) {</a>
-<a name="19"><span class="lineNum">      19 </span><span class="lineCov">          2 :       case SourceType.document:</span></a>
+<a name="19"><span class="lineNum">      19 </span><span class="lineCov">          1 :       case SourceType.document:</span></a>
 <a name="20"><span class="lineNum">      20 </span>            :         return 'document';</a>
 <a name="21"><span class="lineNum">      21 </span><span class="lineCov">          1 :       case SourceType.api:</span></a>
 <a name="22"><span class="lineNum">      22 </span>            :         return 'api';</a>
@@ -118,36 +118,36 @@
 <a name="56"><span class="lineNum">      56 </span>            : class ContextSource {</a>
 <a name="57"><span class="lineNum">      57 </span>            :   /// Unique identifier for the source</a>
 <a name="58"><span class="lineNum">      58 </span>            :   final String id;</a>
-<a name="59"><span class="lineNum">      59 </span>            :   </a>
+<a name="59"><span class="lineNum">      59 </span>            : </a>
 <a name="60"><span class="lineNum">      60 </span>            :   /// Human-readable name for the source</a>
 <a name="61"><span class="lineNum">      61 </span>            :   final String name;</a>
-<a name="62"><span class="lineNum">      62 </span>            :   </a>
+<a name="62"><span class="lineNum">      62 </span>            : </a>
 <a name="63"><span class="lineNum">      63 </span>            :   /// Type of data source</a>
 <a name="64"><span class="lineNum">      64 </span>            :   @JsonKey(name: 'source_type')</a>
 <a name="65"><span class="lineNum">      65 </span>            :   final SourceType sourceType;</a>
-<a name="66"><span class="lineNum">      66 </span>            :   </a>
+<a name="66"><span class="lineNum">      66 </span>            : </a>
 <a name="67"><span class="lineNum">      67 </span>            :   /// Optional URL or connection string</a>
 <a name="68"><span class="lineNum">      68 </span>            :   final String? url;</a>
-<a name="69"><span class="lineNum">      69 </span>            :   </a>
+<a name="69"><span class="lineNum">      69 </span>            : </a>
 <a name="70"><span class="lineNum">      70 </span>            :   /// Additional metadata about the source</a>
 <a name="71"><span class="lineNum">      71 </span>            :   final Map&lt;String, dynamic&gt; metadata;</a>
-<a name="72"><span class="lineNum">      72 </span>            :   </a>
+<a name="72"><span class="lineNum">      72 </span>            : </a>
 <a name="73"><span class="lineNum">      73 </span>            :   /// When the source was last updated</a>
 <a name="74"><span class="lineNum">      74 </span>            :   @JsonKey(name: 'last_updated')</a>
 <a name="75"><span class="lineNum">      75 </span>            :   final DateTime lastUpdated;</a>
-<a name="76"><span class="lineNum">      76 </span>            :   </a>
+<a name="76"><span class="lineNum">      76 </span>            : </a>
 <a name="77"><span class="lineNum">      77 </span>            :   /// Whether the source is currently active</a>
 <a name="78"><span class="lineNum">      78 </span>            :   @JsonKey(name: 'is_active')</a>
 <a name="79"><span class="lineNum">      79 </span>            :   final bool isActive;</a>
-<a name="80"><span class="lineNum">      80 </span>            :   </a>
+<a name="80"><span class="lineNum">      80 </span>            : </a>
 <a name="81"><span class="lineNum">      81 </span>            :   /// Privacy level for this source</a>
 <a name="82"><span class="lineNum">      82 </span>            :   @JsonKey(name: 'privacy_level')</a>
 <a name="83"><span class="lineNum">      83 </span>            :   final PrivacyLevel privacyLevel;</a>
-<a name="84"><span class="lineNum">      84 </span>            :   </a>
+<a name="84"><span class="lineNum">      84 </span>            : </a>
 <a name="85"><span class="lineNum">      85 </span>            :   /// Authority score (0.0 to 1.0) - higher = more authoritative</a>
 <a name="86"><span class="lineNum">      86 </span>            :   @JsonKey(name: 'authority_score')</a>
 <a name="87"><span class="lineNum">      87 </span>            :   final double authorityScore;</a>
-<a name="88"><span class="lineNum">      88 </span>            :   </a>
+<a name="88"><span class="lineNum">      88 </span>            : </a>
 <a name="89"><span class="lineNum">      89 </span>            :   /// Freshness score (0.0 to 1.0) - higher = more recent</a>
 <a name="90"><span class="lineNum">      90 </span>            :   @JsonKey(name: 'freshness_score')</a>
 <a name="91"><span class="lineNum">      91 </span>            :   final double freshnessScore;</a>
@@ -179,7 +179,7 @@
 <a name="117"><span class="lineNum">     117 </span>            :     double? freshnessScore,</a>
 <a name="118"><span class="lineNum">     118 </span>            :   }) {</a>
 <a name="119"><span class="lineNum">     119 </span><span class="lineCov">          8 :     return ContextSource._(</span></a>
-<a name="120"><span class="lineNum">     120 </span><span class="lineCov">          5 :       id: id ?? const Uuid().v4(),</span></a>
+<a name="120"><span class="lineNum">     120 </span><span class="lineCov">          4 :       id: id ?? const Uuid().v4(),</span></a>
 <a name="121"><span class="lineNum">     121 </span>            :       name: name,</a>
 <a name="122"><span class="lineNum">     122 </span>            :       sourceType: sourceType,</a>
 <a name="123"><span class="lineNum">     123 </span>            :       url: url,</a>
@@ -193,11 +193,11 @@
 <a name="131"><span class="lineNum">     131 </span>            :   }</a>
 <a name="132"><span class="lineNum">     132 </span>            : </a>
 <a name="133"><span class="lineNum">     133 </span>            :   /// Create from JSON</a>
-<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          3 :   factory ContextSource.fromJson(Map&lt;String, dynamic&gt; json) =&gt; </span></a>
-<a name="135"><span class="lineNum">     135 </span><span class="lineCov">          3 :       _$ContextSourceFromJson(json);</span></a>
+<a name="134"><span class="lineNum">     134 </span><span class="lineCov">          1 :   factory ContextSource.fromJson(Map&lt;String, dynamic&gt; json) =&gt;</span></a>
+<a name="135"><span class="lineNum">     135 </span><span class="lineCov">          1 :       _$ContextSourceFromJson(json);</span></a>
 <a name="136"><span class="lineNum">     136 </span>            : </a>
 <a name="137"><span class="lineNum">     137 </span>            :   /// Convert to JSON</a>
-<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          4 :   Map&lt;String, dynamic&gt; toJson() =&gt; _$ContextSourceToJson(this);</span></a>
+<a name="138"><span class="lineNum">     138 </span><span class="lineCov">          2 :   Map&lt;String, dynamic&gt; toJson() =&gt; _$ContextSourceToJson(this);</span></a>
 <a name="139"><span class="lineNum">     139 </span>            : </a>
 <a name="140"><span class="lineNum">     140 </span>            :   /// Create a copy with updated fields</a>
 <a name="141"><span class="lineNum">     141 </span><span class="lineCov">          2 :   ContextSource copyWith({</span></a>

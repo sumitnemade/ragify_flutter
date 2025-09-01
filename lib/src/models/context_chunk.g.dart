@@ -11,11 +11,9 @@ ContextChunk _$ContextChunkFromJson(Map<String, dynamic> json) => ContextChunk(
   content: json['content'] as String,
   source: ContextSource.fromJson(json['source'] as Map<String, dynamic>),
   metadata: json['metadata'] as Map<String, dynamic>?,
-  relevanceScore: json['relevance_score'] == null
-      ? null
-      : RelevanceScore.fromJson(
-          json['relevance_score'] as Map<String, dynamic>,
-        ),
+  relevanceScore: RelevanceScore.fromJson(
+    json['relevance_score'] as Map<String, dynamic>,
+  ),
   createdAt: json['created_at'] == null
       ? null
       : DateTime.parse(json['created_at'] as String),
@@ -33,9 +31,11 @@ Map<String, dynamic> _$ContextChunkToJson(ContextChunk instance) =>
     <String, dynamic>{
       'id': instance.id,
       'content': instance.content,
-      'source': instance.source,
+      'source': ContextChunk._sourceToJson(instance.source),
       'metadata': instance.metadata,
-      'relevance_score': instance.relevanceScore,
+      'relevance_score': ContextChunk._relevanceScoreToJson(
+        instance.relevanceScore,
+      ),
       'created_at': instance.createdAt.toIso8601String(),
       'updated_at': instance.updatedAt.toIso8601String(),
       'token_count': instance.tokenCount,

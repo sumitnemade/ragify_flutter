@@ -193,14 +193,8 @@ class ContextUtils {
       return false;
     }
 
-    // Check first and last characters for quick rejection
-    if (text1.isNotEmpty && text2.isNotEmpty) {
-      if (text1[0] != text2[0] ||
-          text1[text1.length - 1] != text2[text2.length - 1]) {
-        return false;
-      }
-    }
-
+    // Only check length ratio for quick rejection
+    // Removed first/last character check as it was too restrictive
     return true;
   }
 
@@ -208,8 +202,17 @@ class ContextUtils {
   static double _calculateSimilarity(String text1, String text2) {
     if (text1.isEmpty || text2.isEmpty) return 0.0;
 
-    final words1 = text1.toLowerCase().split(' ').toSet();
-    final words2 = text2.toLowerCase().split(' ').toSet();
+    // Clean words by removing punctuation and converting to lowercase
+    final words1 = text1.toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
+        .split(' ')
+        .where((word) => word.isNotEmpty) // Remove empty strings
+        .toSet();
+    final words2 = text2.toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
+        .split(' ')
+        .where((word) => word.isNotEmpty) // Remove empty strings
+        .toSet();
 
     if (words1.isEmpty || words2.isEmpty) return 0.0;
 

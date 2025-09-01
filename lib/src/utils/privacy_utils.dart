@@ -7,7 +7,7 @@ class PrivacyUtils {
     PrivacyLevel requestedLevel,
     PrivacyLevel userLevel,
   ) {
-    return requestedLevel.index >= userLevel.index;
+    return requestedLevel.index <= userLevel.index;
   }
 
   /// Get the most restrictive privacy level from a list

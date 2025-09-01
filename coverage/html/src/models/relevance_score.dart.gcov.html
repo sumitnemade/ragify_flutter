@@ -31,13 +31,13 @@
             <td class="headerValue">lcov.info</td>
             <td></td>
             <td class="headerItem">Lines:</td>
-            <td class="headerCovTableEntry">27</td>
+            <td class="headerCovTableEntry">25</td>
             <td class="headerCovTableEntry">28</td>
-            <td class="headerCovTableEntryHi">96.4 %</td>
+            <td class="headerCovTableEntryMed">89.3 %</td>
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-08-31 16:45:42</td>
+            <td class="headerValue">2025-09-01 09:11:41</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -69,15 +69,15 @@
 <a name="7"><span class="lineNum">       7 </span>            : class RelevanceScore {</a>
 <a name="8"><span class="lineNum">       8 </span>            :   /// Relevance score between 0.0 and 1.0</a>
 <a name="9"><span class="lineNum">       9 </span>            :   final double score;</a>
-<a name="10"><span class="lineNum">      10 </span>            :   </a>
+<a name="10"><span class="lineNum">      10 </span>            : </a>
 <a name="11"><span class="lineNum">      11 </span>            :   /// Lower bound of confidence interval</a>
 <a name="12"><span class="lineNum">      12 </span>            :   @JsonKey(name: 'confidence_lower')</a>
 <a name="13"><span class="lineNum">      13 </span>            :   final double? confidenceLower;</a>
-<a name="14"><span class="lineNum">      14 </span>            :   </a>
+<a name="14"><span class="lineNum">      14 </span>            : </a>
 <a name="15"><span class="lineNum">      15 </span>            :   /// Upper bound of confidence interval</a>
 <a name="16"><span class="lineNum">      16 </span>            :   @JsonKey(name: 'confidence_upper')</a>
 <a name="17"><span class="lineNum">      17 </span>            :   final double? confidenceUpper;</a>
-<a name="18"><span class="lineNum">      18 </span>            :   </a>
+<a name="18"><span class="lineNum">      18 </span>            : </a>
 <a name="19"><span class="lineNum">      19 </span>            :   /// Confidence level (0.0 to 1.0)</a>
 <a name="20"><span class="lineNum">      20 </span>            :   @JsonKey(name: 'confidence_level')</a>
 <a name="21"><span class="lineNum">      21 </span>            :   final double confidenceLevel;</a>
@@ -93,11 +93,11 @@
 <a name="31"><span class="lineNum">      31 </span>            :        );</a>
 <a name="32"><span class="lineNum">      32 </span>            : </a>
 <a name="33"><span class="lineNum">      33 </span>            :   /// Create from JSON</a>
-<a name="34"><span class="lineNum">      34 </span><span class="lineCov">          2 :   factory RelevanceScore.fromJson(Map&lt;String, dynamic&gt; json) =&gt; </span></a>
-<a name="35"><span class="lineNum">      35 </span><span class="lineCov">          2 :       _$RelevanceScoreFromJson(json);</span></a>
+<a name="34"><span class="lineNum">      34 </span><span class="lineNoCov">          0 :   factory RelevanceScore.fromJson(Map&lt;String, dynamic&gt; json) =&gt;</span></a>
+<a name="35"><span class="lineNum">      35 </span><span class="lineNoCov">          0 :       _$RelevanceScoreFromJson(json);</span></a>
 <a name="36"><span class="lineNum">      36 </span>            : </a>
 <a name="37"><span class="lineNum">      37 </span>            :   /// Convert to JSON</a>
-<a name="38"><span class="lineNum">      38 </span><span class="lineCov">          2 :   Map&lt;String, dynamic&gt; toJson() =&gt; _$RelevanceScoreToJson(this);</span></a>
+<a name="38"><span class="lineNum">      38 </span><span class="lineNoCov">          0 :   Map&lt;String, dynamic&gt; toJson() =&gt; _$RelevanceScoreToJson(this);</span></a>
 <a name="39"><span class="lineNum">      39 </span>            : </a>
 <a name="40"><span class="lineNum">      40 </span>            :   /// Create a copy with updated fields</a>
 <a name="41"><span class="lineNum">      41 </span><span class="lineCov">          1 :   RelevanceScore copyWith({</span></a>
@@ -107,7 +107,7 @@
 <a name="45"><span class="lineNum">      45 </span>            :     double? confidenceLevel,</a>
 <a name="46"><span class="lineNum">      46 </span>            :   }) {</a>
 <a name="47"><span class="lineNum">      47 </span><span class="lineCov">          1 :     return RelevanceScore(</span></a>
-<a name="48"><span class="lineNum">      48 </span><span class="lineNoCov">          0 :       score: score ?? this.score,</span></a>
+<a name="48"><span class="lineNum">      48 </span><span class="lineCov">          1 :       score: score ?? this.score,</span></a>
 <a name="49"><span class="lineNum">      49 </span><span class="lineCov">          1 :       confidenceLower: confidenceLower ?? this.confidenceLower,</span></a>
 <a name="50"><span class="lineNum">      50 </span><span class="lineCov">          1 :       confidenceUpper: confidenceUpper ?? this.confidenceUpper,</span></a>
 <a name="51"><span class="lineNum">      51 </span><span class="lineCov">          1 :       confidenceLevel: confidenceLevel ?? this.confidenceLevel,</span></a>
@@ -149,8 +149,9 @@
 <a name="87"><span class="lineNum">      87 </span>            :   }</a>
 <a name="88"><span class="lineNum">      88 </span>            : </a>
 <a name="89"><span class="lineNum">      89 </span><span class="lineCov">          1 :   @override</span></a>
-<a name="90"><span class="lineNum">      90 </span><span class="lineCov">          5 :   int get hashCode =&gt; Object.hash(score, confidenceLower, confidenceUpper, confidenceLevel);</span></a>
-<a name="91"><span class="lineNum">      91 </span>            : }</a>
+<a name="90"><span class="lineNum">      90 </span>            :   int get hashCode =&gt;</a>
+<a name="91"><span class="lineNum">      91 </span><span class="lineCov">          5 :       Object.hash(score, confidenceLower, confidenceUpper, confidenceLevel);</span></a>
+<a name="92"><span class="lineNum">      92 </span>            : }</a>
 </pre>
       </td>
     </tr>
