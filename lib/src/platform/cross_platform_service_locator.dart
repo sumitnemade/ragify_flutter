@@ -66,18 +66,26 @@ class CrossPlatformServiceLocator {
 
   /// Get storage type information
   String _getStorageType() {
-    if (PlatformDetector.isWeb) return 'WebStorage (IndexedDB + localStorage)';
-    if (PlatformDetector.isMobile)
+    if (PlatformDetector.isWeb) {
+      return 'WebStorage (IndexedDB + localStorage)';
+    }
+    if (PlatformDetector.isMobile) {
       return 'MobileStorage (SQLite + SharedPreferences)';
-    if (PlatformDetector.isDesktop)
+    }
+    if (PlatformDetector.isDesktop) {
       return 'DesktopStorage (SQLite + File System)';
+    }
     return 'MobileStorage (Fallback)';
   }
 
   /// Get ML type information
   String _getMLType() {
-    if (PlatformDetector.isWeb) return 'WebML (TensorFlow.js)';
-    if (PlatformDetector.isMobile) return 'MobileML (TensorFlow Lite)';
+    if (PlatformDetector.isWeb) {
+      return 'WebML (TensorFlow.js)';
+    }
+    if (PlatformDetector.isMobile) {
+      return 'MobileML (TensorFlow Lite)';
+    }
     return 'MobileML (Fallback)';
   }
 

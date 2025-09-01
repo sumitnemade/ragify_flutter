@@ -26,10 +26,7 @@ void main() {
 
     group('Constructor Tests', () {
       test('should create with required parameters', () {
-        final chunk = ContextChunk(
-          content: 'Test content',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: 'Test content', source: testSource);
 
         expect(chunk.content, equals('Test content'));
         expect(chunk.source, equals(testSource));
@@ -87,16 +84,19 @@ void main() {
 
       test('should use current time when dates not provided', () {
         final beforeCreation = DateTime.now();
-        final chunk = ContextChunk(
-          content: 'Test content',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: 'Test content', source: testSource);
         final afterCreation = DateTime.now();
 
-        expect(chunk.createdAt.isAfter(beforeCreation) || 
-               chunk.createdAt.isAtSameMomentAs(beforeCreation), isTrue);
-        expect(chunk.updatedAt.isBefore(afterCreation) || 
-               chunk.updatedAt.isAtSameMomentAs(afterCreation), isTrue);
+        expect(
+          chunk.createdAt.isAfter(beforeCreation) ||
+              chunk.createdAt.isAtSameMomentAs(beforeCreation),
+          isTrue,
+        );
+        expect(
+          chunk.updatedAt.isBefore(afterCreation) ||
+              chunk.updatedAt.isAtSameMomentAs(afterCreation),
+          isTrue,
+        );
       });
     });
 
@@ -157,12 +157,18 @@ void main() {
         );
 
         final longChunk = ContextChunk(
-          content: 'This is a very long content that exceeds one hundred characters and should be truncated with ellipsis at the end',
+          content:
+              'This is a very long content that exceeds one hundred characters and should be truncated with ellipsis at the end',
           source: testSource,
         );
 
         expect(shortChunk.summary, equals('Short content'));
-        expect(longChunk.summary, equals('This is a very long content that exceeds one hundred characters and should be truncated with ellipsi...'));
+        expect(
+          longChunk.summary,
+          equals(
+            'This is a very long content that exceeds one hundred characters and should be truncated with ellipsi...',
+          ),
+        );
         expect(longChunk.summary.length, equals(103)); // 100 + 3 for "..."
       });
     });
@@ -200,9 +206,7 @@ void main() {
           source: testSource,
         );
 
-        final updated = original.copyWith(
-          content: 'Updated content',
-        );
+        final updated = original.copyWith(content: 'Updated content');
 
         expect(updated.content, equals('Updated content'));
         expect(updated.source, equals(original.source));
@@ -266,20 +270,14 @@ void main() {
       });
 
       test('should be equal to itself', () {
-        final chunk = ContextChunk(
-          content: 'Test content',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: 'Test content', source: testSource);
 
         expect(chunk, equals(chunk));
         expect(chunk.hashCode, equals(chunk.hashCode));
       });
 
       test('should not be equal to different types', () {
-        final chunk = ContextChunk(
-          content: 'Test content',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: 'Test content', source: testSource);
 
         expect(chunk, isNot(equals('string')));
         expect(chunk, isNot(equals(123)));
@@ -300,14 +298,14 @@ void main() {
         expect(stringRep, contains('ContextChunk'));
         expect(stringRep, contains('test_id'));
         expect(stringRep, contains('Test Source'));
-        expect(stringRep, contains('This is a test content that will be summarized'));
+        expect(
+          stringRep,
+          contains('This is a test content that will be summarized'),
+        );
       });
 
       test('should handle short content in toString', () {
-        final chunk = ContextChunk(
-          content: 'Short',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: 'Short', source: testSource);
 
         final stringRep = chunk.toString();
 
@@ -318,10 +316,7 @@ void main() {
 
     group('Edge Cases Tests', () {
       test('should handle empty content', () {
-        final chunk = ContextChunk(
-          content: '',
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: '', source: testSource);
 
         expect(chunk.contentLength, equals(0));
         expect(chunk.summary, equals(''));
@@ -329,10 +324,7 @@ void main() {
 
       test('should handle very long content', () {
         final longContent = 'a' * 1000;
-        final chunk = ContextChunk(
-          content: longContent,
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: longContent, source: testSource);
 
         expect(chunk.contentLength, equals(1000));
         expect(chunk.summary.length, equals(103)); // 100 + 3 for "..."
@@ -340,10 +332,7 @@ void main() {
 
       test('should handle special characters in content', () {
         final specialContent = '!@#\$%^&*()_+-=[]{}|;:,.<>?';
-        final chunk = ContextChunk(
-          content: specialContent,
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: specialContent, source: testSource);
 
         expect(chunk.content, equals(specialContent));
         expect(chunk.contentLength, equals(specialContent.length));
@@ -351,10 +340,7 @@ void main() {
 
       test('should handle unicode characters', () {
         final unicodeContent = 'Hello 世界 🌍';
-        final chunk = ContextChunk(
-          content: unicodeContent,
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: unicodeContent, source: testSource);
 
         expect(chunk.content, equals(unicodeContent));
         expect(chunk.contentLength, equals(unicodeContent.length));
@@ -383,7 +369,7 @@ void main() {
 
       test('should handle large metadata', () {
         final largeMetadata = Map.fromEntries(
-          List.generate(100, (i) => MapEntry('key$i', 'value$i'))
+          List.generate(100, (i) => MapEntry('key$i', 'value$i')),
         );
 
         final chunk = ContextChunk(
@@ -405,29 +391,32 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           original.copyWith(content: 'Content $i');
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be very fast
       });
 
       test('should handle large content efficiently', () {
         final largeContent = 'a' * 10000;
-        final chunk = ContextChunk(
-          content: largeContent,
-          source: testSource,
-        );
+        final chunk = ContextChunk(content: largeContent, source: testSource);
 
         final stopwatch = Stopwatch()..start();
         final summary = chunk.summary;
         stopwatch.stop();
 
         expect(summary.length, equals(103)); // 100 + 3 for "..."
-        expect(stopwatch.elapsedMilliseconds, lessThan(10)); // Should be very fast
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(10),
+        ); // Should be very fast
       });
     });
   });

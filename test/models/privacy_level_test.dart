@@ -48,9 +48,18 @@ void main() {
     group('FromString Tests', () {
       test('should convert valid strings correctly', () {
         expect(PrivacyLevel.fromString('public'), equals(PrivacyLevel.public));
-        expect(PrivacyLevel.fromString('private'), equals(PrivacyLevel.private));
-        expect(PrivacyLevel.fromString('enterprise'), equals(PrivacyLevel.enterprise));
-        expect(PrivacyLevel.fromString('restricted'), equals(PrivacyLevel.restricted));
+        expect(
+          PrivacyLevel.fromString('private'),
+          equals(PrivacyLevel.private),
+        );
+        expect(
+          PrivacyLevel.fromString('enterprise'),
+          equals(PrivacyLevel.enterprise),
+        );
+        expect(
+          PrivacyLevel.fromString('restricted'),
+          equals(PrivacyLevel.restricted),
+        );
       });
 
       test('should handle case insensitive conversion', () {
@@ -59,20 +68,56 @@ void main() {
         expect(PrivacyLevel.fromString('pUbLiC'), equals(PrivacyLevel.public));
         expect(PrivacyLevel.fromString('public'), equals(PrivacyLevel.public));
 
-        expect(PrivacyLevel.fromString('PRIVATE'), equals(PrivacyLevel.private));
-        expect(PrivacyLevel.fromString('Private'), equals(PrivacyLevel.private));
-        expect(PrivacyLevel.fromString('pRiVaTe'), equals(PrivacyLevel.private));
-        expect(PrivacyLevel.fromString('private'), equals(PrivacyLevel.private));
+        expect(
+          PrivacyLevel.fromString('PRIVATE'),
+          equals(PrivacyLevel.private),
+        );
+        expect(
+          PrivacyLevel.fromString('Private'),
+          equals(PrivacyLevel.private),
+        );
+        expect(
+          PrivacyLevel.fromString('pRiVaTe'),
+          equals(PrivacyLevel.private),
+        );
+        expect(
+          PrivacyLevel.fromString('private'),
+          equals(PrivacyLevel.private),
+        );
 
-        expect(PrivacyLevel.fromString('ENTERPRISE'), equals(PrivacyLevel.enterprise));
-        expect(PrivacyLevel.fromString('Enterprise'), equals(PrivacyLevel.enterprise));
-        expect(PrivacyLevel.fromString('eNtErPrIsE'), equals(PrivacyLevel.enterprise));
-        expect(PrivacyLevel.fromString('enterprise'), equals(PrivacyLevel.enterprise));
+        expect(
+          PrivacyLevel.fromString('ENTERPRISE'),
+          equals(PrivacyLevel.enterprise),
+        );
+        expect(
+          PrivacyLevel.fromString('Enterprise'),
+          equals(PrivacyLevel.enterprise),
+        );
+        expect(
+          PrivacyLevel.fromString('eNtErPrIsE'),
+          equals(PrivacyLevel.enterprise),
+        );
+        expect(
+          PrivacyLevel.fromString('enterprise'),
+          equals(PrivacyLevel.enterprise),
+        );
 
-        expect(PrivacyLevel.fromString('RESTRICTED'), equals(PrivacyLevel.restricted));
-        expect(PrivacyLevel.fromString('Restricted'), equals(PrivacyLevel.restricted));
-        expect(PrivacyLevel.fromString('rEsTrIcTeD'), equals(PrivacyLevel.restricted));
-        expect(PrivacyLevel.fromString('restricted'), equals(PrivacyLevel.restricted));
+        expect(
+          PrivacyLevel.fromString('RESTRICTED'),
+          equals(PrivacyLevel.restricted),
+        );
+        expect(
+          PrivacyLevel.fromString('Restricted'),
+          equals(PrivacyLevel.restricted),
+        );
+        expect(
+          PrivacyLevel.fromString('rEsTrIcTeD'),
+          equals(PrivacyLevel.restricted),
+        );
+        expect(
+          PrivacyLevel.fromString('restricted'),
+          equals(PrivacyLevel.restricted),
+        );
       });
 
       test('should throw ArgumentError for invalid strings', () {
@@ -80,7 +125,10 @@ void main() {
         expect(() => PrivacyLevel.fromString(''), throwsArgumentError);
         expect(() => PrivacyLevel.fromString('null'), throwsArgumentError);
         expect(() => PrivacyLevel.fromString('123'), throwsArgumentError);
-        expect(() => PrivacyLevel.fromString('public_extra'), throwsArgumentError);
+        expect(
+          () => PrivacyLevel.fromString('public_extra'),
+          throwsArgumentError,
+        );
         expect(() => PrivacyLevel.fromString('public '), throwsArgumentError);
         expect(() => PrivacyLevel.fromString(' public'), throwsArgumentError);
         expect(() => PrivacyLevel.fromString('public\n'), throwsArgumentError);
@@ -113,10 +161,22 @@ void main() {
 
       test('should handle all case variations correctly', () {
         final testCases = [
-          'public', 'Public', 'PUBLIC', 'pUbLiC',
-          'private', 'Private', 'PRIVATE', 'pRiVaTe',
-          'enterprise', 'Enterprise', 'ENTERPRISE', 'eNtErPrIsE',
-          'restricted', 'Restricted', 'RESTRICTED', 'rEsTrIcTeD',
+          'public',
+          'Public',
+          'PUBLIC',
+          'pUbLiC',
+          'private',
+          'Private',
+          'PRIVATE',
+          'pRiVaTe',
+          'enterprise',
+          'Enterprise',
+          'ENTERPRISE',
+          'eNtErPrIsE',
+          'restricted',
+          'Restricted',
+          'RESTRICTED',
+          'rEsTrIcTeD',
         ];
 
         for (final testCase in testCases) {
@@ -171,7 +231,7 @@ void main() {
       });
 
       test('should handle very long strings', () {
-        final longString = 'public' + 'a' * 1000;
+        final longString = 'public${'a' * 1000}';
         expect(() => PrivacyLevel.fromString(longString), throwsArgumentError);
       });
 
@@ -186,37 +246,55 @@ void main() {
     group('Performance Tests', () {
       test('should handle rapid string conversions efficiently', () {
         final testStrings = ['public', 'private', 'enterprise', 'restricted'];
-        
+
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           for (final testString in testStrings) {
             final result = PrivacyLevel.fromString(testString);
             expect(result, isNotNull);
           }
         }
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be very fast
       });
 
       test('should handle mixed case conversions efficiently', () {
         final mixedCases = [
-          'PUBLIC', 'Public', 'pUbLiC', 'PUBLIC',
-          'PRIVATE', 'Private', 'pRiVaTe', 'PRIVATE',
-          'ENTERPRISE', 'Enterprise', 'eNtErPrIsE', 'ENTERPRISE',
-          'RESTRICTED', 'Restricted', 'rEsTrIcTeD', 'RESTRICTED',
+          'PUBLIC',
+          'Public',
+          'pUbLiC',
+          'PUBLIC',
+          'PRIVATE',
+          'Private',
+          'pRiVaTe',
+          'PRIVATE',
+          'ENTERPRISE',
+          'Enterprise',
+          'eNtErPrIsE',
+          'ENTERPRISE',
+          'RESTRICTED',
+          'Restricted',
+          'rEsTrIcTeD',
+          'RESTRICTED',
         ];
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (final mixedCase in mixedCases) {
           final result = PrivacyLevel.fromString(mixedCase);
           expect(result, isNotNull);
         }
-        
+
         stopwatch.stop();
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(50),
+        ); // Should be very fast
       });
     });
 
@@ -233,11 +311,11 @@ void main() {
       test('should handle boundary conditions', () {
         // Test empty string
         expect(() => PrivacyLevel.fromString(''), throwsArgumentError);
-        
+
         // Test single character strings
         expect(() => PrivacyLevel.fromString('a'), throwsArgumentError);
         expect(() => PrivacyLevel.fromString('z'), throwsArgumentError);
-        
+
         // Test very long strings
         final longString = 'a' * 1000;
         expect(() => PrivacyLevel.fromString(longString), throwsArgumentError);
@@ -248,7 +326,7 @@ void main() {
         final firstResult = PrivacyLevel.fromString(testString);
         final secondResult = PrivacyLevel.fromString(testString);
         final thirdResult = PrivacyLevel.fromString(testString);
-        
+
         expect(firstResult, equals(secondResult));
         expect(secondResult, equals(thirdResult));
         expect(firstResult, equals(PrivacyLevel.public));
@@ -256,14 +334,36 @@ void main() {
 
       test('should handle all error cases consistently', () {
         final invalidStrings = [
-          '', 'null', '123', 'public_extra', 'public ', ' public',
-          'public\n', 'public\r', 'public\t', 'public!', 'public@',
-          'public#', 'public\$', 'public%', 'public^', 'public&',
-          'public*', 'public(', 'public)', 'a', 'z', 'A', 'Z',
+          '',
+          'null',
+          '123',
+          'public_extra',
+          'public ',
+          ' public',
+          'public\n',
+          'public\r',
+          'public\t',
+          'public!',
+          'public@',
+          'public#',
+          'public\$',
+          'public%',
+          'public^',
+          'public&',
+          'public*',
+          'public(',
+          'public)',
+          'a',
+          'z',
+          'A',
+          'Z',
         ];
 
         for (final invalidString in invalidStrings) {
-          expect(() => PrivacyLevel.fromString(invalidString), throwsArgumentError);
+          expect(
+            () => PrivacyLevel.fromString(invalidString),
+            throwsArgumentError,
+          );
         }
       });
     });
@@ -281,7 +381,7 @@ void main() {
 
       test('should include invalid value in error message', () {
         final testValues = ['invalid', 'empty', '123', 'special!'];
-        
+
         for (final testValue in testValues) {
           try {
             PrivacyLevel.fromString(testValue);

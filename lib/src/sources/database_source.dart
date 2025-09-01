@@ -717,9 +717,12 @@ class DatabaseSource implements BaseDataSource {
     // 3. Full-text search queries
 
     if (query != null && query.length > 50) return true; // Long queries
-    if (filters != null && filters.length > 2) return true; // Multiple filters
-    if (limit != null && limit > _parallelConfig.batchSize)
+    if (filters != null && filters.length > 2) {
+      return true; // Multiple filters
+    }
+    if (limit != null && limit > _parallelConfig.batchSize) {
       return true; // Large result sets
+    }
 
     return false;
   }

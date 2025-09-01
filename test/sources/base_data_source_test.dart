@@ -13,30 +13,69 @@ void main() {
       });
 
       test('should convert from string correctly', () {
-        expect(SourceStatus.fromString('healthy'), equals(SourceStatus.healthy));
-        expect(SourceStatus.fromString('degraded'), equals(SourceStatus.degraded));
-        expect(SourceStatus.fromString('unhealthy'), equals(SourceStatus.unhealthy));
-        expect(SourceStatus.fromString('offline'), equals(SourceStatus.offline));
-        expect(SourceStatus.fromString('unknown'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString('healthy'),
+          equals(SourceStatus.healthy),
+        );
+        expect(
+          SourceStatus.fromString('degraded'),
+          equals(SourceStatus.degraded),
+        );
+        expect(
+          SourceStatus.fromString('unhealthy'),
+          equals(SourceStatus.unhealthy),
+        );
+        expect(
+          SourceStatus.fromString('offline'),
+          equals(SourceStatus.offline),
+        );
+        expect(
+          SourceStatus.fromString('unknown'),
+          equals(SourceStatus.unknown),
+        );
       });
 
       test('should handle case insensitive conversion', () {
-        expect(SourceStatus.fromString('HEALTHY'), equals(SourceStatus.healthy));
-        expect(SourceStatus.fromString('Degraded'), equals(SourceStatus.degraded));
-        expect(SourceStatus.fromString('UnHeAlThY'), equals(SourceStatus.unhealthy));
+        expect(
+          SourceStatus.fromString('HEALTHY'),
+          equals(SourceStatus.healthy),
+        );
+        expect(
+          SourceStatus.fromString('Degraded'),
+          equals(SourceStatus.degraded),
+        );
+        expect(
+          SourceStatus.fromString('UnHeAlThY'),
+          equals(SourceStatus.unhealthy),
+        );
       });
 
       test('should return unknown for invalid strings', () {
-        expect(SourceStatus.fromString('invalid'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString('invalid'),
+          equals(SourceStatus.unknown),
+        );
         expect(SourceStatus.fromString(''), equals(SourceStatus.unknown));
         expect(SourceStatus.fromString('123'), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy_extra'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString('healthy_extra'),
+          equals(SourceStatus.unknown),
+        );
       });
 
       test('should handle edge cases', () {
-        expect(SourceStatus.fromString(' healthy '), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy '), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString(' healthy'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString(' healthy '),
+          equals(SourceStatus.unknown),
+        );
+        expect(
+          SourceStatus.fromString('healthy '),
+          equals(SourceStatus.unknown),
+        );
+        expect(
+          SourceStatus.fromString(' healthy'),
+          equals(SourceStatus.unknown),
+        );
       });
     });
 
@@ -77,21 +116,42 @@ void main() {
 
       test('should handle special characters', () {
         expect(SourceStatus.fromString('!@#\$'), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy!'), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy@'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString('healthy!'),
+          equals(SourceStatus.unknown),
+        );
+        expect(
+          SourceStatus.fromString('healthy@'),
+          equals(SourceStatus.unknown),
+        );
       });
 
       test('should handle whitespace variations', () {
-        expect(SourceStatus.fromString('\thealthy'), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy\n'), equals(SourceStatus.unknown));
-        expect(SourceStatus.fromString('healthy\r'), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString('\thealthy'),
+          equals(SourceStatus.unknown),
+        );
+        expect(
+          SourceStatus.fromString('healthy\n'),
+          equals(SourceStatus.unknown),
+        );
+        expect(
+          SourceStatus.fromString('healthy\r'),
+          equals(SourceStatus.unknown),
+        );
       });
     });
 
     group('Performance Tests', () {
       test('should handle rapid string conversions', () {
-        final testStrings = ['healthy', 'degraded', 'unhealthy', 'offline', 'unknown'];
-        
+        final testStrings = [
+          'healthy',
+          'degraded',
+          'unhealthy',
+          'offline',
+          'unknown',
+        ];
+
         for (int i = 0; i < 100; i++) {
           for (final testString in testStrings) {
             final result = SourceStatus.fromString(testString);
@@ -102,8 +162,16 @@ void main() {
 
       test('should handle mixed case conversions efficiently', () {
         final mixedCases = [
-          'HEALTHY', 'Healthy', 'hEaLtHy', 'healTHY', 'HEALTHY',
-          'DEGRADED', 'Degraded', 'dEgRaDeD', 'degrADED', 'DEGRADED',
+          'HEALTHY',
+          'Healthy',
+          'hEaLtHy',
+          'healTHY',
+          'HEALTHY',
+          'DEGRADED',
+          'Degraded',
+          'dEgRaDeD',
+          'degrADED',
+          'DEGRADED',
         ];
 
         for (final mixedCase in mixedCases) {
@@ -126,14 +194,17 @@ void main() {
       test('should handle boundary conditions', () {
         // Test empty string
         expect(SourceStatus.fromString(''), equals(SourceStatus.unknown));
-        
+
         // Test single character strings
         expect(SourceStatus.fromString('a'), equals(SourceStatus.unknown));
         expect(SourceStatus.fromString('z'), equals(SourceStatus.unknown));
-        
+
         // Test very long strings
         final longString = 'a' * 1000;
-        expect(SourceStatus.fromString(longString), equals(SourceStatus.unknown));
+        expect(
+          SourceStatus.fromString(longString),
+          equals(SourceStatus.unknown),
+        );
       });
 
       test('should maintain consistency across multiple calls', () {
@@ -141,7 +212,7 @@ void main() {
         final firstResult = SourceStatus.fromString(testString);
         final secondResult = SourceStatus.fromString(testString);
         final thirdResult = SourceStatus.fromString(testString);
-        
+
         expect(firstResult, equals(secondResult));
         expect(secondResult, equals(thirdResult));
         expect(firstResult, equals(SourceStatus.healthy));

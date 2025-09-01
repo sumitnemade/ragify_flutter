@@ -234,19 +234,25 @@ void main() {
       test('should handle empty vectors in operations', () {
         expect(() => EmbeddingUtils.addVectors([], []), returnsNormally);
         expect(() => EmbeddingUtils.subtractVectors([], []), returnsNormally);
-        expect(() => EmbeddingUtils.multiplyVectorByScalar([], 2.0), returnsNormally);
+        expect(
+          () => EmbeddingUtils.multiplyVectorByScalar([], 2.0),
+          returnsNormally,
+        );
       });
 
-      test('should throw error for vectors of different lengths in operations', () {
-        expect(
-          () => EmbeddingUtils.addVectors([1.0, 2.0], [1.0]),
-          throwsArgumentError,
-        );
-        expect(
-          () => EmbeddingUtils.subtractVectors([1.0, 2.0], [1.0]),
-          throwsArgumentError,
-        );
-      });
+      test(
+        'should throw error for vectors of different lengths in operations',
+        () {
+          expect(
+            () => EmbeddingUtils.addVectors([1.0, 2.0], [1.0]),
+            throwsArgumentError,
+          );
+          expect(
+            () => EmbeddingUtils.subtractVectors([1.0, 2.0], [1.0]),
+            throwsArgumentError,
+          );
+        },
+      );
     });
 
     group('Edge Case Tests', () {
@@ -277,13 +283,13 @@ void main() {
       test('should handle multiple operations efficiently', () {
         final vector1 = List.generate(100, (i) => i.toDouble());
         final vector2 = List.generate(100, (i) => (i + 1).toDouble());
-        
+
         // Perform multiple operations to test performance
         for (int i = 0; i < 10; i++) {
           final similarity = EmbeddingUtils.cosineSimilarity(vector1, vector2);
           final distance = EmbeddingUtils.euclideanDistance(vector1, vector2);
           final manhattan = EmbeddingUtils.manhattanDistance(vector1, vector2);
-          
+
           expect(similarity, greaterThan(-1.0));
           expect(similarity, lessThan(1.0));
           expect(distance, greaterThan(0.0));

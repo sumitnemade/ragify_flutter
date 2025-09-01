@@ -139,11 +139,15 @@ class PrivacyManager {
         final matchedText = match.group(0)!;
         if (_isEmail(matchedText)) return '[EMAIL_${_hashString(matchedText)}]';
         if (_isPhone(matchedText)) return '[PHONE_${_hashString(matchedText)}]';
-        if (_isCreditCard(matchedText))
+        if (_isCreditCard(matchedText)) {
           return '[CARD_${_hashString(matchedText)}]';
-        if (_isSSN(matchedText)) return '[SSN_${_hashString(matchedText)}]';
-        if (_isIPAddress(matchedText))
+        }
+        if (_isSSN(matchedText)) {
+          return '[SSN_${_hashString(matchedText)}]';
+        }
+        if (_isIPAddress(matchedText)) {
           return '[IP_${_hashString(matchedText)}]';
+        }
         if (_isDate(matchedText)) return '[DATE_${_hashString(matchedText)}]';
         return '[UNKNOWN]';
       });

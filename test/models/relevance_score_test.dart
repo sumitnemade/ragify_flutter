@@ -48,14 +48,8 @@ void main() {
       });
 
       test('should handle confidence level boundary values', () {
-        final minConfidence = RelevanceScore(
-          score: 0.5,
-          confidenceLevel: 0.0,
-        );
-        final maxConfidence = RelevanceScore(
-          score: 0.5,
-          confidenceLevel: 1.0,
-        );
+        final minConfidence = RelevanceScore(score: 0.5, confidenceLevel: 0.0);
+        final maxConfidence = RelevanceScore(score: 0.5, confidenceLevel: 1.0);
 
         expect(minConfidence.confidenceLevel, equals(0.0));
         expect(maxConfidence.confidenceLevel, equals(1.0));
@@ -162,7 +156,7 @@ void main() {
           confidenceUpper: null,
         );
 
-        // The copyWith method uses the null-coalescing operator (??), 
+        // The copyWith method uses the null-coalescing operator (??),
         // so null values will use the original values instead of becoming null
         expect(updated.confidenceLower, equals(original.confidenceLower));
         expect(updated.confidenceUpper, equals(original.confidenceUpper));
@@ -231,14 +225,8 @@ void main() {
 
       test('should return null when confidence bounds are missing', () {
         final score1 = RelevanceScore(score: 0.5);
-        final score2 = RelevanceScore(
-          score: 0.5,
-          confidenceLower: 0.4,
-        );
-        final score3 = RelevanceScore(
-          score: 0.5,
-          confidenceUpper: 0.6,
-        );
+        final score2 = RelevanceScore(score: 0.5, confidenceLower: 0.4);
+        final score3 = RelevanceScore(score: 0.5, confidenceUpper: 0.6);
 
         expect(score1.confidenceIntervalWidth, isNull);
         expect(score2.confidenceIntervalWidth, isNull);
@@ -299,14 +287,8 @@ void main() {
 
       test('should return N/A when confidence bounds are missing', () {
         final score1 = RelevanceScore(score: 0.5);
-        final score2 = RelevanceScore(
-          score: 0.5,
-          confidenceLower: 0.4,
-        );
-        final score3 = RelevanceScore(
-          score: 0.5,
-          confidenceUpper: 0.6,
-        );
+        final score2 = RelevanceScore(score: 0.5, confidenceLower: 0.4);
+        final score3 = RelevanceScore(score: 0.5, confidenceUpper: 0.6);
 
         expect(score1.confidenceIntervalString, equals('N/A'));
         expect(score2.confidenceIntervalString, equals('N/A'));
@@ -425,42 +407,24 @@ void main() {
       });
 
       test('should not be equal when confidenceLower differs', () {
-        final score1 = RelevanceScore(
-          score: 0.8,
-          confidenceLower: 0.7,
-        );
-        final score2 = RelevanceScore(
-          score: 0.8,
-          confidenceLower: 0.6,
-        );
+        final score1 = RelevanceScore(score: 0.8, confidenceLower: 0.7);
+        final score2 = RelevanceScore(score: 0.8, confidenceLower: 0.6);
 
         expect(score1, isNot(equals(score2)));
         expect(score1.hashCode, isNot(equals(score2.hashCode)));
       });
 
       test('should not be equal when confidenceUpper differs', () {
-        final score1 = RelevanceScore(
-          score: 0.8,
-          confidenceUpper: 0.9,
-        );
-        final score2 = RelevanceScore(
-          score: 0.8,
-          confidenceUpper: 0.8,
-        );
+        final score1 = RelevanceScore(score: 0.8, confidenceUpper: 0.9);
+        final score2 = RelevanceScore(score: 0.8, confidenceUpper: 0.8);
 
         expect(score1, isNot(equals(score2)));
         expect(score1.hashCode, isNot(equals(score2.hashCode)));
       });
 
       test('should not be equal when confidenceLevel differs', () {
-        final score1 = RelevanceScore(
-          score: 0.8,
-          confidenceLevel: 0.95,
-        );
-        final score2 = RelevanceScore(
-          score: 0.8,
-          confidenceLevel: 0.9,
-        );
+        final score1 = RelevanceScore(score: 0.8, confidenceLevel: 0.95);
+        final score2 = RelevanceScore(score: 0.8, confidenceLevel: 0.9);
 
         expect(score1, isNot(equals(score2)));
         expect(score1.hashCode, isNot(equals(score2.hashCode)));
@@ -590,14 +554,17 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           original.copyWith(score: 0.5 + (i / 10000));
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be very fast
       });
 
       test('should handle multiple equality checks efficiently', () {
@@ -616,28 +583,34 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           score1 == score2;
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(50),
+        ); // Should be very fast
       });
 
       test('should handle multiple threshold checks efficiently', () {
         final score = RelevanceScore(score: 0.5);
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           score.isAboveThreshold(i / 1000.0);
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(50),
+        ); // Should be very fast
       });
     });
   });

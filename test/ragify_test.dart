@@ -2,10 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/ragify.dart';
 import 'package:ragify_flutter/src/core/ragify_config.dart';
 import 'package:ragify_flutter/src/models/context_chunk.dart';
-import 'package:ragify_flutter/src/models/context_response.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
-import 'package:ragify_flutter/src/models/relevance_score.dart';
 import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:ragify_flutter/src/platform/platform_detector.dart';
 import 'package:ragify_flutter/src/scoring/advanced_scoring_engine.dart';
@@ -98,12 +96,10 @@ void main() {
     });
 
     tearDown(() async {
-      if (ragify != null) {
-        try {
-          await ragify.close();
-        } catch (e) {
-          // Ignore errors during cleanup
-        }
+      try {
+        await ragify.close();
+      } catch (e) {
+        // Ignore errors during cleanup
       }
     });
 
@@ -145,10 +141,16 @@ void main() {
       });
 
       test('should check platform feature support', () {
-        final supportsAI = ragify.supportsPlatformFeature(PlatformFeature.aiModelApis);
-        final supportsVector = ragify.supportsPlatformFeature(PlatformFeature.vectorOperations);
-        final supportsSQLite = ragify.supportsPlatformFeature(PlatformFeature.sqlite);
-        
+        final supportsAI = ragify.supportsPlatformFeature(
+          PlatformFeature.aiModelApis,
+        );
+        final supportsVector = ragify.supportsPlatformFeature(
+          PlatformFeature.vectorOperations,
+        );
+        final supportsSQLite = ragify.supportsPlatformFeature(
+          PlatformFeature.sqlite,
+        );
+
         expect(supportsAI, isA<bool>());
         expect(supportsVector, isA<bool>());
         expect(supportsSQLite, isA<bool>());
@@ -235,7 +237,10 @@ void main() {
         final defaultConfig = RagifyConfig.defaultConfig();
         expect(defaultConfig.maxContextSize, greaterThan(0));
         expect(defaultConfig.cacheTtl, greaterThan(0));
-        expect(defaultConfig.defaultRelevanceThreshold, greaterThanOrEqualTo(0.0));
+        expect(
+          defaultConfig.defaultRelevanceThreshold,
+          greaterThanOrEqualTo(0.0),
+        );
         expect(defaultConfig.defaultRelevanceThreshold, lessThanOrEqualTo(1.0));
         expect(defaultConfig.maxConcurrentSources, greaterThan(0));
       });
@@ -261,7 +266,10 @@ void main() {
       test('should have all required methods available', () {
         // Test that all public methods exist and are callable
         expect(() => ragify.getPlatformInfo(), returnsNormally);
-        expect(() => ragify.supportsPlatformFeature(PlatformFeature.aiModelApis), returnsNormally);
+        expect(
+          () => ragify.supportsPlatformFeature(PlatformFeature.aiModelApis),
+          returnsNormally,
+        );
         expect(() => ragify.getPlatformRecommendations(), returnsNormally);
         expect(() => ragify.getCacheStats(), returnsNormally);
         expect(() => ragify.getPrivacyStats(), returnsNormally);
@@ -275,7 +283,10 @@ void main() {
     group('Error Handling Tests', () {
       test('should handle invalid platform features gracefully', () {
         // Test with invalid platform feature (this should not crash)
-        expect(() => ragify.supportsPlatformFeature(PlatformFeature.aiModelApis), returnsNormally);
+        expect(
+          () => ragify.supportsPlatformFeature(PlatformFeature.aiModelApis),
+          returnsNormally,
+        );
       });
 
       test('should handle data source operations gracefully', () {
@@ -308,7 +319,7 @@ void main() {
       test('should work with multiple data sources', () {
         final dataSource1 = MockDataSource();
         final dataSource2 = MockDataSource();
-        
+
         expect(() => ragify.addDataSource(dataSource1), returnsNormally);
         expect(() => ragify.addDataSource(dataSource2), returnsNormally);
         expect(() => ragify.removeDataSource('mock_source'), returnsNormally);
@@ -317,19 +328,16 @@ void main() {
       test('should handle configuration changes', () {
         final originalConfig = ragify.config;
         expect(originalConfig, isA<RagifyConfig>());
-        
+
         // Create new instance with different config
         final newRagify = RAGify(
-          config: RagifyConfig(
-            maxContextSize: 15000,
-            cacheTtl: 7200,
-          ),
+          config: RagifyConfig(maxContextSize: 15000, cacheTtl: 7200),
           isTestMode: true,
         );
-        
+
         expect(newRagify.config.maxContextSize, equals(15000));
         expect(newRagify.config.cacheTtl, equals(7200));
-        
+
         // Clean up
         newRagify.close();
       });

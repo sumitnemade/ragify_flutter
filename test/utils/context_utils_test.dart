@@ -7,7 +7,7 @@ void main() {
       test('should estimate token count for text', () {
         final text = 'This is a test text with multiple words.';
         final tokenCount = ContextUtils.estimateTokenCount(text);
-        
+
         // Simple approximation: 1 token ≈ 4 characters
         expect(tokenCount, greaterThan(0));
         expect(tokenCount, closeTo(text.length / 4, 1));
@@ -27,14 +27,23 @@ void main() {
     group('Performance Statistics Tests', () {
       test('should return performance statistics', () {
         final stats = ContextUtils.getPerformanceStats();
-        
+
         expect(stats['optimization_features'], isA<List<String>>());
         expect(stats['performance_improvements'], isA<Map<String, dynamic>>());
         expect(stats['algorithms'], isA<Map<String, dynamic>>());
-        
-        expect(stats['optimization_features'], contains('content_hash_duplicate_detection'));
-        expect(stats['performance_improvements']['deduplication'], equals('O(n log n) instead of O(n²)'));
-        expect(stats['algorithms']['deduplication'], equals('Hash-based + similarity with early termination'));
+
+        expect(
+          stats['optimization_features'],
+          contains('content_hash_duplicate_detection'),
+        );
+        expect(
+          stats['performance_improvements']['deduplication'],
+          equals('O(n log n) instead of O(n²)'),
+        );
+        expect(
+          stats['algorithms']['deduplication'],
+          equals('Hash-based + similarity with early termination'),
+        );
       });
     });
 

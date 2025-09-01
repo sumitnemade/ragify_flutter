@@ -201,7 +201,7 @@ void main() {
           excludeSources: null,
         );
 
-        // The copyWith method uses the null-coalescing operator (??), 
+        // The copyWith method uses the null-coalescing operator (??),
         // so null values will use the original values instead of becoming null
         expect(updated.userId, equals(original.userId));
         expect(updated.sessionId, equals(original.sessionId));
@@ -523,7 +523,7 @@ void main() {
 
       test('should handle different relevance thresholds', () {
         final thresholds = [0.0, 0.1, 0.5, 0.9, 1.0];
-        
+
         for (final threshold in thresholds) {
           final request = ContextRequest(
             query: 'Test query',
@@ -538,7 +538,7 @@ void main() {
 
       test('should handle different token limits', () {
         final tokenLimits = [1, 100, 1000, 10000, 100000];
-        
+
         for (final limit in tokenLimits) {
           final request = ContextRequest(
             query: 'Test query',
@@ -562,14 +562,17 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           original.copyWith(query: 'Query $i');
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be very fast
       });
 
       test('should handle multiple equality checks efficiently', () {
@@ -588,14 +591,17 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           request1 == request2;
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(50),
+        ); // Should be very fast
       });
     });
   });

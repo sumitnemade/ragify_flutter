@@ -539,8 +539,9 @@ class AdvancedFusionEngine {
       // Find similar chunks
       for (final otherChunk in chunks) {
         if (otherChunk.id == chunk.id ||
-            processedChunks.contains(otherChunk.id))
+            processedChunks.contains(otherChunk.id)) {
           continue;
+        }
 
         final similarity = _calculateSemanticSimilarityInIsolate(
           chunk,
@@ -671,8 +672,9 @@ class AdvancedFusionEngine {
       // Find overlapping groups
       for (final otherGroup in groups) {
         if (otherGroup.id == group.id ||
-            processedGroups.contains(otherGroup.id))
+            processedGroups.contains(otherGroup.id)) {
           continue;
+        }
 
         // Check if groups overlap (have common chunks or high similarity)
         if (_groupsOverlap(group, otherGroup, query)) {
@@ -744,8 +746,9 @@ class AdvancedFusionEngine {
       // Find similar chunks
       for (final otherChunk in chunks) {
         if (otherChunk.id == chunk.id ||
-            processedChunks.contains(otherChunk.id))
+            processedChunks.contains(otherChunk.id)) {
           continue;
+        }
 
         final similarity = await _calculateSemanticSimilarity(
           chunk,

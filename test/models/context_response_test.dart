@@ -104,7 +104,12 @@ void main() {
 
         expect(responseWithDefaults.metadata, equals({}));
         expect(responseWithDefaults.createdAt, isA<DateTime>());
-        expect(responseWithDefaults.createdAt.isAfter(DateTime.now().subtract(Duration(seconds: 1))), isTrue);
+        expect(
+          responseWithDefaults.createdAt.isAfter(
+            DateTime.now().subtract(Duration(seconds: 1)),
+          ),
+          isTrue,
+        );
       });
 
       test('should handle empty chunks list', () {
@@ -145,7 +150,10 @@ void main() {
 
       test('should calculate total content length correctly', () {
         // Each chunk has content length based on its content
-        final expectedLength = testChunks.fold(0, (total, chunk) => total + chunk.content.length);
+        final expectedLength = testChunks.fold(
+          0,
+          (total, chunk) => total + chunk.content.length,
+        );
         expect(response.totalContentLength, equals(expectedLength));
       });
 
@@ -174,7 +182,7 @@ void main() {
 
       test('should sort chunks by relevance score', () {
         final sortedChunks = response.chunksByRelevance;
-        
+
         expect(sortedChunks.length, equals(3));
         expect(sortedChunks[0].relevanceScore?.score, equals(0.9));
         expect(sortedChunks[1].relevanceScore?.score, equals(0.8));
@@ -243,16 +251,38 @@ void main() {
     group('Filtering Methods Tests', () {
       test('should get chunks above relevance threshold', () {
         final chunksAboveThreshold = response.getChunksAboveThreshold(0.8);
-        expect(chunksAboveThreshold.length, equals(2)); // 0.9 and 0.8 are both >= 0.8
-        expect(chunksAboveThreshold.any((chunk) => chunk.relevanceScore?.score == 0.9), isTrue);
-        expect(chunksAboveThreshold.any((chunk) => chunk.relevanceScore?.score == 0.8), isTrue);
+        expect(
+          chunksAboveThreshold.length,
+          equals(2),
+        ); // 0.9 and 0.8 are both >= 0.8
+        expect(
+          chunksAboveThreshold.any(
+            (chunk) => chunk.relevanceScore?.score == 0.9,
+          ),
+          isTrue,
+        );
+        expect(
+          chunksAboveThreshold.any(
+            (chunk) => chunk.relevanceScore?.score == 0.8,
+          ),
+          isTrue,
+        );
       });
 
       test('should get chunks at relevance threshold', () {
         final chunksAtThreshold = response.getChunksAboveThreshold(0.8);
-        expect(chunksAtThreshold.length, equals(2)); // 0.9 and 0.8 are both >= 0.8
-        expect(chunksAtThreshold.any((chunk) => chunk.relevanceScore?.score == 0.9), isTrue);
-        expect(chunksAtThreshold.any((chunk) => chunk.relevanceScore?.score == 0.8), isTrue);
+        expect(
+          chunksAtThreshold.length,
+          equals(2),
+        ); // 0.9 and 0.8 are both >= 0.8
+        expect(
+          chunksAtThreshold.any((chunk) => chunk.relevanceScore?.score == 0.9),
+          isTrue,
+        );
+        expect(
+          chunksAtThreshold.any((chunk) => chunk.relevanceScore?.score == 0.8),
+          isTrue,
+        );
       });
 
       test('should get chunks below relevance threshold', () {
@@ -261,33 +291,42 @@ void main() {
         expect(chunksBelowThreshold[0].relevanceScore?.score, equals(0.9));
       });
 
-      test('should handle chunks without relevance score in threshold filtering', () {
-        final chunkWithoutRelevance = ContextChunk(
-          id: 'no_relevance',
-          content: 'No relevance score',
-          source: testSource,
-        );
+      test(
+        'should handle chunks without relevance score in threshold filtering',
+        () {
+          final chunkWithoutRelevance = ContextChunk(
+            id: 'no_relevance',
+            content: 'No relevance score',
+            source: testSource,
+          );
 
-        final responseWithoutRelevance = ContextResponse(
-          id: 'no_relevance_response',
-          query: 'No relevance query',
-          chunks: [chunkWithoutRelevance],
-          maxTokens: 500,
-          privacyLevel: PrivacyLevel.public,
-        );
+          final responseWithoutRelevance = ContextResponse(
+            id: 'no_relevance_response',
+            query: 'No relevance query',
+            chunks: [chunkWithoutRelevance],
+            maxTokens: 500,
+            privacyLevel: PrivacyLevel.public,
+          );
 
-        final chunksAboveThreshold = responseWithoutRelevance.getChunksAboveThreshold(0.5);
-        expect(chunksAboveThreshold, isEmpty);
-      });
+          final chunksAboveThreshold = responseWithoutRelevance
+              .getChunksAboveThreshold(0.5);
+          expect(chunksAboveThreshold, isEmpty);
+        },
+      );
 
       test('should get chunks from specific source', () {
         final chunksFromSource = response.getChunksFromSource('Test Source');
         expect(chunksFromSource.length, equals(3));
-        expect(chunksFromSource.every((chunk) => chunk.source.name == 'Test Source'), isTrue);
+        expect(
+          chunksFromSource.every((chunk) => chunk.source.name == 'Test Source'),
+          isTrue,
+        );
       });
 
       test('should return empty list for non-existent source', () {
-        final chunksFromNonExistentSource = response.getChunksFromSource('Non-existent Source');
+        final chunksFromNonExistentSource = response.getChunksFromSource(
+          'Non-existent Source',
+        );
         expect(chunksFromNonExistentSource, isEmpty);
       });
 
@@ -312,7 +351,7 @@ void main() {
         expect(updatedResponse.maxTokens, equals(2000));
         expect(updatedResponse.privacyLevel, equals(PrivacyLevel.private));
         expect(updatedResponse.processingTimeMs, equals(300));
-        
+
         // Unchanged fields
         expect(updatedResponse.chunks, equals(response.chunks));
         expect(updatedResponse.userId, equals(response.userId));
@@ -322,9 +361,7 @@ void main() {
       });
 
       test('should create copy with partial updates', () {
-        final updatedResponse = response.copyWith(
-          query: 'Partial update',
-        );
+        final updatedResponse = response.copyWith(query: 'Partial update');
 
         expect(updatedResponse.query, equals('Partial update'));
         expect(updatedResponse.id, equals(response.id));
@@ -355,12 +392,15 @@ void main() {
           processingTimeMs: null,
         );
 
-        // The copyWith method uses the null-coalescing operator (??), 
+        // The copyWith method uses the null-coalescing operator (??),
         // so null values will use the original values instead of becoming null
         expect(updatedResponse.userId, equals(response.userId));
         expect(updatedResponse.sessionId, equals(response.sessionId));
-        expect(updatedResponse.processingTimeMs, equals(response.processingTimeMs));
-        
+        expect(
+          updatedResponse.processingTimeMs,
+          equals(response.processingTimeMs),
+        );
+
         // Other fields unchanged
         expect(updatedResponse.id, equals(response.id));
         expect(updatedResponse.query, equals(response.query));
@@ -545,7 +585,7 @@ void main() {
 
       test('should handle different token limits', () {
         final tokenLimits = [1, 100, 1000, 10000, 100000];
-        
+
         for (final limit in tokenLimits) {
           final responseWithLimit = ContextResponse(
             id: 'limit_$limit',
@@ -563,14 +603,17 @@ void main() {
     group('Performance Tests', () {
       test('should handle multiple copy operations efficiently', () {
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           response.copyWith(id: 'copy_$i');
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be very fast
       });
 
       test('should handle multiple equality checks efficiently', () {
@@ -583,23 +626,29 @@ void main() {
         );
 
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           response == response2;
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(50)); // Should be very fast
+
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(50),
+        ); // Should be very fast
       });
 
       test('should handle sorting large numbers of chunks efficiently', () {
-        final largeChunks = List.generate(1000, (i) => ContextChunk(
-          id: 'chunk_$i',
-          content: 'Content $i',
-          source: testSource,
-          relevanceScore: RelevanceScore(score: 1.0 - (i / 1000)),
-        ));
+        final largeChunks = List.generate(
+          1000,
+          (i) => ContextChunk(
+            id: 'chunk_$i',
+            content: 'Content $i',
+            source: testSource,
+            relevanceScore: RelevanceScore(score: 1.0 - (i / 1000)),
+          ),
+        );
 
         final responseWithLargeChunks = ContextResponse(
           id: 'large_chunks',
@@ -614,7 +663,10 @@ void main() {
         stopwatch.stop();
 
         expect(sortedChunks.length, equals(1000));
-        expect(stopwatch.elapsedMilliseconds, lessThan(100)); // Should be reasonably fast
+        expect(
+          stopwatch.elapsedMilliseconds,
+          lessThan(100),
+        ); // Should be reasonably fast
         expect(sortedChunks[0].relevanceScore?.score, closeTo(1.0, 0.001));
         expect(sortedChunks[999].relevanceScore?.score, closeTo(0.001, 0.001));
       });

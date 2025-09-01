@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 /// Unified storage implementation using Hive for all platforms
 /// Hive provides cross-platform NoSQL storage with excellent performance
 /// Works on: Web, Mobile (Android/iOS), Desktop (Windows/macOS/Linux), Fuchsia
-/// 
+///
 /// Benefits:
 /// - Hive works natively on all platforms
 /// - Fallback to in-memory storage when Hive fails
@@ -68,7 +68,7 @@ class UnifiedStorage implements CrossPlatformStorage {
       }
 
       _initialized = true;
-      
+
       if (_usingHive) {
         logger.i('Unified storage initialized with Hive for all platforms');
       } else {
@@ -80,7 +80,9 @@ class UnifiedStorage implements CrossPlatformStorage {
       _usingHive = false;
       _hiveBox = null;
       _initialized = true;
-      logger.w('Continuing with fallback in-memory storage due to Hive initialization failure');
+      logger.w(
+        'Continuing with fallback in-memory storage due to Hive initialization failure',
+      );
     }
   }
 
@@ -91,12 +93,12 @@ class UnifiedStorage implements CrossPlatformStorage {
       // This is a simple heuristic that should work for most test scenarios
       final stackTrace = StackTrace.current;
       final stackString = stackTrace.toString();
-      
+
       // Check for test-related patterns in the stack trace
-      return stackString.contains('test/') || 
-             stackString.contains('flutter_test') ||
-             stackString.contains('package:test') ||
-             stackString.contains('dart:test');
+      return stackString.contains('test/') ||
+          stackString.contains('flutter_test') ||
+          stackString.contains('package:test') ||
+          stackString.contains('dart:test');
     } catch (e) {
       // If we can't determine the environment, assume it's not a test
       return false;
@@ -150,10 +152,10 @@ class UnifiedStorage implements CrossPlatformStorage {
     try {
       if (_usingHive && _hiveBox != null && _hiveBox!.containsKey(key)) {
         final storedData = _hiveBox!.get(key);
-        
+
         // Handle type casting for primitive types
         if (storedData is T) return storedData;
-        
+
         // For complex objects stored as JSON, try to deserialize
         if (storedData is String && T != String) {
           try {
@@ -164,18 +166,20 @@ class UnifiedStorage implements CrossPlatformStorage {
             return null;
           }
         }
-        
+
         // Try to cast directly
         if (storedData is T) return storedData;
-        
-        logger.w('Type mismatch for key $key: expected $T, got ${storedData.runtimeType}');
+
+        logger.w(
+          'Type mismatch for key $key: expected $T, got ${storedData.runtimeType}',
+        );
         return null;
       } else if (!_usingHive && _fallbackStorage.containsKey(key)) {
         final value = _fallbackStorage[key];
-        
+
         // Handle type casting for primitive types
         if (value is T) return value;
-        
+
         // For complex objects stored as JSON, try to deserialize
         if (value is String && T != String) {
           try {
@@ -186,11 +190,13 @@ class UnifiedStorage implements CrossPlatformStorage {
             return null;
           }
         }
-        
+
         // Try to cast directly
         if (value is T) return value;
-        
-        logger.w('Type mismatch for key $key: expected $T, got ${value.runtimeType}');
+
+        logger.w(
+          'Type mismatch for key $key: expected $T, got ${value.runtimeType}',
+        );
         return null;
       }
     } catch (e) {
@@ -206,7 +212,11 @@ class UnifiedStorage implements CrossPlatformStorage {
 
     try {
       if (_usingHive && _hiveBox != null) {
-        if (value is String || value is int || value is double || value is bool || value is List<String>) {
+        if (value is String ||
+            value is int ||
+            value is double ||
+            value is bool ||
+            value is List<String>) {
           // Store primitive types directly
           await _hiveBox!.put(key, value);
         } else {
@@ -216,7 +226,11 @@ class UnifiedStorage implements CrossPlatformStorage {
         }
       } else {
         // Use fallback storage
-        if (value is String || value is int || value is double || value is bool || value is List<String>) {
+        if (value is String ||
+            value is int ||
+            value is double ||
+            value is bool ||
+            value is List<String>) {
           // Store primitive types directly
           _fallbackStorage[key] = value;
         } else {
@@ -225,7 +239,7 @@ class UnifiedStorage implements CrossPlatformStorage {
           _fallbackStorage[key] = jsonString;
         }
       }
-      
+
       logger.d('Stored value for key $key: ${value.runtimeType}');
     } catch (e) {
       logger.e('Failed to set value for key $key: $e');
@@ -308,7 +322,7 @@ class UnifiedStorage implements CrossPlatformStorage {
     try {
       if (_usingHive && _hiveBox != null) {
         totalKeys = _hiveBox!.length;
-        
+
         // Calculate approximate size from stored data
         for (final key in _hiveBox!.keys) {
           final data = _hiveBox!.get(key);
@@ -320,7 +334,7 @@ class UnifiedStorage implements CrossPlatformStorage {
         }
       } else {
         totalKeys = _fallbackStorage.length;
-        
+
         // Calculate approximate size from fallback storage
         for (final entry in _fallbackStorage.entries) {
           final key = entry.key.toString();
@@ -342,10 +356,11 @@ class UnifiedStorage implements CrossPlatformStorage {
 
   /// Get the current Hive box for debugging
   Box? get debugBox => _hiveBox;
-  
+
   /// Get the current fallback storage for debugging
-  Map<String, dynamic> get debugFallbackStorage => Map.unmodifiable(_fallbackStorage);
-  
+  Map<String, dynamic> get debugFallbackStorage =>
+      Map.unmodifiable(_fallbackStorage);
+
   /// Check if currently using Hive
   bool get isUsingHive => _usingHive;
 }

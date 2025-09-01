@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/document_source.dart';
-import 'package:ragify_flutter/src/models/context_chunk.dart';
-import 'package:ragify_flutter/src/models/context_source.dart';
+
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
 import 'package:logger/logger.dart';
@@ -127,31 +126,51 @@ void main() {
       test('should handle basic operations without errors', () {
         // Test that methods handle basic operations without errors
         expect(() => documentSource.getChunks(query: 'test'), returnsNormally);
-        expect(() => documentSource.getChunks(query: 'test', maxChunks: 5), returnsNormally);
-        expect(() => documentSource.getChunks(query: 'test', minRelevance: 0.5), returnsNormally);
-        expect(() => documentSource.getChunks(query: 'test', userId: 'user123'), returnsNormally);
-        expect(() => documentSource.getChunks(query: 'test', sessionId: 'session456'), returnsNormally);
+        expect(
+          () => documentSource.getChunks(query: 'test', maxChunks: 5),
+          returnsNormally,
+        );
+        expect(
+          () => documentSource.getChunks(query: 'test', minRelevance: 0.5),
+          returnsNormally,
+        );
+        expect(
+          () => documentSource.getChunks(query: 'test', userId: 'user123'),
+          returnsNormally,
+        );
+        expect(
+          () =>
+              documentSource.getChunks(query: 'test', sessionId: 'session456'),
+          returnsNormally,
+        );
       });
 
       test('should handle edge cases gracefully', () {
         // Test with empty query
         expect(() => documentSource.getChunks(query: ''), returnsNormally);
-        
+
         // Test with very long query
-        expect(() => documentSource.getChunks(query: 'a' * 1000), returnsNormally);
-        
+        expect(
+          () => documentSource.getChunks(query: 'a' * 1000),
+          returnsNormally,
+        );
+
         // Test with special characters
-        expect(() => documentSource.getChunks(query: '!@#\$%^&*()'), returnsNormally);
+        expect(
+          () => documentSource.getChunks(query: '!@#\$%^&*()'),
+          returnsNormally,
+        );
       });
     });
 
     group('Performance Tests', () {
       test('should handle multiple concurrent requests', () async {
         // Test that multiple concurrent requests don't cause issues
-        final futures = List.generate(5, (i) => 
-          documentSource.getChunks(query: 'test$i')
+        final futures = List.generate(
+          5,
+          (i) => documentSource.getChunks(query: 'test$i'),
         );
-        
+
         expect(() => Future.wait(futures), returnsNormally);
       });
 
@@ -195,7 +214,10 @@ void main() {
         );
 
         final source = publicSource.source;
-        expect(source.privacyLevel, equals(PrivacyLevel.private)); // Default is private
+        expect(
+          source.privacyLevel,
+          equals(PrivacyLevel.private),
+        ); // Default is private
       });
     });
   });
