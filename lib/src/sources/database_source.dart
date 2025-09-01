@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
 import 'package:logger/logger.dart';
-import 'package:sqflite/sqflite.dart';
+// SQLite only available on mobile and desktop platforms
+import 'package:sqflite/sqflite.dart' if (dart.library.html) 'dart:html' as sqflite_stub;
 import 'package:postgres/postgres.dart' as postgres;
 import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:mongo_dart/mongo_dart.dart';
@@ -15,6 +16,10 @@ import '../models/relevance_score.dart';
 import '../sources/base_data_source.dart';
 import '../cache/cache_manager.dart';
 import '../config/dynamic_config_manager.dart';
+
+// Platform-agnostic database types
+typedef Database = dynamic;
+typedef ConflictAlgorithm = dynamic;
 
 /// **NEW: Parallel query configuration**
 class ParallelQueryConfig {
@@ -226,9 +231,7 @@ class DatabaseConnectionPool {
   Future<void> close() async {
     for (final connection in _connections) {
       try {
-        if (connection is Database) {
-          await connection.close();
-        } else if (connection is postgres.Connection) {
+        if (connection is postgres.Connection) {
           await connection.close();
         } else if (connection is mysql.MySqlConnection) {
           await connection.close();
@@ -475,7 +478,7 @@ class DatabaseSource implements BaseDataSource {
   Future<dynamic> _createConnection() async {
     switch (databaseType.toLowerCase()) {
       case 'sqlite':
-        return await openDatabase(
+        return await sqflite_stub.openDatabase(
           databaseConfig.database,
           version: 1,
           onCreate: _onCreateSQLite,
@@ -1226,7 +1229,7 @@ class DatabaseSource implements BaseDataSource {
         'privacy_level': chunk.source.privacyLevel.value,
         'created_at': chunk.createdAt.millisecondsSinceEpoch,
         'updated_at': chunk.updatedAt.millisecondsSinceEpoch,
-      }, conflictAlgorithm: ConflictAlgorithm.replace);
+      }, conflictAlgorithm: sqflite_stub.ConflictAlgorithm.replace);
     }
 
     await batch.commit(noResult: true);

@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the RagifyConfig class from the ragify_flutter library, for the Dart programming language.">
+  <title>RagifyConfig class - ragify_flutter library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../static-assets/styles.css?v1">
+  <link rel="icon" href="../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../index.html">ragify_flutter</a></li>
+    <li><a href="../ragify_flutter/">ragify_flutter.dart</a></li>
+    <li class="self-crumb">RagifyConfig class</li>
+  </ol>
+  <div class="self-name">RagifyConfig</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="ragify_flutter&#47;ragify_flutter-library-sidebar.html"
+    data-below-sidebar="ragify_flutter&#47;RagifyConfig-class-sidebar.html">
+    <div>
+<h1><span class="kind-class">RagifyConfig</span> class 
+ 
+</h1></div>
+
+    
+<section class="desc markdown">
+  <p>Configuration for the RAGify context orchestrator</p>
+</section>
+
+
+    <section>
+      <dl class="dl-horizontal">
+        
+
+        
+        
+
+
+        
+        
+  <dt>Annotations</dt>
+  <dd>
+    <ul class="annotation-list clazz-relationships">
+        <li>@<a href="https://pub.dev/documentation/json_annotation/4.9.0/json_annotation/JsonSerializable-class.html">JsonSerializable</a>()</li>
+    </ul>
+  </dd>
+
+
+      </dl>
+    </section>
+
+    
+  <section class="summary offset-anchor" id="constructors">
+    <h2>Constructors</h2>
+    <dl class="constructor-summary-list">
+        <dt id="RagifyConfig.new" class="callable">
+          <span class="name"><a href="../ragify_flutter/RagifyConfig/RagifyConfig.html">RagifyConfig.new</a></span><span class="signature">({<span class="parameter" id="-param-vectorDbUrl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">vectorDbUrl</span>, </span><span class="parameter" id="-param-cacheUrl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">cacheUrl</span>, </span><span class="parameter" id="-param-privacyLevel"><span class="type-annotation"><a href="../ragify_flutter/PrivacyLevel.html">PrivacyLevel</a></span> <span class="parameter-name">privacyLevel</span> = <span class="default-value">PrivacyLevel.private</span>, </span><span class="parameter" id="-param-maxContextSize"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">maxContextSize</span> = <span class="default-value">10000</span>, </span><span class="parameter" id="-param-defaultRelevanceThreshold"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">defaultRelevanceThreshold</span> = <span class="default-value">0.5</span>, </span><span class="parameter" id="-param-enableCaching"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">enableCaching</span> = <span class="default-value">true</span>, </span><span class="parameter" id="-param-cacheTtl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">cacheTtl</span> = <span class="default-value">3600</span>, </span><span class="parameter" id="-param-enableAnalytics"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">enableAnalytics</span> = <span class="default-value">true</span>, </span><span class="parameter" id="-param-logLevel"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">logLevel</span> = <span class="default-value">&#39;INFO&#39;</span>, </span><span class="parameter" id="-param-fusionConfig"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">fusionConfig</span> = <span class="default-value">const {}</span>, </span><span class="parameter" id="-param-conflictDetectionThreshold"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">conflictDetectionThreshold</span> = <span class="default-value">0.7</span>, </span><span class="parameter" id="-param-sourceTimeout"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span> <span class="parameter-name">sourceTimeout</span> = <span class="default-value">30.0</span>, </span><span class="parameter" id="-param-maxConcurrentSources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span> <span class="parameter-name">maxConcurrentSources</span> = <span class="default-value">10</span>, </span><span class="parameter" id="-param-metadata"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">metadata</span> = <span class="default-value">const {}</span></span>})</span>
+        </dt>
+        <dd>
+          
+            <div class="constructor-modifier features">const</div>
+        </dd>
+        <dt id="RagifyConfig.defaultConfig" class="callable">
+          <span class="name"><a href="../ragify_flutter/RagifyConfig/RagifyConfig.defaultConfig.html">RagifyConfig.defaultConfig</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Create default configuration
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+        <dt id="RagifyConfig.fromJson" class="callable">
+          <span class="name"><a href="../ragify_flutter/RagifyConfig/RagifyConfig.fromJson.html">RagifyConfig.fromJson</a></span><span class="signature">(<span class="parameter" id="fromJson-param-json"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span> <span class="parameter-name">json</span></span>)</span>
+        </dt>
+        <dd>
+          Create from JSON
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+        <dt id="RagifyConfig.minimal" class="callable">
+          <span class="name"><a href="../ragify_flutter/RagifyConfig/RagifyConfig.minimal.html">RagifyConfig.minimal</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Create minimal configuration
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+        <dt id="RagifyConfig.production" class="callable">
+          <span class="name"><a href="../ragify_flutter/RagifyConfig/RagifyConfig.production.html">RagifyConfig.production</a></span><span class="signature">()</span>
+        </dt>
+        <dd>
+          Create production configuration
+            <div class="constructor-modifier features">factory</div>
+        </dd>
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-properties">
+    <h2>Properties</h2>
+    <dl class="properties">
+        <dt id="cacheTtl" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/cacheTtl.html">cacheTtl</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd>
+  Cache TTL in seconds
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="cacheUrl" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/cacheUrl.html">cacheUrl</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>
+  
+
+</dt>
+<dd>
+  Cache connection URL
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="conflictDetectionThreshold" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/conflictDetectionThreshold.html">conflictDetectionThreshold</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd>
+  Conflict detection threshold
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="defaultRelevanceThreshold" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/defaultRelevanceThreshold.html">defaultRelevanceThreshold</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd>
+  Default relevance threshold
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="enableAnalytics" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/enableAnalytics.html">enableAnalytics</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  
+
+</dt>
+<dd>
+  Whether to enable analytics
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="enableCaching" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/enableCaching.html">enableCaching</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  
+
+</dt>
+<dd>
+  Whether to enable caching
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="fusionConfig" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/fusionConfig.html">fusionConfig</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  
+
+</dt>
+<dd>
+  Fusion configuration options
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="hashCode" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/hashCode.html">hashCode</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  The hash code for this object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="logLevel" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/logLevel.html">logLevel</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  
+
+</dt>
+<dd>
+  Log level for the system
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="maxConcurrentSources" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/maxConcurrentSources.html">maxConcurrentSources</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd>
+  Maximum concurrent sources
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="maxContextSize" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/maxContextSize.html">maxContextSize</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a></span>
+  
+
+</dt>
+<dd>
+  Maximum context size in tokens
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="metadata" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/metadata.html">metadata</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  
+
+</dt>
+<dd>
+  Additional metadata
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="privacyLevel" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/privacyLevel.html">privacyLevel</a></span>
+  <span class="signature">&#8594; <a href="../ragify_flutter/PrivacyLevel.html">PrivacyLevel</a></span>
+  
+
+</dt>
+<dd>
+  Default privacy level for operations
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="runtimeType" class="property inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/runtimeType.html">runtimeType</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Type-class.html">Type</a></span>
+  
+
+</dt>
+<dd class="inherited">
+  A representation of the runtime type of the object.
+  <div class="features"><span class="feature">no setter</span><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="sourceTimeout" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/sourceTimeout.html">sourceTimeout</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a></span>
+  
+
+</dt>
+<dd>
+  Source timeout in seconds
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+        <dt id="vectorDbUrl" class="property">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/vectorDbUrl.html">vectorDbUrl</a></span>
+  <span class="signature">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span>
+  
+
+</dt>
+<dd>
+  Vector database connection URL
+  <div class="features"><span class="feature">final</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+
+    
+  <section
+      class="summary offset-anchor"
+      id="instance-methods">
+    <h2>Methods</h2>
+    <dl class="callables">
+        <dt id="copyWith" class="callable">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/copyWith.html">copyWith</a></span><span class="signature">(<wbr>{<span class="parameter" id="copyWith-param-vectorDbUrl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">vectorDbUrl</span>, </span><span class="parameter" id="copyWith-param-cacheUrl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">cacheUrl</span>, </span><span class="parameter" id="copyWith-param-privacyLevel"><span class="type-annotation"><a href="../ragify_flutter/PrivacyLevel.html">PrivacyLevel</a>?</span> <span class="parameter-name">privacyLevel</span>, </span><span class="parameter" id="copyWith-param-maxContextSize"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxContextSize</span>, </span><span class="parameter" id="copyWith-param-defaultRelevanceThreshold"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">defaultRelevanceThreshold</span>, </span><span class="parameter" id="copyWith-param-enableCaching"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">enableCaching</span>, </span><span class="parameter" id="copyWith-param-cacheTtl"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">cacheTtl</span>, </span><span class="parameter" id="copyWith-param-enableAnalytics"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a>?</span> <span class="parameter-name">enableAnalytics</span>, </span><span class="parameter" id="copyWith-param-logLevel"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">logLevel</span>, </span><span class="parameter" id="copyWith-param-fusionConfig"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span>?</span> <span class="parameter-name">fusionConfig</span>, </span><span class="parameter" id="copyWith-param-conflictDetectionThreshold"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">conflictDetectionThreshold</span>, </span><span class="parameter" id="copyWith-param-sourceTimeout"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">sourceTimeout</span>, </span><span class="parameter" id="copyWith-param-maxConcurrentSources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxConcurrentSources</span>, </span><span class="parameter" id="copyWith-param-metadata"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span>?</span> <span class="parameter-name">metadata</span></span>})
+    <span class="returntype parameter">&#8594; <a href="../ragify_flutter/RagifyConfig-class.html">RagifyConfig</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Create a copy with updated fields
+  
+
+</dd>
+
+        <dt id="noSuchMethod" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/noSuchMethod.html">noSuchMethod</a></span><span class="signature">(<wbr><span class="parameter" id="noSuchMethod-param-invocation"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Invocation-class.html">Invocation</a></span> <span class="parameter-name">invocation</span></span>)
+    <span class="returntype parameter">&#8594; dynamic</span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  Invoked when a nonexistent method or property is accessed.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+        <dt id="toJson" class="callable">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/toJson.html">toJson</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+  </span>
+  
+
+</dt>
+<dd>
+  Convert to JSON
+  
+
+</dd>
+
+        <dt id="toString" class="callable">
+  <span class="name"><a href="../ragify_flutter/RagifyConfig/toString.html">toString</a></span><span class="signature">(<wbr>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>
+  </span>
+  
+
+</dt>
+<dd>
+  A string representation of this object.
+  <div class="features"><span class="feature">override</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+  <section
+      class="summary offset-anchor inherited"
+      id="operators">
+    <h2>Operators</h2>
+    <dl class="callables">
+        <dt id="operator ==" class="callable inherited">
+  <span class="name"><a href="https://api.flutter.dev/flutter/dart-core/Object/operator_equals.html">operator ==</a></span><span class="signature">(<wbr><span class="parameter" id="==-param-other"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/Object-class.html">Object</a></span> <span class="parameter-name">other</span></span>)
+    <span class="returntype parameter">&#8594; <a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span>
+  </span>
+  
+
+</dt>
+<dd class="inherited">
+  The equality operator.
+  <div class="features"><span class="feature">inherited</span></div>
+
+</dd>
+
+    </dl>
+  </section>
+    
+    
+    
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../index.html">ragify_flutter</a></li>
+    <li><a href="../ragify_flutter/">ragify_flutter</a></li>
+    <li class="self-crumb">RagifyConfig class</li>
+</ol>
+
+    <h5>ragify_flutter library</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div>
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+  </div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    ragify_flutter
+      0.0.1
+  </span>
+  
+</footer>
+
+
+<script src="../static-assets/highlight.pack.js?v1"></script>
+<script src="../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the getContext method from the RAGify class, for the Dart programming language.">
+  <title>getContext method - RAGify class - ragify_flutter library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter.dart</a></li>
+    <li><a href="../../ragify_flutter/RAGify-class.html">RAGify</a></li>
+    <li class="self-crumb">getContext method</li>
+  </ol>
+  <div class="self-name">getContext</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="ragify_flutter&#47;RAGify-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">getContext</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../ragify_flutter/ContextResponse-class.html">ContextResponse</a></span>&gt;</span></span>
+<span class="name ">getContext</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="getContext-param-query"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">query</span>, </span></li>
+<li><span class="parameter" id="getContext-param-userId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">userId</span>, </span></li>
+<li><span class="parameter" id="getContext-param-sessionId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">sessionId</span>, </span></li>
+<li><span class="parameter" id="getContext-param-maxTokens"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxTokens</span>, </span></li>
+<li><span class="parameter" id="getContext-param-maxChunks"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxChunks</span>, </span></li>
+<li><span class="parameter" id="getContext-param-minRelevance"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">minRelevance</span>, </span></li>
+<li><span class="parameter" id="getContext-param-privacyLevel"><span class="type-annotation"><a href="../../ragify_flutter/PrivacyLevel.html">PrivacyLevel</a>?</span> <span class="parameter-name">privacyLevel</span>, </span></li>
+<li><span class="parameter" id="getContext-param-includeMetadata"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeMetadata</span> = <span class="default-value">true</span>, </span></li>
+<li><span class="parameter" id="getContext-param-sources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">sources</span>, </span></li>
+<li><span class="parameter" id="getContext-param-excludeSources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">excludeSources</span>, </span></li>
+<li><span class="parameter" id="getContext-param-useCache"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">useCache</span> = <span class="default-value">true</span>, </span></li>
+<li><span class="parameter" id="getContext-param-useVectorSearch"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">useVectorSearch</span> = <span class="default-value">true</span>, </span></li>
+</ol>})
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Get context for a query with full feature integration</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Future&lt;ContextResponse&gt; getContext({
+  required String query,
+  String? userId,
+  String? sessionId,
+  int? maxTokens,
+  int? maxChunks,
+  double? minRelevance,
+  PrivacyLevel? privacyLevel,
+  bool includeMetadata = true,
+  List&lt;String&gt;? sources,
+  List&lt;String&gt;? excludeSources,
+  bool useCache = true,
+  bool useVectorSearch = true,
+}) async {
+  try {
+    if (!_isInitialized) {
+      await initialize();
+    }
+
+    if (_isClosed) {
+      throw StateError(&#39;Cannot get context from closed RAGify instance&#39;);
+    }
+
+    &#47;&#47; Check privacy level
+    final effectivePrivacyLevel = privacyLevel ?? config.privacyLevel;
+    &#47;&#47; For now, use a simple privacy check - in production, implement proper user privacy level management
+    if (effectivePrivacyLevel == PrivacyLevel.restricted) {
+      throw PrivacyViolationException(
+        &#39;context_retrieval&#39;,
+        &#39;private&#39;,
+        effectivePrivacyLevel.value,
+      );
+    }
+
+    &#47;&#47; Try cache first if enabled
+    if (useCache &amp;&amp; config.enableCaching) {
+      final cacheKey = _generateCacheKey(
+        query,
+        userId,
+        sessionId,
+        effectivePrivacyLevel,
+      );
+      final cachedResponse = await _cacheManager.get(cacheKey);
+      if (cachedResponse != null) {
+        logger.d(&#39;Returning cached context for query: $query&#39;);
+        if (cachedResponse is Map&lt;String, dynamic&gt;) {
+          return ContextResponse.fromJson(cachedResponse);
+        } else {
+          logger.w(
+            &#39;Cached response is not in expected format, ignoring cache&#39;,
+          );
+        }
+      }
+    }
+
+    &#47;&#47; Get context from orchestrator
+    final response = await _orchestrator.getContext(
+      query: query,
+      userId: userId,
+      sessionId: sessionId,
+      maxTokens: maxTokens,
+      maxChunks: maxChunks,
+      minRelevance: minRelevance,
+      privacyLevel: effectivePrivacyLevel,
+      includeMetadata: includeMetadata,
+      sources: sources,
+      excludeSources: excludeSources,
+    );
+
+    &#47;&#47; Cache the response if enabled
+    if (useCache &amp;&amp; config.enableCaching) {
+      try {
+        final cacheKey = _generateCacheKey(
+          query,
+          userId,
+          sessionId,
+          effectivePrivacyLevel,
+        );
+        await _cacheManager.set(
+          cacheKey,
+          response.toJson(),
+          ttl: Duration(seconds: config.cacheTtl),
+        );
+        logger.d(&#39;Successfully cached response for query: $query&#39;);
+      } catch (cacheError) {
+        logger.w(
+          &#39;Failed to cache response, continuing without caching: $cacheError&#39;,
+        );
+      }
+    }
+
+    &#47;&#47; Privacy audit logging would be implemented here in production
+    if (effectivePrivacyLevel == PrivacyLevel.enterprise ||
+        effectivePrivacyLevel == PrivacyLevel.restricted) {
+      logger.i(
+        &#39;Privacy audit: context_retrieval for user $userId, session $sessionId, level $effectivePrivacyLevel&#39;,
+      );
+    }
+
+    return response;
+  } catch (e, stackTrace) {
+    &#47;&#47; Log the error with full context
+    logger.e(
+      &#39;Failed to get context for query: $query&#39;,
+      error: e,
+      stackTrace: stackTrace,
+    );
+
+    &#47;&#47; Provide user-friendly error information
+    if (e is PrivacyViolationException) {
+      logger.e(&#39;Privacy violation: ${e.message}&#39;);
+      rethrow; &#47;&#47; Re-throw privacy violations as they are security issues
+    } else if (e is StateError) {
+      logger.e(&#39;State error: ${e.message}&#39;);
+      rethrow; &#47;&#47; Re-throw state errors as they indicate system issues
+    }
+    &#47;&#47; else if (e is ContextNotFoundException) {
+    &#47;&#47;   &#47;&#47; This should have been handled above, but just in case
+    &#47;&#47;   logger.w(&#39;Context not found for query: $query&#39;);
+    &#47;&#47;   rethrow;
+    &#47;&#47; }
+    else {
+      &#47;&#47; For other unexpected errors, try to provide a meaningful error response
+      logger.e(&#39;Unexpected error in getContext: $e&#39;);
+
+      &#47;&#47; Create an error response that can be handled by the caller
+      final errorResponse = ContextResponse(
+        id: const Uuid().v4(),
+        query: query,
+        chunks: [],
+        userId: userId,
+        sessionId: sessionId,
+        maxTokens: maxTokens ?? 0,
+        privacyLevel: privacyLevel ?? config.privacyLevel,
+        metadata: {
+          &#39;error&#39;: &#39;Failed to retrieve context&#39;,
+          &#39;error_type&#39;: e.runtimeType.toString(),
+          &#39;error_message&#39;: e.toString(),
+          &#39;timestamp&#39;: DateTime.now().toIso8601String(),
+        },
+      );
+
+      return errorResponse;
+    }
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/RAGify-class.html">RAGify</a></li>
+    <li class="self-crumb">getContext method</li>
+</ol>
+
+    <h5>RAGify class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    ragify_flutter
+      0.0.1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

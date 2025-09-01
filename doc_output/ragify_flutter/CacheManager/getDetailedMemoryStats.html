@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the getDetailedMemoryStats method from the CacheManager class, for the Dart programming language.">
+  <title>getDetailedMemoryStats method - CacheManager class - ragify_flutter library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter.dart</a></li>
+    <li><a href="../../ragify_flutter/CacheManager-class.html">CacheManager</a></li>
+    <li class="self-crumb">getDetailedMemoryStats method</li>
+  </ol>
+  <div class="self-name">getDetailedMemoryStats</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="ragify_flutter&#47;CacheManager-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">getDetailedMemoryStats</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-core/Map-class.html">Map</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>, <span class="type-parameter">dynamic</span>&gt;</span></span>
+<span class="name ">getDetailedMemoryStats</span>(<wbr>)
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Get detailed memory statistics with precise tracking</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Map&lt;String, dynamic&gt; getDetailedMemoryStats() {
+  final estimatedBytes = _estimateOptimizedMemoryUsage();
+  final estimatedMB = estimatedBytes &#47; (1024 * 1024);
+  final memoryLimitMB =
+      (_config[&#39;max_memory_mb&#39;] as int) * (1024 * 1024) &#47; (1024 * 1024);
+  final utilizationPercent =
+      (estimatedBytes &#47; ((_config[&#39;max_memory_mb&#39;] as int) * 1024 * 1024)) *
+      100;
+
+  &#47;&#47; Analyze entry types for better memory understanding
+  final entryTypeStats = &lt;String, int&gt;{};
+  final entrySizeStats = &lt;String, double&gt;{};
+
+  for (final entry in _lruCache.values) {
+    final type = entry.data.runtimeType.toString();
+    final size = _estimateOptimizedEntryMemory(entry);
+
+    entryTypeStats[type] = (entryTypeStats[type] ?? 0) + 1;
+    entrySizeStats[type] = (entrySizeStats[type] ?? 0) + size;
+  }
+
+  &#47;&#47; Get dynamic configuration information
+  final dynamicConfig = DynamicConfigManager.instance;
+  final environmentInfo = dynamicConfig.getEnvironmentInfo();
+  final memoryConfig = dynamicConfig.getMemoryConfig();
+
+  return {
+    &#39;estimated_memory_bytes&#39;: estimatedBytes,
+    &#39;estimated_memory_mb&#39;: estimatedMB.toStringAsFixed(2),
+    &#39;memory_limit_bytes&#39;: (_config[&#39;max_memory_mb&#39;] as int) * 1024 * 1024,
+    &#39;memory_limit_mb&#39;: memoryLimitMB.toStringAsFixed(2),
+    &#39;memory_utilization_percent&#39;: utilizationPercent.toStringAsFixed(1),
+    &#39;entry_count&#39;: _lruCache.length,
+    &#39;entry_type_distribution&#39;: entryTypeStats,
+    &#39;entry_size_by_type&#39;: entrySizeStats.map(
+      (k, v) =&gt; MapEntry(k, &#39;${(v &#47; 1024).toStringAsFixed(2)} KB&#39;),
+    ),
+    &#39;average_entry_size_bytes&#39;: _lruCache.isNotEmpty
+        ? (estimatedBytes &#47; _lruCache.length).toStringAsFixed(0)
+        : &#39;0&#39;,
+    &#39;memory_efficiency&#39;:
+        &#39;${((_lruCache.length &#47; (_config[&#39;max_entries&#39;] as int)) * 100).toStringAsFixed(1)}%&#39;,
+    &#39;lru_evictions&#39;: _performanceMetrics[&#39;lru_evictions&#39;] ?? 0,
+    &#39;memory_enforcement_operations&#39;:
+        _performanceMetrics[&#39;memory_enforcement_operations&#39;] ?? 0,
+    &#39;dynamic_configuration&#39;: {
+      &#39;environment&#39;: environmentInfo[&#39;environment&#39;],
+      &#39;device_capabilities&#39;: {
+        &#39;available_memory_mb&#39;: environmentInfo[&#39;available_memory_mb&#39;],
+        &#39;cpu_cores&#39;: environmentInfo[&#39;cpu_cores&#39;],
+        &#39;is_low_end_device&#39;: environmentInfo[&#39;is_low_end_device&#39;],
+        &#39;is_high_end_device&#39;: environmentInfo[&#39;is_high_end_device&#39;],
+      },
+      &#39;adaptive_limits&#39;: {
+        &#39;cache_max_memory_mb&#39;: memoryConfig[&#39;cache_max_memory_mb&#39;],
+        &#39;cache_max_entries&#39;: memoryConfig[&#39;cache_max_entries&#39;],
+        &#39;connection_pool_size&#39;: memoryConfig[&#39;connection_pool_size&#39;],
+      },
+    },
+  };
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/CacheManager-class.html">CacheManager</a></li>
+    <li class="self-crumb">getDetailedMemoryStats method</li>
+</ol>
+
+    <h5>CacheManager class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    ragify_flutter
+      0.0.1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

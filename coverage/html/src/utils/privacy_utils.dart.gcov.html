@@ -37,7 +37,7 @@
           </tr>
           <tr>
             <td class="headerItem">Date:</td>
-            <td class="headerValue">2025-09-01 09:11:41</td>
+            <td class="headerValue">2025-09-01 09:35:18</td>
             <td></td>
             <td class="headerItem">Functions:</td>
             <td class="headerCovTableEntry">0</td>
@@ -69,7 +69,7 @@
 <a name="7"><span class="lineNum">       7 </span>            :     PrivacyLevel requestedLevel,</a>
 <a name="8"><span class="lineNum">       8 </span>            :     PrivacyLevel userLevel,</a>
 <a name="9"><span class="lineNum">       9 </span>            :   ) {</a>
-<a name="10"><span class="lineNum">      10 </span><span class="lineCov">          3 :     return requestedLevel.index &gt;= userLevel.index;</span></a>
+<a name="10"><span class="lineNum">      10 </span><span class="lineCov">          3 :     return requestedLevel.index &lt;= userLevel.index;</span></a>
 <a name="11"><span class="lineNum">      11 </span>            :   }</a>
 <a name="12"><span class="lineNum">      12 </span>            : </a>
 <a name="13"><span class="lineNum">      13 </span>            :   /// Get the most restrictive privacy level from a list</a>

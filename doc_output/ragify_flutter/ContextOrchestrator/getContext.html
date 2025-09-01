@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, user-scalable=no">
+  <meta name="description" content="API docs for the getContext method from the ContextOrchestrator class, for the Dart programming language.">
+  <title>getContext method - ContextOrchestrator class - ragify_flutter library - Dart API</title>
+
+
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+  
+  <link rel="stylesheet" href="../../static-assets/github.css?v1">
+  <link rel="stylesheet" href="../../static-assets/styles.css?v1">
+  <link rel="icon" href="../../static-assets/favicon.png?v1">
+  
+</head>
+
+<body data-base-href="../../" data-using-base-href="false" class="light-theme">
+<div id="overlay-under-drawer"></div>
+<header id="title">
+  <span id="sidenav-left-toggle" class="material-symbols-outlined" role="button" tabindex="0">menu</span>
+  <ol class="breadcrumbs gt-separated dark hidden-xs">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter.dart</a></li>
+    <li><a href="../../ragify_flutter/ContextOrchestrator-class.html">ContextOrchestrator</a></li>
+    <li class="self-crumb">getContext method</li>
+  </ol>
+  <div class="self-name">getContext</div>
+  <form class="search navbar-right" role="search">
+    <input type="text" id="search-box" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+  <button class="toggle" id="theme-button" title="Toggle between light and dark mode" aria-label="Light and dark mode toggle">
+    <span id="dark-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      dark_mode
+    </span>
+    <span id="light-theme-button" class="material-symbols-outlined" aria-hidden="true">
+      light_mode
+    </span>
+  </button>
+</header>
+<main>
+<div
+    id="dartdoc-main-content"
+    class="main-content"
+    data-above-sidebar="ragify_flutter&#47;ContextOrchestrator-class-sidebar.html"
+    data-below-sidebar="">
+    <div>
+<h1><span class="kind-method">getContext</span> method 
+</h1></div>
+
+    <section class="multi-line-signature">
+      
+<span class="returntype"><a href="https://api.flutter.dev/flutter/dart-core/Future-class.html">Future</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="../../ragify_flutter/ContextResponse-class.html">ContextResponse</a></span>&gt;</span></span>
+<span class="name ">getContext</span>(<wbr>{<ol class="parameter-list"> <li><span class="parameter" id="getContext-param-query"><span>required</span> <span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span> <span class="parameter-name">query</span>, </span></li>
+<li><span class="parameter" id="getContext-param-userId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">userId</span>, </span></li>
+<li><span class="parameter" id="getContext-param-sessionId"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a>?</span> <span class="parameter-name">sessionId</span>, </span></li>
+<li><span class="parameter" id="getContext-param-maxTokens"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxTokens</span>, </span></li>
+<li><span class="parameter" id="getContext-param-maxChunks"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/int-class.html">int</a>?</span> <span class="parameter-name">maxChunks</span>, </span></li>
+<li><span class="parameter" id="getContext-param-minRelevance"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/double-class.html">double</a>?</span> <span class="parameter-name">minRelevance</span>, </span></li>
+<li><span class="parameter" id="getContext-param-privacyLevel"><span class="type-annotation"><a href="../../ragify_flutter/PrivacyLevel.html">PrivacyLevel</a>?</span> <span class="parameter-name">privacyLevel</span>, </span></li>
+<li><span class="parameter" id="getContext-param-includeMetadata"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/bool-class.html">bool</a></span> <span class="parameter-name">includeMetadata</span> = <span class="default-value">true</span>, </span></li>
+<li><span class="parameter" id="getContext-param-sources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">sources</span>, </span></li>
+<li><span class="parameter" id="getContext-param-excludeSources"><span class="type-annotation"><a href="https://api.flutter.dev/flutter/dart-core/List-class.html">List</a><span class="signature">&lt;<wbr><span class="type-parameter"><a href="https://api.flutter.dev/flutter/dart-core/String-class.html">String</a></span>&gt;</span>?</span> <span class="parameter-name">excludeSources</span>, </span></li>
+</ol>})
+
+      
+
+    </section>
+    
+<section class="desc markdown">
+  <p>Get intelligent context for a query</p>
+</section>
+
+
+    
+<section class="summary source-code" id="source">
+  <h2><span>Implementation</span></h2>
+  <pre class="language-dart"><code class="language-dart">Future&lt;ContextResponse&gt; getContext({
+  required String query,
+  String? userId,
+  String? sessionId,
+  int? maxTokens,
+  int? maxChunks,
+  double? minRelevance,
+  PrivacyLevel? privacyLevel,
+  bool includeMetadata = true,
+  List&lt;String&gt;? sources,
+  List&lt;String&gt;? excludeSources,
+}) async {
+  if (!_isInitialized) {
+    &#47;&#47; In test mode, skip initialization to avoid platform-specific issues
+    if (!_isTestMode) {
+      await initialize();
+    } else {
+      _isInitialized = true; &#47;&#47; Mark as initialized in test mode
+    }
+  }
+
+  if (_isClosed) {
+    throw StateError(&#39;Cannot get context from closed orchestrator&#39;);
+  }
+
+  final request = ContextRequest(
+    query: query,
+    userId: userId,
+    sessionId: sessionId,
+    maxTokens: maxTokens ?? config.maxContextSize,
+    maxChunks: maxChunks,
+    minRelevance: minRelevance ?? config.defaultRelevanceThreshold,
+    privacyLevel: privacyLevel ?? config.privacyLevel,
+    includeMetadata: includeMetadata,
+    sources: sources,
+    excludeSources: excludeSources,
+  );
+
+  logger.i(&#39;Processing context request&#39;);
+
+  try {
+    return await _retrieveContext(request);
+  } catch (e, stackTrace) {
+    logger.e(&#39;Failed to get context&#39;, error: e, stackTrace: stackTrace);
+    rethrow;
+  }
+}</code></pre>
+</section>
+
+
+  </div> <!-- /.main-content -->
+  <div id="dartdoc-sidebar-left" class="sidebar sidebar-offcanvas-left">
+    <!-- The search input and breadcrumbs below are only responsively visible at low resolutions. -->
+<header id="header-search-sidebar" class="hidden-l">
+  <form class="search-sidebar" role="search">
+    <input type="text" id="search-sidebar" autocomplete="off" disabled class="form-control typeahead" placeholder="Loading search...">
+  </form>
+</header>
+<ol class="breadcrumbs gt-separated dark hidden-l" id="sidebar-nav">
+    <li><a href="../../index.html">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/">ragify_flutter</a></li>
+    <li><a href="../../ragify_flutter/ContextOrchestrator-class.html">ContextOrchestrator</a></li>
+    <li class="self-crumb">getContext method</li>
+</ol>
+
+    <h5>ContextOrchestrator class</h5>
+    <div id="dartdoc-sidebar-left-content"></div>
+  </div><!--/.sidebar-offcanvas-->
+  <div id="dartdoc-sidebar-right" class="sidebar sidebar-offcanvas-right">
+</div><!--/.sidebar-offcanvas-->
+</main>
+<footer>
+  <span class="no-break">
+    ragify_flutter
+      0.0.1
+  </span>
+  
+</footer>
+
+
+<script src="../../static-assets/highlight.pack.js?v1"></script>
+<script src="../../static-assets/docs.dart.js"></script>
+
+</body>
+</html>
+

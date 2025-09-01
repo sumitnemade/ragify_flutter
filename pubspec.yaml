@@ -5,8 +5,8 @@ homepage: https://github.com/sumitnemade/ragify_flutter
 repository: https://github.com/sumitnemade/ragify_flutter
 issue_tracker: https://github.com/sumitnemade/ragify_flutter/issues
 documentation: https://github.com/sumitnemade/ragify_flutter/blob/main/README.md
-
-# Package topics for better discoverability (max 5 allowed by pub.dev)
+  
+  ^1.5.0
 topics:
   - ai
   - context-management
@@ -18,17 +18,24 @@ environment:
   sdk: ^3.8.1
   flutter: ">=3.10.0"
 
+# Platform support
+flutter:
+  # No UI components - this is a pure logic package
+  # Supports all platforms: Android, iOS, Web, Windows, macOS, Linux
+  # Uses conditional imports for platform-specific features
+
+# Platform-specific dependencies
 dependencies:
   flutter:
     sdk: flutter
   
   # Core dependencies
-  http: ^1.1.0
-  dio: ^5.3.2
-  json_annotation: ^4.8.1
+  http: ^1.5.0
+  dio: ^5.9.0
+  json_annotation: ^4.9.0
   
   # Async and concurrency
-  async: ^2.11.0
+  async: ^2.13.0
   
   # Cross-platform ML and vector operations
   # Using AI Model APIs only - no local models
@@ -37,47 +44,42 @@ dependencies:
   # Mobile: Hive + shared_preferences, Web: Hive, Desktop: Hive + file_system
   hive: ^2.2.3
   hive_flutter: ^1.1.0
-  shared_preferences: ^2.2.2
-  sqflite: ^2.4.2
+  shared_preferences: ^2.5.3
   
-  # Cross-platform database drivers
-  postgres: ^2.6.3
-  mysql1: ^0.20.0
-  mongo_dart: ^0.10.3
+  # Platform-specific database drivers (conditional imports)
+  sqflite: ^2.4.2  # Android, iOS, macOS
+  postgres: ^3.5.6  # All platforms
+  mysql1: ^0.20.0  # All platforms
+  mongo_dart: ^0.10.5  # All platforms
   
   # Cross-platform document processing
-  path: ^1.8.3
+  path: ^1.9.1
   path_provider: ^2.1.5
   
   # Cross-platform security and encryption
-  crypto: ^3.0.3
+  crypto: ^3.0.6
   encrypt: ^5.0.3
   
   # Cross-platform real-time communication
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
   
   # Logging and debugging
-  logger: ^2.0.2+1
+  logger: ^2.6.1
   
   # State management
-  provider: ^6.1.1
+  provider: ^6.1.5+1
   
   # Utilities
-  uuid: ^4.0.0
-  intl: ^0.18.1
+  uuid: ^4.5.1
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
-  build_runner: ^2.4.7
-  json_serializable: ^6.7.1
-  mockito: ^5.4.2
-  test: ^1.24.3
+  flutter_lints: ^6.0.0
+  build_runner: ^2.7.0
+  json_serializable: ^6.11.0
+  mockito: ^5.5.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
-
-# The following section is specific to Flutter packages.
-flutter:
-  # No UI components - this is a pure logic package
