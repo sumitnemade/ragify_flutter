@@ -1,114 +1,206 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/document_source.dart';
-
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
+import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:logger/logger.dart';
+import 'dart:io';
+import 'dart:io' as io;
 
 void main() {
   group('DocumentSource Tests', () {
     late DocumentSource documentSource;
-    late Logger mockLogger;
+    late String tempDir;
 
     setUp(() {
-      mockLogger = Logger();
+      tempDir = Directory.systemTemp.createTempSync('document_source_test').path;
       documentSource = DocumentSource(
         name: 'Test Document Source',
-        documentPath: '/test/path',
-        logger: mockLogger,
-        chunkSize: 1000,
-        chunkOverlap: 200,
+        documentPath: tempDir,
+        chunkSize: 100,
+        chunkOverlap: 20,
         includeMetadata: true,
       );
     });
 
-    group('Constructor Tests', () {
-      test('should create document source with default values', () {
-        final source = DocumentSource(
-          name: 'Default Source',
-          documentPath: '/default/path',
-        );
-
-        expect(source.name, equals('Default Source'));
-        expect(source.documentPath, equals('/default/path'));
-        expect(source.sourceType, equals(SourceType.document));
-        expect(source.chunkSize, equals(1000));
-        expect(source.chunkOverlap, equals(200));
-        expect(source.includeMetadata, isTrue);
-        expect(source.isActive, isTrue);
-        expect(source.config, isEmpty);
-        expect(source.metadata, isEmpty);
-      });
-
-      test('should create document source with custom values', () {
-        final source = DocumentSource(
-          name: 'Custom Source',
-          documentPath: '/custom/path',
-          chunkSize: 500,
-          chunkOverlap: 100,
-          includeMetadata: false,
-          config: {'custom': 'config'},
-          metadata: {'custom': 'metadata'},
-        );
-
-        expect(source.name, equals('Custom Source'));
-        expect(source.documentPath, equals('/custom/path'));
-        expect(source.chunkSize, equals(500));
-        expect(source.chunkOverlap, equals(100));
-        expect(source.includeMetadata, isFalse);
-        expect(source.config, equals({'custom': 'config'}));
-        expect(source.metadata, equals({'custom': 'metadata'}));
-      });
-
-      test('should create context source correctly', () {
-        final source = documentSource.source;
-
-        expect(source.name, equals('Test Document Source'));
-        expect(source.sourceType, equals(SourceType.document));
-        expect(source.url, equals('/test/path'));
-        expect(source.metadata, isEmpty);
-        expect(source.privacyLevel, equals(PrivacyLevel.private));
-        expect(source.authorityScore, equals(0.8));
-        expect(source.freshnessScore, equals(1.0));
-      });
+    tearDown(() {
+      // Clean up temp directory
+      try {
+        Directory(tempDir).deleteSync(recursive: true);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     });
 
-    group('Supported Extensions Tests', () {
-      test('should have correct supported extensions', () {
-        final extensions = documentSource.supportedExtensions;
-
-        expect(extensions, contains('.txt'));
-        expect(extensions, contains('.md'));
-        expect(extensions, contains('.json'));
-        expect(extensions, contains('.pdf'));
-        expect(extensions, contains('.docx'));
-        expect(extensions.length, equals(5));
-      });
-
-      test('should check if file is supported', () {
-        // Test private method through reflection or public interface
-        expect(() => documentSource.getChunks(query: 'test'), returnsNormally);
-      });
-    });
-
-    group('Configuration Tests', () {
-      test('should have correct default configuration', () {
-        expect(documentSource.chunkSize, equals(1000));
-        expect(documentSource.chunkOverlap, equals(200));
+    group('Constructor and Basic Properties', () {
+      test('should create DocumentSource with required parameters', () {
+        expect(documentSource.name, equals('Test Document Source'));
+        expect(documentSource.documentPath, equals(tempDir));
+        expect(documentSource.sourceType, equals(SourceType.document));
+        expect(documentSource.chunkSize, equals(100));
+        expect(documentSource.chunkOverlap, equals(20));
         expect(documentSource.includeMetadata, isTrue);
         expect(documentSource.isActive, isTrue);
       });
 
-      test('should have correct source properties', () {
-        expect(documentSource.name, equals('Test Document Source'));
-        expect(documentSource.sourceType, equals(SourceType.document));
-        expect(documentSource.documentPath, equals('/test/path'));
+      test('should create DocumentSource with custom logger', () {
+        final customLogger = Logger();
+        final source = DocumentSource(
+          name: 'Custom Logger Source',
+          documentPath: tempDir,
+          logger: customLogger,
+        );
+
+        expect(source.logger, equals(customLogger));
+      });
+
+      test('should create DocumentSource with custom config and metadata', () {
+        final customConfig = {'custom': 'config'};
+        final customMetadata = {'custom': 'metadata'};
+        
+        final source = DocumentSource(
+          name: 'Custom Config Source',
+          documentPath: tempDir,
+          config: customConfig,
+          metadata: customMetadata,
+        );
+
+        expect(source.config, equals(customConfig));
+        expect(source.metadata, equals(customMetadata));
+      });
+
+      test('should have correct supported extensions', () {
+        final expectedExtensions = {'.txt', '.md', '.json', '.pdf', '.docx'};
+        expect(documentSource.supportedExtensions, equals(expectedExtensions));
       });
     });
 
-    group('Error Handling Tests', () {
+    group('Source Context', () {
+      test('should get source context correctly', () {
+        final source = documentSource.source;
+
+        expect(source.name, equals('Test Document Source'));
+        expect(source.sourceType, equals(SourceType.document));
+        expect(source.url, equals(tempDir));
+        expect(source.privacyLevel, equals(PrivacyLevel.private));
+        expect(source.authorityScore, equals(0.8));
+        expect(source.freshnessScore, equals(1.0));
+        expect(source.isActive, isTrue);
+      });
+    });
+
+    group('File Support Detection', () {
+      test('should have correct supported extensions', () {
+        final extensions = documentSource.supportedExtensions;
+        expect(extensions.contains('.txt'), isTrue);
+        expect(extensions.contains('.md'), isTrue);
+        expect(extensions.contains('.json'), isTrue);
+        expect(extensions.contains('.pdf'), isTrue);
+        expect(extensions.contains('.docx'), isTrue);
+        expect(extensions.contains('.doc'), isFalse);
+        expect(extensions.contains('.rtf'), isFalse);
+        expect(extensions.contains('.html'), isFalse);
+      });
+
+      test('should check if file is supported', () {
+        final extensions = documentSource.supportedExtensions;
+        expect(extensions.contains('.txt'), isTrue);
+        expect(extensions.contains('.md'), isTrue);
+        expect(extensions.contains('.json'), isTrue);
+        expect(extensions.contains('.pdf'), isTrue);
+        expect(extensions.contains('.docx'), isTrue);
+      });
+    });
+
+    group('Document Processing', () {
+      test('should process documents and create chunks', () async {
+        final content = 'This is a test document with multiple words for chunking';
+        File('${tempDir}/test.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(query: 'test document');
+
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('test'));
+        expect(chunks.first.source.name, equals('Test Document Source'));
+        expect(chunks.first.tokenCount, greaterThan(0));
+        expect(chunks.first.tags, contains('txt'));
+        expect(chunks.first.tags, contains('document'));
+      });
+
+      test('should handle large documents with multiple chunks', () async {
+        final content = 'word ' * 500; // 500 words
+        File('${tempDir}/large.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(query: 'word');
+
+        expect(chunks.length, greaterThan(1));
+        expect(chunks.first.content.split(' ').length, lessThanOrEqualTo(100));
+      });
+
+      test('should create chunks with correct metadata', () async {
+        final content = 'Test content for metadata testing';
+        File('${tempDir}/metadata_test.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(query: 'metadata');
+
+        expect(chunks, isNotEmpty);
+        final chunk = chunks.first;
+        expect(chunk.metadata['document_name'], equals('metadata_test.txt'));
+        expect(chunk.metadata['document_path'], contains('metadata_test.txt'));
+        expect(chunk.metadata['chunk_size'], equals(chunk.content.length));
+        expect(chunk.metadata['file_size'], greaterThan(0));
+      });
+    });
+
+    group('Chunk Retrieval', () {
+      test('should get chunks from documents', () async {
+        // Create test document
+        final content = 'This is a test document with multiple words for chunking';
+        File('${tempDir}/test.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(query: 'test document');
+
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('test'));
+        expect(chunks.first.source.name, equals('Test Document Source'));
+      });
+
+      test('should respect maxChunks limit', () async {
+        // Create large document
+        final content = 'word ' * 500; // 500 words
+        File('${tempDir}/large.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(
+          query: 'word',
+          maxChunks: 3,
+        );
+
+        expect(chunks.length, lessThanOrEqualTo(3));
+      });
+
+      test('should filter by relevance score', () async {
+        // Create test document
+        final content = 'This document contains important information about testing';
+        File('${tempDir}/test.txt').writeAsStringSync(content);
+
+        final chunks = await documentSource.getChunks(
+          query: 'testing',
+          minRelevance: 0.5,
+        );
+
+        expect(chunks, isNotEmpty);
+        for (final chunk in chunks) {
+          expect(chunk.relevanceScore?.score ?? 0.0, greaterThanOrEqualTo(0.5));
+        }
+      });
+
+      test('should handle empty document directory', () async {
+        final chunks = await documentSource.getChunks(query: 'test');
+        expect(chunks, isEmpty);
+      });
+
       test('should handle inactive source gracefully', () async {
-        // Test that inactive source throws appropriate error
+        // Close the source to make it inactive
         await documentSource.close();
 
         expect(
@@ -116,115 +208,173 @@ void main() {
           throwsA(isA<StateError>()),
         );
       });
+    });
 
-      test('should handle configuration errors gracefully', () async {
-        final source = DocumentSource(
-          name: 'Error Source',
-          documentPath: '/nonexistent/path',
+    group('Caching', () {
+      test('should cache processed documents', () async {
+        final content = 'Test content for caching';
+        File('${tempDir}/cache_test.txt').writeAsStringSync(content);
+
+        // First call should process the document
+        final chunks1 = await documentSource.getChunks(query: 'test');
+        expect(chunks1, isNotEmpty);
+
+        // Second call should use cache
+        final chunks2 = await documentSource.getChunks(query: 'test');
+        expect(chunks2, equals(chunks1));
+      });
+
+      test('should use different cache keys for different queries', () async {
+        final content = 'Test content for different queries';
+        File('${tempDir}/query_test.txt').writeAsStringSync(content);
+
+        final chunks1 = await documentSource.getChunks(query: 'test');
+        final chunks2 = await documentSource.getChunks(query: 'content');
+
+        expect(chunks1, isNotEmpty);
+        expect(chunks2, isNotEmpty);
+        // Should be cached separately
+        expect(chunks1.first.content, equals(chunks2.first.content));
+      });
+    });
+
+    group('Source Management', () {
+      test('should refresh source successfully', () async {
+        // Create initial document
+        File('${tempDir}/initial.txt').writeAsStringSync('Initial content');
+        
+        // Get initial chunks to populate cache
+        await documentSource.getChunks(query: 'initial');
+        
+        // Refresh source
+        await documentSource.refresh();
+
+        // Source should still be active
+        expect(documentSource.isActive, isTrue);
+      });
+
+      test('should handle refresh when directory no longer exists', () async {
+        // Create source with temp directory
+        final tempSource = DocumentSource(
+          name: 'Temp Source',
+          documentPath: tempDir,
         );
 
-        // The method should not throw for non-existent paths, just return empty results
-        final chunks = await source.getChunks(query: 'test');
+        // Delete the directory
+        Directory(tempDir).deleteSync(recursive: true);
+
+        // Refresh should deactivate source
+        await tempSource.refresh();
+        expect(tempSource.isActive, isFalse);
+      });
+
+      test('should close source successfully', () async {
+        // Create document and get chunks to populate cache
+        File('${tempDir}/close_test.txt').writeAsStringSync('Content for closing');
+        await documentSource.getChunks(query: 'closing');
+
+        // Close source
+        await documentSource.close();
+
+        // Source should be inactive
+        expect(documentSource.isActive, isFalse);
+      });
+
+      test('should update metadata successfully', () async {
+        final newMetadata = {'new_key': 'new_value'};
+        
+        await documentSource.updateMetadata(newMetadata);
+        
+        expect(documentSource.metadata['new_key'], equals('new_value'));
+      });
+
+      test('should update configuration successfully', () async {
+        final newConfig = {'new_config': 'new_value'};
+        
+        await documentSource.updateConfiguration(newConfig);
+        
+        expect(documentSource.config['new_config'], equals('new_value'));
+      });
+    });
+
+    group('Health and Status', () {
+      test('should check health correctly', () async {
+        final isHealthy = await documentSource.isHealthy();
+        expect(isHealthy, isTrue);
+      });
+
+      test('should return unhealthy when directory does not exist', () async {
+        final nonExistentSource = DocumentSource(
+          name: 'Non-existent Source',
+          documentPath: '/non/existent/path',
+        );
+
+        final isHealthy = await nonExistentSource.isHealthy();
+        expect(isHealthy, isFalse);
+      });
+
+      test('should get status correctly', () async {
+        final status = await documentSource.getStatus();
+        expect(status, equals(SourceStatus.healthy));
+      });
+
+      test('should return offline status when inactive', () async {
+        // Close the source to make it inactive
+        await documentSource.close();
+
+        final status = await documentSource.getStatus();
+        expect(status, equals(SourceStatus.offline));
+      });
+    });
+
+    group('Statistics', () {
+      test('should get source statistics', () async {
+        // Create test files
+        File('${tempDir}/stats1.txt').writeAsStringSync('Content 1');
+        File('${tempDir}/stats2.md').writeAsStringSync('Content 2');
+        File('${tempDir}/ignored.rtf').writeAsStringSync('Ignored');
+
+        final stats = await documentSource.getStats();
+
+        expect(stats['name'], equals('Test Document Source'));
+        expect(stats['type'], equals('document'));
+        expect(stats['document_path'], equals(tempDir));
+        expect(stats['total_files'], equals(2));
+        expect(stats['total_size_bytes'], greaterThan(0));
+        expect(stats['supported_extensions'], isA<List<String>>());
+        expect(stats['chunk_size'], equals(100));
+        expect(stats['chunk_overlap'], equals(20));
+        expect(stats['cache_size'], equals(0));
+        expect(stats['is_active'], isTrue);
+        expect(stats['performance_features'], isA<List<String>>());
+        expect(stats['total_cached_chunks'], equals(0));
+      });
+
+      test('should handle stats calculation errors gracefully', () async {
+        // Create a directory that can't be accessed
+        final restrictedDir = Directory('${tempDir}/restricted');
+        restrictedDir.createSync();
+
+        final restrictedSource = DocumentSource(
+          name: 'Restricted Source',
+          documentPath: restrictedDir.path,
+        );
+
+        final stats = await restrictedSource.getStats();
+        expect(stats['total_files'], equals(0));
+        expect(stats['total_size_bytes'], equals(0));
+      });
+    });
+
+    group('Error Handling', () {
+      test('should handle unsupported file types gracefully', () async {
+        // Create a file with unsupported extension
+        final unsupportedFile = File('${tempDir}/unsupported.rtf');
+        unsupportedFile.writeAsStringSync('Content');
+
+        // The source should ignore unsupported files
+        final chunks = await documentSource.getChunks(query: 'Content');
         expect(chunks, isEmpty);
-      });
-    });
-
-    group('Utility Method Tests', () {
-      test('should handle basic operations without errors', () {
-        // Test that methods handle basic operations without errors
-        expect(() => documentSource.getChunks(query: 'test'), returnsNormally);
-        expect(
-          () => documentSource.getChunks(query: 'test', maxChunks: 5),
-          returnsNormally,
-        );
-        expect(
-          () => documentSource.getChunks(query: 'test', minRelevance: 0.5),
-          returnsNormally,
-        );
-        expect(
-          () => documentSource.getChunks(query: 'test', userId: 'user123'),
-          returnsNormally,
-        );
-        expect(
-          () =>
-              documentSource.getChunks(query: 'test', sessionId: 'session456'),
-          returnsNormally,
-        );
-      });
-
-      test('should handle edge cases gracefully', () {
-        // Test with empty query
-        expect(() => documentSource.getChunks(query: ''), returnsNormally);
-
-        // Test with very long query
-        expect(
-          () => documentSource.getChunks(query: 'a' * 1000),
-          returnsNormally,
-        );
-
-        // Test with special characters
-        expect(
-          () => documentSource.getChunks(query: '!@#\$%^&*()'),
-          returnsNormally,
-        );
-      });
-    });
-
-    group('Performance Tests', () {
-      test('should handle multiple concurrent requests', () async {
-        // Test that multiple concurrent requests don't cause issues
-        final futures = List.generate(
-          5,
-          (i) => documentSource.getChunks(query: 'test$i'),
-        );
-
-        expect(() => Future.wait(futures), returnsNormally);
-      });
-
-      test('should handle large chunk sizes', () {
-        final largeSource = DocumentSource(
-          name: 'Large Chunk Source',
-          documentPath: '/test/path',
-          chunkSize: 10000,
-          chunkOverlap: 2000,
-        );
-
-        expect(() => largeSource.getChunks(query: 'test'), returnsNormally);
-      });
-    });
-
-    group('Integration Tests', () {
-      test('should work with different logger configurations', () {
-        final silentLogger = Logger(level: Level.error);
-        final verboseLogger = Logger(level: Level.debug);
-
-        final silentSource = DocumentSource(
-          name: 'Silent Source',
-          documentPath: '/test/path',
-          logger: silentLogger,
-        );
-
-        final verboseSource = DocumentSource(
-          name: 'Verbose Source',
-          documentPath: '/test/path',
-          logger: verboseLogger,
-        );
-
-        expect(() => silentSource.getChunks(query: 'test'), returnsNormally);
-        expect(() => verboseSource.getChunks(query: 'test'), returnsNormally);
-      });
-
-      test('should handle different privacy levels through context source', () {
-        final publicSource = DocumentSource(
-          name: 'Public Source',
-          documentPath: '/test/path',
-        );
-
-        final source = publicSource.source;
-        expect(
-          source.privacyLevel,
-          equals(PrivacyLevel.private),
-        ); // Default is private
       });
     });
   });

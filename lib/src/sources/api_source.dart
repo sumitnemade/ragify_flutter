@@ -66,7 +66,7 @@ class APISource implements BaseDataSource {
 
   /// Internal state
   bool _isActive = true;
-  late final ContextSource _source;
+  late ContextSource _source;
   DateTime? _lastRequestTime;
   Duration? _lastResponseTime;
 
@@ -81,6 +81,7 @@ class APISource implements BaseDataSource {
     Duration? timeout,
     RateLimitConfig? rateLimit,
     AdaptiveTimeoutConfig? adaptiveTimeout,
+    http.Client? httpClient,
   }) : logger = logger ?? Logger(),
        config = config ?? {},
        metadata = metadata ?? {},
@@ -91,7 +92,7 @@ class APISource implements BaseDataSource {
            const Duration(seconds: 30),
        rateLimit = rateLimit ?? RateLimitConfig(),
        adaptiveTimeout = adaptiveTimeout ?? const AdaptiveTimeoutConfig() {
-    _httpClient = http.Client();
+    _httpClient = httpClient ?? http.Client();
     _source = ContextSource(
       name: name,
       sourceType: sourceType,

@@ -65,7 +65,7 @@ class DocumentSource implements BaseDataSource {
 
   /// Internal state
   bool _isActive = true;
-  late final ContextSource _source;
+  late ContextSource _source;
   final Map<String, List<ContextChunk>> _documentCache = {};
 
   /// Create a new document source
@@ -326,15 +326,21 @@ class DocumentSource implements BaseDataSource {
     } else {
       // Multiple chunks with overlap
       int start = 0;
+      // Ensure we always make forward progress even when chunkOverlap >= chunkSize
+      final int step = (chunkSize - chunkOverlap) <= 0 ? 1 : (chunkSize - chunkOverlap);
+
       while (start < words.length) {
-        final end = (start + chunkSize).clamp(0, words.length);
+        final int end = (start + chunkSize) > words.length ? words.length : (start + chunkSize);
         final chunkWords = words.sublist(start, end);
         final chunkText = chunkWords.join(' ');
 
         chunks.add(_createChunk(chunkText, document, start, end, query));
 
-        start = end - chunkOverlap;
-        if (start >= words.length) break;
+        if (end >= words.length) {
+          break; // reached the end
+        }
+
+        start += step;
       }
     }
 

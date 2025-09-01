@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/database_source.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
+import 'package:ragify_flutter/src/models/privacy_level.dart';
+import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:ragify_flutter/src/cache/cache_manager.dart';
 import '../test_helper.dart';
 
@@ -113,36 +115,235 @@ void main() {
         // Pool should be closed
         expect(pool, isNotNull);
       });
+
+      test('should get performance metrics', () {
+        final metrics = pool.getPerformanceMetrics();
+        
+        expect(metrics, isA<Map<String, dynamic>>());
+        expect(metrics['total_queries'], equals(0));
+        expect(metrics['parallel_queries'], equals(0));
+        expect(metrics['sequential_queries'], equals(0));
+        expect(metrics['query_timeouts'], equals(0));
+        expect(metrics['connection_waits'], equals(0));
+        expect(metrics['batch_queries'], equals(0));
+        expect(metrics['average_wait_time_ms'], equals(0.0));
+        expect(metrics['parallelization_rate'], equals('0%'));
+      });
+
+      test('should reset performance metrics', () {
+        // First get metrics to ensure they exist
+        final initialMetrics = pool.getPerformanceMetrics();
+        expect(initialMetrics['total_queries'], equals(0));
+        
+        // Reset metrics
+        pool.resetPerformanceMetrics();
+        
+        // Get metrics again to ensure they're still accessible
+        final resetMetrics = pool.getPerformanceMetrics();
+        expect(resetMetrics['total_queries'], equals(0));
+      });
+
+      test('should get health status', () {
+        final health = pool.getHealthStatus();
+        
+        expect(health, isA<Map<String, dynamic>>());
+        expect(health['total_connections'], equals(0));
+        expect(health['available_connections'], equals(0));
+        expect(health['in_use_connections'], equals(0));
+        expect(health['stale_connections'], equals(0));
+        expect(health['pool_utilization'], equals('0%'));
+        expect(health['health_status'], equals('healthy'));
+      });
     });
 
     group('DatabaseSource - Basic Tests', () {
-      test('should create database source with required parameters', () {
-        // Test that we can create a DatabaseSource with minimal parameters
-        expect(() {
-          DatabaseSource(
-            databaseConfig: config,
-            databaseType: 'sqlite',
-            name: 'test_source',
-            sourceType: SourceType.database,
-            cacheManager: _MockCacheManager(),
-          );
-        }, returnsNormally);
-      });
+      late DatabaseSource source;
+      late _MockCacheManager mockCacheManager;
 
-      test('should handle database source creation', () {
-        // Test basic creation without complex operations
-        final source = DatabaseSource(
+      setUp(() {
+        mockCacheManager = _MockCacheManager();
+        source = DatabaseSource(
           databaseConfig: config,
           databaseType: 'sqlite',
           name: 'test_source',
           sourceType: SourceType.database,
-          cacheManager: _MockCacheManager(),
+          cacheManager: mockCacheManager,
         );
+      });
 
+      test('should create database source with required parameters', () {
         expect(source, isNotNull);
         expect(source.name, equals('test_source'));
         expect(source.databaseType, equals('sqlite'));
         expect(source.sourceType, equals(SourceType.database));
+      });
+
+      test('should get configuration', () {
+        final config = source.getConfiguration();
+        expect(config, isA<Map<String, dynamic>>());
+        expect(config, isEmpty);
+      });
+
+      test('should update configuration', () async {
+        final newConfig = {'new': 'config'};
+        await source.updateConfiguration(newConfig);
+        
+        final config = source.getConfiguration();
+        expect(config['new'], equals('config'));
+      });
+
+      test('should update metadata', () async {
+        final newMetadata = {'new': 'metadata'};
+        await source.updateMetadata(newMetadata);
+        
+        final metadata = source.metadata;
+        expect(metadata['new'], equals('metadata'));
+      });
+
+      test('should get source context', () {
+        final sourceContext = source.source;
+
+        expect(sourceContext.name, equals('test_source'));
+        expect(sourceContext.sourceType, equals(SourceType.database));
+        expect(sourceContext.metadata, isEmpty);
+        expect(sourceContext.privacyLevel, equals(PrivacyLevel.public));
+        expect(sourceContext.authorityScore, equals(1.0));
+        expect(sourceContext.freshnessScore, equals(1.0));
+      });
+
+      test('should get stats when not initialized', () async {
+        final stats = await source.getStats();
+        
+        expect(stats['database_type'], equals('sqlite'));
+        expect(stats['host'], equals('localhost'));
+        expect(stats['port'], equals(5432));
+        expect(stats['database'], equals('test_db'));
+        expect(stats['max_connections'], equals(5));
+        expect(stats['is_initialized'], isFalse);
+        expect(stats['connection_pool_size'], equals(0));
+        expect(stats['available_connections'], equals(0));
+        expect(stats['parallel_query_config'], isA<Map<String, dynamic>>());
+        
+        expect(stats['performance_metrics'], isA<Map>());
+        expect(stats['pool_health'], isA<Map>());
+        expect(stats['performance_metrics'], isEmpty);
+        expect(stats['pool_health'], isEmpty);
+      });
+
+      test('should get status when not initialized', () async {
+        final status = await source.getStatus();
+        expect(status, equals(SourceStatus.offline));
+      });
+
+      test('should get health when not initialized', () async {
+        final isHealthy = await source.isHealthy();
+        expect(isHealthy, isFalse);
+      });
+
+      test('should refresh without error', () async {
+        expect(() => source.refresh(), returnsNormally);
+      });
+
+      test('should get chunks when not initialized', () async {
+        final chunks = await source.getChunks(query: 'test');
+        expect(chunks, isEmpty);
+      });
+
+      test('should set and get parallel query configuration', () {
+        final parallelConfig = ParallelQueryConfig(
+          maxConcurrentQueries: 8,
+          batchSize: 200,
+          enableParallelQueries: true,
+          queryTimeout: Duration(seconds: 45),
+          maxRetries: 5,
+        );
+
+        source.setParallelQueryConfig(parallelConfig);
+        final retrievedConfig = source.getParallelQueryConfig();
+
+        expect(retrievedConfig.maxConcurrentQueries, equals(8));
+        expect(retrievedConfig.batchSize, equals(200));
+        expect(retrievedConfig.enableParallelQueries, isTrue);
+        expect(retrievedConfig.queryTimeout, equals(Duration(seconds: 45)));
+        expect(retrievedConfig.maxRetries, equals(5));
+      });
+    });
+
+    group('QueryBatch Tests', () {
+      test('should create QueryBatch with all parameters', () {
+        final batch = QueryBatch(
+          query: 'SELECT * FROM users',
+          filters: {'status': 'active'},
+          limit: 100,
+          offset: 50,
+          batchIndex: 1,
+        );
+
+        expect(batch.query, equals('SELECT * FROM users'));
+        expect(batch.filters, equals({'status': 'active'}));
+        expect(batch.limit, equals(100));
+        expect(batch.offset, equals(50));
+        expect(batch.batchIndex, equals(1));
+      });
+
+      test('should create QueryBatch with minimal parameters', () {
+        final batch = QueryBatch(
+          query: 'SELECT * FROM users',
+          batchIndex: 0,
+        );
+
+        expect(batch.query, equals('SELECT * FROM users'));
+        expect(batch.filters, isNull);
+        expect(batch.limit, isNull);
+        expect(batch.offset, isNull);
+        expect(batch.batchIndex, equals(0));
+      });
+
+      test('should convert QueryBatch to JSON', () {
+        final batch = QueryBatch(
+          query: 'SELECT * FROM users WHERE age > 18',
+          filters: {'min_age': 18, 'status': 'active'},
+          limit: 50,
+          offset: 0,
+          batchIndex: 2,
+        );
+
+        final json = batch.toJson();
+
+        expect(json['query'], equals('SELECT * FROM users WHERE age > 18'));
+        expect(json['filters'], equals({'min_age': 18, 'status': 'active'}));
+        expect(json['limit'], equals(50));
+        expect(json['offset'], equals(0));
+        expect(json['batch_index'], equals(2));
+      });
+    });
+
+    group('ParallelQueryResult Tests', () {
+      test('should create ParallelQueryResult with all parameters', () {
+        final result = ParallelQueryResult<String>(
+          results: ['result1', 'result2', 'result3'],
+          queryTime: Duration(milliseconds: 150),
+          queriesExecuted: 3,
+          metadata: {'total_results': 3, 'cache_hit': false},
+        );
+
+        expect(result.results, equals(['result1', 'result2', 'result3']));
+        expect(result.queryTime, equals(Duration(milliseconds: 150)));
+        expect(result.queriesExecuted, equals(3));
+        expect(result.metadata, equals({'total_results': 3, 'cache_hit': false}));
+      });
+
+      test('should create ParallelQueryResult with minimal parameters', () {
+        final result = ParallelQueryResult<int>(
+          results: [1, 2, 3, 4, 5],
+          queryTime: Duration(milliseconds: 100),
+          queriesExecuted: 1,
+        );
+
+        expect(result.results, equals([1, 2, 3, 4, 5]));
+        expect(result.queryTime, equals(Duration(milliseconds: 100)));
+        expect(result.queriesExecuted, equals(1));
+        expect(result.metadata, isEmpty);
       });
     });
   });
@@ -200,3 +401,4 @@ class _MockCacheManager implements CacheManager {
     Map<String, dynamic> metadata,
   ) async {}
 }
+
