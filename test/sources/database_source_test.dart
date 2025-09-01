@@ -118,7 +118,7 @@ void main() {
 
       test('should get performance metrics', () {
         final metrics = pool.getPerformanceMetrics();
-        
+
         expect(metrics, isA<Map<String, dynamic>>());
         expect(metrics['total_queries'], equals(0));
         expect(metrics['parallel_queries'], equals(0));
@@ -134,10 +134,10 @@ void main() {
         // First get metrics to ensure they exist
         final initialMetrics = pool.getPerformanceMetrics();
         expect(initialMetrics['total_queries'], equals(0));
-        
+
         // Reset metrics
         pool.resetPerformanceMetrics();
-        
+
         // Get metrics again to ensure they're still accessible
         final resetMetrics = pool.getPerformanceMetrics();
         expect(resetMetrics['total_queries'], equals(0));
@@ -145,7 +145,7 @@ void main() {
 
       test('should get health status', () {
         final health = pool.getHealthStatus();
-        
+
         expect(health, isA<Map<String, dynamic>>());
         expect(health['total_connections'], equals(0));
         expect(health['available_connections'], equals(0));
@@ -187,7 +187,7 @@ void main() {
       test('should update configuration', () async {
         final newConfig = {'new': 'config'};
         await source.updateConfiguration(newConfig);
-        
+
         final config = source.getConfiguration();
         expect(config['new'], equals('config'));
       });
@@ -195,7 +195,7 @@ void main() {
       test('should update metadata', () async {
         final newMetadata = {'new': 'metadata'};
         await source.updateMetadata(newMetadata);
-        
+
         final metadata = source.metadata;
         expect(metadata['new'], equals('metadata'));
       });
@@ -213,7 +213,7 @@ void main() {
 
       test('should get stats when not initialized', () async {
         final stats = await source.getStats();
-        
+
         expect(stats['database_type'], equals('sqlite'));
         expect(stats['host'], equals('localhost'));
         expect(stats['port'], equals(5432));
@@ -223,7 +223,7 @@ void main() {
         expect(stats['connection_pool_size'], equals(0));
         expect(stats['available_connections'], equals(0));
         expect(stats['parallel_query_config'], isA<Map<String, dynamic>>());
-        
+
         expect(stats['performance_metrics'], isA<Map>());
         expect(stats['pool_health'], isA<Map>());
         expect(stats['performance_metrics'], isEmpty);
@@ -287,10 +287,7 @@ void main() {
       });
 
       test('should create QueryBatch with minimal parameters', () {
-        final batch = QueryBatch(
-          query: 'SELECT * FROM users',
-          batchIndex: 0,
-        );
+        final batch = QueryBatch(query: 'SELECT * FROM users', batchIndex: 0);
 
         expect(batch.query, equals('SELECT * FROM users'));
         expect(batch.filters, isNull);
@@ -330,7 +327,10 @@ void main() {
         expect(result.results, equals(['result1', 'result2', 'result3']));
         expect(result.queryTime, equals(Duration(milliseconds: 150)));
         expect(result.queriesExecuted, equals(3));
-        expect(result.metadata, equals({'total_results': 3, 'cache_hit': false}));
+        expect(
+          result.metadata,
+          equals({'total_results': 3, 'cache_hit': false}),
+        );
       });
 
       test('should create ParallelQueryResult with minimal parameters', () {
@@ -401,4 +401,3 @@ class _MockCacheManager implements CacheManager {
     Map<String, dynamic> metadata,
   ) async {}
 }
-

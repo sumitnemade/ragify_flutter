@@ -44,11 +44,17 @@ void main() {
       // real network connections and keep tests deterministic.
 
       test('subscribe throws when not initialized', () async {
-        await expectLater(source.subscribe('test/topic'), throwsA(isA<StateError>()));
+        await expectLater(
+          source.subscribe('test/topic'),
+          throwsA(isA<StateError>()),
+        );
       });
 
       test('publish throws when not initialized', () async {
-        await expectLater(source.publish('test/topic', {'data': 'test'}), throwsA(isA<StateError>()));
+        await expectLater(
+          source.publish('test/topic', {'data': 'test'}),
+          throwsA(isA<StateError>()),
+        );
       });
     });
 
@@ -89,7 +95,10 @@ void main() {
         await source.subscribe('mqtt/test');
         final stats = await source.getStats();
         expect(stats['is_subscribed'], isTrue);
-        expect((stats['subscribed_topics'] as List).contains('mqtt/test'), isTrue);
+        expect(
+          (stats['subscribed_topics'] as List).contains('mqtt/test'),
+          isTrue,
+        );
       });
     });
 
@@ -128,7 +137,10 @@ void main() {
       test('subscribes and publishes on Redis after initialization', () async {
         await source.initialize();
         await source.subscribe('redis:channel');
-        await expectLater(source.publish('redis:channel', {'key': 'value'}), completes);
+        await expectLater(
+          source.publish('redis:channel', {'key': 'value'}),
+          completes,
+        );
         final stats = await source.getStats();
         expect(stats['is_subscribed'], isTrue);
       });
@@ -177,10 +189,7 @@ void main() {
 
     group('RealtimeConfig', () {
       test('creates configuration with defaults', () {
-        final config = RealtimeConfig(
-          url: 'ws://test',
-          protocol: 'websocket',
-        );
+        final config = RealtimeConfig(url: 'ws://test', protocol: 'websocket');
 
         expect(config.url, equals('ws://test'));
         expect(config.protocol, equals('websocket'));
@@ -210,7 +219,7 @@ void main() {
     group('Statistics and Health', () {
       test('provides comprehensive stats', () async {
         final stats = await source.getStats();
-        
+
         expect(stats, containsPair('protocol', 'websocket'));
         expect(stats, containsPair('url', 'ws://localhost:8080'));
         expect(stats, containsPair('is_initialized', false));
@@ -226,7 +235,7 @@ void main() {
     group('Configuration', () {
       test('provides configuration details', () {
         final configMap = source.getConfiguration();
-        
+
         expect(configMap, isA<Map<String, dynamic>>());
         expect(configMap, containsPair('protocol', 'websocket'));
         expect(configMap, containsPair('connection_timeout', 10000));

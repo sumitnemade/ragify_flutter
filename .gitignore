@@ -33,11 +33,6 @@ build/
 # Cursor IDE
 .cursor/
 
-# Generated files
-*.g.dart
-*.freezed.dart
-*.mocks.dart
-
 # Environment files
 .env
 .env.local

@@ -1,11 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/api_source.dart';
-import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:ragify_flutter/src/models/context_chunk.dart';
-import 'package:ragify_flutter/src/models/relevance_score.dart';
-import 'package:ragify_flutter/src/models/context_source.dart';
-import 'package:ragify_flutter/src/models/privacy_level.dart';
-import 'package:ragify_flutter/src/exceptions/ragify_exceptions.dart';
+import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:http/http.dart' as http;
 
 void main() {
@@ -85,16 +81,13 @@ void main() {
           name: 'custom_headers',
           baseUrl: 'https://api.example.com',
           config: {
-            'custom_headers': {
-              'X-API-Key': 'secret123',
-              'X-Version': '1.0',
-            },
+            'custom_headers': {'X-API-Key': 'secret123', 'X-Version': '1.0'},
           },
           httpClient: mockHttpClient,
         );
 
         // This will trigger the custom headers logic (lines 208, 209)
-        final chunks = await customSource.getChunks(query: 'test');
+        await customSource.getChunks(query: 'test');
         expect(customSource.getConfiguration()['custom_headers'], isA<Map>());
       });
 
@@ -115,14 +108,14 @@ void main() {
         );
 
         await adaptiveSource.getChunks(query: 'test');
-        
+
         // Test slow network timeout calculation (line 548)
         final slowTimeout = adaptiveSource.adaptiveTimeout.calculateTimeout(
           Duration(milliseconds: 1500), // Above threshold
         );
         expect(slowTimeout.inSeconds, 20); // 10 * 2.0
 
-        // Test fast network timeout calculation  
+        // Test fast network timeout calculation
         final fastTimeout = adaptiveSource.adaptiveTimeout.calculateTimeout(
           Duration(milliseconds: 400), // Below threshold/2
         );
@@ -144,7 +137,7 @@ void main() {
         );
 
         await disabledSource.getChunks(query: 'test');
-        
+
         final timeout = disabledSource.adaptiveTimeout.calculateTimeout(
           Duration(milliseconds: 1500),
         );
@@ -171,7 +164,10 @@ void main() {
 
         expect(chunks, hasLength(1));
         expect(chunks.first.metadata['author'], 'Test Author');
-        expect(chunks.first.tags, containsAll(['api', 'external', 'Technology', 'Article']));
+        expect(
+          chunks.first.tags,
+          containsAll(['api', 'external', 'Technology', 'Article']),
+        );
       });
 
       test('covers empty metadata handling', () async {
@@ -188,7 +184,7 @@ void main() {
         for (int i = 0; i < 250; i++) {
           await source.getChunks(query: 'query_$i');
         }
-        
+
         // Test cache behavior
         final stats = await source.getStats();
         expect(stats['cache_size'], isA<int>());
@@ -200,19 +196,17 @@ void main() {
         final rateLimitSource = APISource(
           name: 'rate_limit_test',
           baseUrl: 'https://api.example.com',
-          rateLimit: RateLimitConfig(
-            minInterval: Duration(milliseconds: 100),
-          ),
+          rateLimit: RateLimitConfig(minInterval: Duration(milliseconds: 100)),
           httpClient: mockHttpClient,
         );
 
         // Make rapid requests to trigger rate limiting
         await rateLimitSource.getChunks(query: 'first');
-        
+
         final stopwatch = Stopwatch()..start();
         await rateLimitSource.getChunks(query: 'second');
         stopwatch.stop();
-        
+
         // Should have some delay due to rate limiting
         expect(stopwatch.elapsed.inMilliseconds, greaterThan(50));
       });
@@ -221,18 +215,18 @@ void main() {
     group('Source Management Coverage', () {
       test('covers refresh functionality', () async {
         await source.getChunks(query: 'cache this');
-        
+
         await source.refresh();
-        
+
         // Refresh should work without error
         expect(source.isActive, isTrue);
       });
 
       test('covers metadata update', () async {
         final initialMetadata = Map<String, dynamic>.from(source.metadata);
-        
+
         await source.updateMetadata({'new_key': 'new_value', 'count': 42});
-        
+
         expect(source.metadata, containsPair('new_key', 'new_value'));
         expect(source.metadata, containsPair('count', 42));
         // Check that all initial metadata keys are still present
@@ -242,21 +236,29 @@ void main() {
       });
 
       test('covers configuration update', () async {
-        final initialConfig = Map<String, dynamic>.from(source.getConfiguration());
-        
+        final initialConfig = Map<String, dynamic>.from(
+          source.getConfiguration(),
+        );
+
         await source.updateConfiguration({'new_setting': 'new_value'});
-        
-        expect(source.getConfiguration(), containsPair('new_setting', 'new_value'));
+
+        expect(
+          source.getConfiguration(),
+          containsPair('new_setting', 'new_value'),
+        );
         // Check that all initial config keys are still present
         for (final entry in initialConfig.entries) {
-          expect(source.getConfiguration(), containsPair(entry.key, entry.value));
+          expect(
+            source.getConfiguration(),
+            containsPair(entry.key, entry.value),
+          );
         }
       });
 
       test('covers source status when offline', () async {
         // Close source to make it offline
         await source.close();
-        
+
         final status = await source.getStatus();
         expect(status, SourceStatus.offline);
       });
@@ -267,7 +269,7 @@ void main() {
           baseUrl: 'https://api.example.com',
           httpClient: _MockUnhealthyHttpClient(),
         );
-        
+
         final status = await unhealthySource.getStatus();
         expect(status, SourceStatus.unhealthy);
       });
@@ -332,9 +334,9 @@ void main() {
       test('covers CachedResponse creation and access', () {
         final data = {'test': 'value'};
         final timestamp = DateTime.now();
-        
+
         final cached = CachedResponse(data: data, timestamp: timestamp);
-        
+
         expect(cached.data, data);
         expect(cached.timestamp, timestamp);
       });
@@ -350,7 +352,7 @@ class _MockHttpClient extends http.BaseClient {
       200,
       headers: {'content-type': 'application/json'},
     );
-    
+
     return http.StreamedResponse(
       Stream.value(response.body.codeUnits),
       response.statusCode,
@@ -367,7 +369,7 @@ class _MockHttpClientWithMetadata extends http.BaseClient {
       200,
       headers: {'content-type': 'application/json'},
     );
-    
+
     return http.StreamedResponse(
       Stream.value(response.body.codeUnits),
       response.statusCode,

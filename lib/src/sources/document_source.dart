@@ -327,10 +327,14 @@ class DocumentSource implements BaseDataSource {
       // Multiple chunks with overlap
       int start = 0;
       // Ensure we always make forward progress even when chunkOverlap >= chunkSize
-      final int step = (chunkSize - chunkOverlap) <= 0 ? 1 : (chunkSize - chunkOverlap);
+      final int step = (chunkSize - chunkOverlap) <= 0
+          ? 1
+          : (chunkSize - chunkOverlap);
 
       while (start < words.length) {
-        final int end = (start + chunkSize) > words.length ? words.length : (start + chunkSize);
+        final int end = (start + chunkSize) > words.length
+            ? words.length
+            : (start + chunkSize);
         final chunkWords = words.sublist(start, end);
         final chunkText = chunkWords.join(' ');
 

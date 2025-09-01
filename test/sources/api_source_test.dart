@@ -1,12 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/api_source.dart';
-import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
-import 'package:ragify_flutter/src/exceptions/ragify_exceptions.dart';
-import 'package:ragify_flutter/src/config/dynamic_config_manager.dart';
 import 'package:logger/logger.dart';
-import 'package:http/http.dart' as http;
 
 void main() {
   group('APISource Tests', () {
@@ -50,9 +46,15 @@ void main() {
         expect(source.baseUrl, equals('https://default.api.com'));
         expect(source.sourceType, equals(SourceType.api));
         expect(source.authHeaders, isEmpty);
-        expect(source.timeout, equals(Duration(seconds: 24))); // Actual default value
+        expect(
+          source.timeout,
+          equals(Duration(seconds: 24)),
+        ); // Actual default value
         expect(source.rateLimit.maxRequestsPerMinute, equals(60));
-        expect(source.adaptiveTimeout.baseTimeout, equals(Duration(seconds: 30)));
+        expect(
+          source.adaptiveTimeout.baseTimeout,
+          equals(Duration(seconds: 30)),
+        );
         expect(source.isActive, isTrue);
         expect(source.config, isEmpty);
         expect(source.metadata, isEmpty);
@@ -88,8 +90,14 @@ void main() {
         expect(source.authHeaders, equals({'X-API-Key': 'custom-key'}));
         expect(source.timeout, equals(Duration(seconds: 60)));
         expect(source.rateLimit.maxRequestsPerMinute, equals(50));
-        expect(source.adaptiveTimeout.baseTimeout, equals(Duration(seconds: 15)));
-        expect(source.adaptiveTimeout.maxTimeout, equals(Duration(seconds: 60)));
+        expect(
+          source.adaptiveTimeout.baseTimeout,
+          equals(Duration(seconds: 15)),
+        );
+        expect(
+          source.adaptiveTimeout.maxTimeout,
+          equals(Duration(seconds: 60)),
+        );
         expect(source.adaptiveTimeout.slowNetworkMultiplier, equals(3.0));
         expect(source.config, equals({'custom': 'config'}));
         expect(source.metadata, equals({'custom': 'metadata'}));
@@ -173,7 +181,9 @@ void main() {
           networkQualityThreshold: 1000,
         );
 
-        final slowNetworkTimeout = config.calculateTimeout(Duration(milliseconds: 1500));
+        final slowNetworkTimeout = config.calculateTimeout(
+          Duration(milliseconds: 1500),
+        );
         expect(slowNetworkTimeout.inMilliseconds, equals(60000)); // 30s * 2.0
       });
 
@@ -184,7 +194,9 @@ void main() {
           networkQualityThreshold: 1000,
         );
 
-        final fastNetworkTimeout = config.calculateTimeout(Duration(milliseconds: 400));
+        final fastNetworkTimeout = config.calculateTimeout(
+          Duration(milliseconds: 400),
+        );
         expect(fastNetworkTimeout.inMilliseconds, equals(24000)); // 30s * 0.8
       });
 
@@ -240,8 +252,16 @@ void main() {
         final after = DateTime.now();
 
         expect(response.data, equals({'key': 'value'}));
-        expect(response.timestamp.isAfter(before) || response.timestamp.isAtSameMomentAs(before), isTrue);
-        expect(response.timestamp.isBefore(after) || response.timestamp.isAtSameMomentAs(after), isTrue);
+        expect(
+          response.timestamp.isAfter(before) ||
+              response.timestamp.isAtSameMomentAs(before),
+          isTrue,
+        );
+        expect(
+          response.timestamp.isBefore(after) ||
+              response.timestamp.isAtSameMomentAs(after),
+          isTrue,
+        );
       });
     });
 
@@ -278,7 +298,10 @@ void main() {
       });
 
       test('should update configuration successfully', () async {
-        expect(() => apiSource.updateConfiguration({'new': 'config'}), returnsNormally);
+        expect(
+          () => apiSource.updateConfiguration({'new': 'config'}),
+          returnsNormally,
+        );
       });
     });
   });

@@ -5,7 +5,6 @@ import 'package:ragify_flutter/src/models/privacy_level.dart';
 import 'package:ragify_flutter/src/sources/base_data_source.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
-import 'dart:io' as io;
 
 void main() {
   group('DocumentSource Tests', () {
@@ -13,7 +12,9 @@ void main() {
     late String tempDir;
 
     setUp(() {
-      tempDir = Directory.systemTemp.createTempSync('document_source_test').path;
+      tempDir = Directory.systemTemp
+          .createTempSync('document_source_test')
+          .path;
       documentSource = DocumentSource(
         name: 'Test Document Source',
         documentPath: tempDir,
@@ -57,7 +58,7 @@ void main() {
       test('should create DocumentSource with custom config and metadata', () {
         final customConfig = {'custom': 'config'};
         final customMetadata = {'custom': 'metadata'};
-        
+
         final source = DocumentSource(
           name: 'Custom Config Source',
           documentPath: tempDir,
@@ -114,8 +115,9 @@ void main() {
 
     group('Document Processing', () {
       test('should process documents and create chunks', () async {
-        final content = 'This is a test document with multiple words for chunking';
-        File('${tempDir}/test.txt').writeAsStringSync(content);
+        final content =
+            'This is a test document with multiple words for chunking';
+        File('$tempDir/test.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(query: 'test document');
 
@@ -129,7 +131,7 @@ void main() {
 
       test('should handle large documents with multiple chunks', () async {
         final content = 'word ' * 500; // 500 words
-        File('${tempDir}/large.txt').writeAsStringSync(content);
+        File('$tempDir/large.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(query: 'word');
 
@@ -139,7 +141,7 @@ void main() {
 
       test('should create chunks with correct metadata', () async {
         final content = 'Test content for metadata testing';
-        File('${tempDir}/metadata_test.txt').writeAsStringSync(content);
+        File('$tempDir/metadata_test.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(query: 'metadata');
 
@@ -155,8 +157,9 @@ void main() {
     group('Chunk Retrieval', () {
       test('should get chunks from documents', () async {
         // Create test document
-        final content = 'This is a test document with multiple words for chunking';
-        File('${tempDir}/test.txt').writeAsStringSync(content);
+        final content =
+            'This is a test document with multiple words for chunking';
+        File('$tempDir/test.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(query: 'test document');
 
@@ -168,7 +171,7 @@ void main() {
       test('should respect maxChunks limit', () async {
         // Create large document
         final content = 'word ' * 500; // 500 words
-        File('${tempDir}/large.txt').writeAsStringSync(content);
+        File('$tempDir/large.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(
           query: 'word',
@@ -180,8 +183,9 @@ void main() {
 
       test('should filter by relevance score', () async {
         // Create test document
-        final content = 'This document contains important information about testing';
-        File('${tempDir}/test.txt').writeAsStringSync(content);
+        final content =
+            'This document contains important information about testing';
+        File('$tempDir/test.txt').writeAsStringSync(content);
 
         final chunks = await documentSource.getChunks(
           query: 'testing',
@@ -213,7 +217,7 @@ void main() {
     group('Caching', () {
       test('should cache processed documents', () async {
         final content = 'Test content for caching';
-        File('${tempDir}/cache_test.txt').writeAsStringSync(content);
+        File('$tempDir/cache_test.txt').writeAsStringSync(content);
 
         // First call should process the document
         final chunks1 = await documentSource.getChunks(query: 'test');
@@ -226,7 +230,7 @@ void main() {
 
       test('should use different cache keys for different queries', () async {
         final content = 'Test content for different queries';
-        File('${tempDir}/query_test.txt').writeAsStringSync(content);
+        File('$tempDir/query_test.txt').writeAsStringSync(content);
 
         final chunks1 = await documentSource.getChunks(query: 'test');
         final chunks2 = await documentSource.getChunks(query: 'content');
@@ -241,11 +245,11 @@ void main() {
     group('Source Management', () {
       test('should refresh source successfully', () async {
         // Create initial document
-        File('${tempDir}/initial.txt').writeAsStringSync('Initial content');
-        
+        File('$tempDir/initial.txt').writeAsStringSync('Initial content');
+
         // Get initial chunks to populate cache
         await documentSource.getChunks(query: 'initial');
-        
+
         // Refresh source
         await documentSource.refresh();
 
@@ -270,7 +274,9 @@ void main() {
 
       test('should close source successfully', () async {
         // Create document and get chunks to populate cache
-        File('${tempDir}/close_test.txt').writeAsStringSync('Content for closing');
+        File(
+          '$tempDir/close_test.txt',
+        ).writeAsStringSync('Content for closing');
         await documentSource.getChunks(query: 'closing');
 
         // Close source
@@ -282,17 +288,17 @@ void main() {
 
       test('should update metadata successfully', () async {
         final newMetadata = {'new_key': 'new_value'};
-        
+
         await documentSource.updateMetadata(newMetadata);
-        
+
         expect(documentSource.metadata['new_key'], equals('new_value'));
       });
 
       test('should update configuration successfully', () async {
         final newConfig = {'new_config': 'new_value'};
-        
+
         await documentSource.updateConfiguration(newConfig);
-        
+
         expect(documentSource.config['new_config'], equals('new_value'));
       });
     });
@@ -330,9 +336,9 @@ void main() {
     group('Statistics', () {
       test('should get source statistics', () async {
         // Create test files
-        File('${tempDir}/stats1.txt').writeAsStringSync('Content 1');
-        File('${tempDir}/stats2.md').writeAsStringSync('Content 2');
-        File('${tempDir}/ignored.rtf').writeAsStringSync('Ignored');
+        File('$tempDir/stats1.txt').writeAsStringSync('Content 1');
+        File('$tempDir/stats2.md').writeAsStringSync('Content 2');
+        File('$tempDir/ignored.rtf').writeAsStringSync('Ignored');
 
         final stats = await documentSource.getStats();
 
@@ -352,7 +358,7 @@ void main() {
 
       test('should handle stats calculation errors gracefully', () async {
         // Create a directory that can't be accessed
-        final restrictedDir = Directory('${tempDir}/restricted');
+        final restrictedDir = Directory('$tempDir/restricted');
         restrictedDir.createSync();
 
         final restrictedSource = DocumentSource(
@@ -369,7 +375,7 @@ void main() {
     group('Error Handling', () {
       test('should handle unsupported file types gracefully', () async {
         // Create a file with unsupported extension
-        final unsupportedFile = File('${tempDir}/unsupported.rtf');
+        final unsupportedFile = File('$tempDir/unsupported.rtf');
         unsupportedFile.writeAsStringSync('Content');
 
         // The source should ignore unsupported files

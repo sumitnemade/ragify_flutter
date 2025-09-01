@@ -321,7 +321,7 @@ class DatabaseSource implements BaseDataSource {
     if (parallelConfig != null) {
       _parallelConfig = parallelConfig;
     }
-    
+
     if (metadata != null) {
       _metadata.addAll(metadata);
     }
@@ -565,11 +565,13 @@ class DatabaseSource implements BaseDataSource {
   /// **NEW: Initialize database tables**
   Future<void> _initializeDatabaseTables() async {
     // Skip table initialization if using injected connections (for testing)
-    if (_connectionPool._connections.isNotEmpty && 
-        _connectionPool._connections.first.runtimeType.toString().contains('Mock')) {
+    if (_connectionPool._connections.isNotEmpty &&
+        _connectionPool._connections.first.runtimeType.toString().contains(
+          'Mock',
+        )) {
       return;
     }
-    
+
     final connection = await _connectionPool.getConnection();
 
     try {

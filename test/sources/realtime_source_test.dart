@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/realtime_source.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
-import 'package:ragify_flutter/src/cache/cache_manager.dart';
-import 'package:logger/logger.dart';
 
 void main() {
   group('RealtimeSource Tests', () {
@@ -21,7 +19,7 @@ void main() {
         heartbeatInterval: Duration(seconds: 30),
         options: {'custom': 'option'},
       );
-      
+
       realtimeSource = RealtimeSource(
         name: 'Test Realtime Source',
         sourceType: SourceType.realtime,
@@ -52,13 +50,25 @@ void main() {
         expect(source.url, equals('ws://default.localhost:8080'));
         expect(source.sourceType, equals(SourceType.realtime));
         expect(source.privacyLevel, equals(PrivacyLevel.public));
-        expect(source.realtimeConfig.url, equals('ws://default.localhost:8080'));
+        expect(
+          source.realtimeConfig.url,
+          equals('ws://default.localhost:8080'),
+        );
         expect(source.realtimeConfig.protocol, equals('websocket'));
-        expect(source.realtimeConfig.connectionTimeout, equals(Duration(seconds: 30)));
-        expect(source.realtimeConfig.reconnectInterval, equals(Duration(seconds: 5)));
+        expect(
+          source.realtimeConfig.connectionTimeout,
+          equals(Duration(seconds: 30)),
+        );
+        expect(
+          source.realtimeConfig.reconnectInterval,
+          equals(Duration(seconds: 5)),
+        );
         expect(source.realtimeConfig.maxReconnectAttempts, equals(5));
         expect(source.realtimeConfig.enableHeartbeat, isTrue);
-        expect(source.realtimeConfig.heartbeatInterval, equals(Duration(seconds: 30)));
+        expect(
+          source.realtimeConfig.heartbeatInterval,
+          equals(Duration(seconds: 30)),
+        );
         expect(source.isActive, isFalse);
         expect(source.config, isA<Map<String, dynamic>>());
         expect(source.metadata, isEmpty);
@@ -88,13 +98,28 @@ void main() {
 
         expect(source.name, equals('Custom Realtime Source'));
         expect(source.url, equals('wss://secure.localhost:8080/realtime'));
-        expect(source.realtimeConfig.url, equals('wss://secure.localhost:8080/realtime'));
-        expect(source.realtimeConfig.connectionTimeout, equals(Duration(seconds: 60)));
-        expect(source.realtimeConfig.reconnectInterval, equals(Duration(seconds: 10)));
+        expect(
+          source.realtimeConfig.url,
+          equals('wss://secure.localhost:8080/realtime'),
+        );
+        expect(
+          source.realtimeConfig.connectionTimeout,
+          equals(Duration(seconds: 60)),
+        );
+        expect(
+          source.realtimeConfig.reconnectInterval,
+          equals(Duration(seconds: 10)),
+        );
         expect(source.realtimeConfig.maxReconnectAttempts, equals(5));
         expect(source.realtimeConfig.enableHeartbeat, isFalse);
-        expect(source.realtimeConfig.heartbeatInterval, equals(Duration(seconds: 60)));
-        expect(source.realtimeConfig.options, equals({'secure': true, 'compression': true}));
+        expect(
+          source.realtimeConfig.heartbeatInterval,
+          equals(Duration(seconds: 60)),
+        );
+        expect(
+          source.realtimeConfig.options,
+          equals({'secure': true, 'compression': true}),
+        );
         expect(source.metadata, equals({'custom': 'metadata'}));
       });
 
@@ -184,7 +209,10 @@ void main() {
         expect(message.topic, equals('sensor/temperature'));
         expect(message.data, equals({'temperature': 25.5, 'humidity': 60.0}));
         expect(message.timestamp, equals(DateTime(2023, 1, 1)));
-        expect(message.metadata, equals({'sensor_type': 'temperature', 'location': 'room1'}));
+        expect(
+          message.metadata,
+          equals({'sensor_type': 'temperature', 'location': 'room1'}),
+        );
         expect(message.sourceId, equals('sensor1'));
       });
 
@@ -286,7 +314,10 @@ void main() {
       });
 
       test('should update configuration successfully', () async {
-        expect(() => realtimeSource.updateConfiguration({'new': 'config'}), returnsNormally);
+        expect(
+          () => realtimeSource.updateConfiguration({'new': 'config'}),
+          returnsNormally,
+        );
       });
     });
   });

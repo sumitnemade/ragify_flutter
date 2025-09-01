@@ -1,9 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/realtime_source.dart';
 import 'package:ragify_flutter/src/sources/base_data_source.dart';
-import 'package:ragify_flutter/src/models/context_chunk.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
 
@@ -23,7 +21,7 @@ void main() {
         connectionTimeout: Duration(seconds: 10),
         options: {'test': 'coverage'},
       );
-      
+
       source = RealtimeSource(
         name: 'coverage_realtime',
         realtimeConfig: config,
@@ -65,7 +63,7 @@ void main() {
 
       test('covers RealtimeConfig toJson', () {
         final json = config.toJson();
-        
+
         expect(json['protocol'], 'websocket');
         expect(json['url'], 'ws://localhost:8080');
         expect(json['enable_heartbeat'], true);
@@ -113,7 +111,7 @@ void main() {
     group('RealtimeConnection Coverage', () {
       test('covers RealtimeConnection getters', () {
         final connection = _MockRealtimeConnection(config);
-        
+
         expect(connection.isConnected, false);
         expect(connection.isClosed, false);
         expect(connection.lastConnected, isNull);
@@ -124,27 +122,27 @@ void main() {
 
       test('covers RealtimeConnection status updates', () {
         final connection = _MockRealtimeConnection(config);
-        
+
         // Test connection status update
         connection.testUpdateConnectionStatus(true);
         expect(connection.isConnected, true);
         expect(connection.lastConnected, isNotNull);
-        
+
         connection.testUpdateConnectionStatus(false);
         expect(connection.isConnected, false);
-        
+
         // Test message received update
         connection.testUpdateMessageReceived();
         expect(connection.messageCount, 1);
         expect(connection.lastMessage, isNotNull);
-        
+
         connection.testUpdateMessageReceived();
         expect(connection.messageCount, 2);
-        
+
         // Test error update
         connection.testUpdateError();
         expect(connection.errorCount, 1);
-        
+
         connection.testUpdateError();
         expect(connection.errorCount, 2);
       });
@@ -158,14 +156,17 @@ void main() {
         expect(wsConnection.isClosed, false);
       });
 
-      test('covers WebSocketConnection disconnect when not connected', () async {
-        final wsConnection = WebSocketConnection(config);
-        
-        // Should not throw when disconnecting without being connected
-        await wsConnection.disconnect();
-        expect(wsConnection.isClosed, true);
-        expect(wsConnection.isConnected, false);
-      });
+      test(
+        'covers WebSocketConnection disconnect when not connected',
+        () async {
+          final wsConnection = WebSocketConnection(config);
+
+          // Should not throw when disconnecting without being connected
+          await wsConnection.disconnect();
+          expect(wsConnection.isClosed, true);
+          expect(wsConnection.isConnected, false);
+        },
+      );
     });
 
     group('MQTTConnection Coverage', () {
@@ -174,7 +175,7 @@ void main() {
           protocol: 'mqtt',
           url: 'mqtt://localhost:1883',
         );
-        
+
         final mqttConnection = MQTTConnection(mqttConfig);
         expect(mqttConnection.config, mqttConfig);
         expect(mqttConnection.isConnected, false);
@@ -186,9 +187,9 @@ void main() {
           protocol: 'mqtt',
           url: 'mqtt://localhost:1883',
         );
-        
+
         final mqttConnection = MQTTConnection(mqttConfig);
-        
+
         // Should not throw when disconnecting without being connected
         await mqttConnection.disconnect();
         expect(mqttConnection.isClosed, true);
@@ -202,7 +203,7 @@ void main() {
           protocol: 'redis',
           url: 'redis://localhost:6379',
         );
-        
+
         final redisConnection = RedisConnection(redisConfig);
         expect(redisConnection.config, redisConfig);
         expect(redisConnection.isConnected, false);
@@ -214,9 +215,9 @@ void main() {
           protocol: 'redis',
           url: 'redis://localhost:6379',
         );
-        
+
         final redisConnection = RedisConnection(redisConfig);
-        
+
         // Should not throw when disconnecting without being connected
         await redisConnection.disconnect();
         expect(redisConnection.isClosed, true);
@@ -247,17 +248,20 @@ void main() {
       test('covers RealtimeSource updateConfiguration', () async {
         final newConfig = {'new_setting': 'new_value', 'timeout': 5000};
         await source.updateConfiguration(newConfig);
-        
+
         // Configuration update should work without error
         expect(() => source.getConfiguration(), returnsNormally);
       });
 
       test('covers RealtimeSource updateMetadata', () async {
         await source.updateMetadata({'new_meta': 'meta_value', 'version': 2});
-        
+
         expect(source.metadata['new_meta'], 'meta_value');
         expect(source.metadata['version'], 2);
-        expect(source.metadata['test'], 'coverage'); // Original metadata preserved
+        expect(
+          source.metadata['test'],
+          'coverage',
+        ); // Original metadata preserved
       });
 
       test('covers RealtimeSource close', () async {
@@ -313,7 +317,7 @@ void main() {
     group('RealtimeSource Statistics Coverage', () {
       test('covers getStats with comprehensive data', () async {
         final stats = await source.getStats();
-        
+
         expect(stats, isA<Map<String, dynamic>>());
         expect(stats['protocol'], 'websocket');
         expect(stats['url'], 'ws://localhost:8080');
@@ -350,7 +354,7 @@ void main() {
           protocol: 'websocket',
           url: 'ws://localhost:8080',
         );
-        
+
         final wsSource = RealtimeSource(
           name: 'ws_test',
           realtimeConfig: wsConfig,
@@ -358,7 +362,7 @@ void main() {
           url: 'ws://localhost:8080',
           privacyLevel: PrivacyLevel.public,
         );
-        
+
         expect(wsSource.realtimeConfig.protocol, 'websocket');
       });
 
@@ -367,7 +371,7 @@ void main() {
           protocol: 'mqtt',
           url: 'mqtt://localhost:1883',
         );
-        
+
         final mqttSource = RealtimeSource(
           name: 'mqtt_test',
           realtimeConfig: mqttConfig,
@@ -375,7 +379,7 @@ void main() {
           url: 'mqtt://localhost:1883',
           privacyLevel: PrivacyLevel.enterprise,
         );
-        
+
         expect(mqttSource.realtimeConfig.protocol, 'mqtt');
       });
 
@@ -384,7 +388,7 @@ void main() {
           protocol: 'redis',
           url: 'redis://localhost:6379',
         );
-        
+
         final redisSource = RealtimeSource(
           name: 'redis_test',
           realtimeConfig: redisConfig,
@@ -392,7 +396,7 @@ void main() {
           url: 'redis://localhost:6379',
           privacyLevel: PrivacyLevel.restricted,
         );
-        
+
         expect(redisSource.realtimeConfig.protocol, 'redis');
       });
 
@@ -401,7 +405,7 @@ void main() {
           protocol: 'invalid_protocol',
           url: 'invalid://localhost',
         );
-        
+
         expect(
           () => RealtimeSource(
             name: 'invalid_test',
@@ -425,7 +429,7 @@ void main() {
           privacyLevel: PrivacyLevel.private,
           maxBufferSize: 10,
         );
-        
+
         // Buffer size should be reflected in stats
         final stats = smallBufferSource.getStats();
         expect(stats, completes);
@@ -447,19 +451,19 @@ class _MockRealtimeConnection extends RealtimeConnection {
 
   @override
   bool get isClosed => _mockClosed;
-  
+
   @override
   bool get isConnected => _mockConnected;
-  
+
   @override
   DateTime? get lastConnected => _mockLastConnected;
-  
+
   @override
   DateTime? get lastMessage => _mockLastMessage;
-  
+
   @override
   int get messageCount => _mockMessageCount;
-  
+
   @override
   int get errorCount => _mockErrorCount;
 
@@ -499,12 +503,12 @@ class _MockRealtimeConnection extends RealtimeConnection {
       _mockLastConnected = DateTime.now();
     }
   }
-  
+
   void testUpdateMessageReceived() {
     _mockLastMessage = DateTime.now();
     _mockMessageCount++;
   }
-  
+
   void testUpdateError() {
     _mockErrorCount++;
   }

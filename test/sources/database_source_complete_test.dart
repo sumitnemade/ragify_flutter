@@ -299,7 +299,10 @@ void main() {
       });
 
       test('updateConfiguration adds new values', () async {
-        await source.updateConfiguration({'cache_enabled': true, 'timeout': 30});
+        await source.updateConfiguration({
+          'cache_enabled': true,
+          'timeout': 30,
+        });
         final config = source.getConfiguration();
         expect(config['cache_enabled'], isTrue);
         expect(config['timeout'], 30);
@@ -307,7 +310,7 @@ void main() {
 
       test('updateMetadata merges with existing metadata', () async {
         expect(source.metadata['version'], '1.0');
-        
+
         await source.updateMetadata({'author': 'test_user', 'version': '2.0'});
         expect(source.metadata['version'], '2.0'); // Updated
         expect(source.metadata['environment'], 'test'); // Preserved
@@ -379,10 +382,7 @@ void main() {
       });
 
       test('storeChunks throws StateError when not initialized', () async {
-        await expectLater(
-          source.storeChunks([]),
-          throwsA(isA<StateError>()),
-        );
+        await expectLater(source.storeChunks([]), throwsA(isA<StateError>()));
       });
 
       test('isHealthy returns false when not initialized', () async {
@@ -512,7 +512,10 @@ void main() {
 
       test('creates with injected connection pool', () {
         final mockConnections = [_MockConnection()];
-        final customPool = DatabaseConnectionPool(config, initialConnections: mockConnections);
+        final customPool = DatabaseConnectionPool(
+          config,
+          initialConnections: mockConnections,
+        );
 
         final source = DatabaseSource(
           name: 'injected_pool_source',
@@ -536,7 +539,7 @@ void main() {
 /// Simple mock connection for testing connection pool injection
 class _MockConnection {
   bool isClosed = false;
-  
+
   Future<void> close() async {
     isClosed = true;
   }

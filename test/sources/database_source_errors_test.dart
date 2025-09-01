@@ -105,7 +105,7 @@ void main() {
 
       test('serializes to JSON correctly', () {
         final json = config.toJson();
-        
+
         expect(json, containsPair('host', 'localhost'));
         expect(json, containsPair('port', 5432));
         expect(json, containsPair('database', 'test_db'));
@@ -119,7 +119,7 @@ void main() {
     group('ParallelQueryConfig', () {
       test('creates parallel config with defaults', () {
         final pc = ParallelQueryConfig();
-        
+
         expect(pc.maxConcurrentQueries, equals(4));
         expect(pc.batchSize, equals(100));
         expect(pc.enableParallelQueries, isTrue);
@@ -135,7 +135,7 @@ void main() {
           queryTimeout: Duration(seconds: 60),
           maxRetries: 5,
         );
-        
+
         expect(pc.maxConcurrentQueries, equals(8));
         expect(pc.batchSize, equals(50));
         expect(pc.enableParallelQueries, isFalse);
@@ -153,7 +153,7 @@ void main() {
         );
 
         final json = pc.toJson();
-        
+
         expect(json, containsPair('max_concurrent_queries', 6));
         expect(json, containsPair('batch_size', 200));
         expect(json, containsPair('enable_parallel_queries', true));
@@ -251,20 +251,20 @@ void main() {
     group('Lifecycle', () {
       test('handles refresh when not initialized', () async {
         await source.refresh();
-        
+
         // Should complete without error
         expect(source.isActive, isFalse);
       });
 
       test('handles updateMetadata', () {
         source.updateMetadata({'new_key': 'new_value'});
-        
+
         expect(source.metadata, containsPair('new_key', 'new_value'));
       });
 
       test('handles close', () async {
         await source.close();
-        
+
         // Should complete without error
         expect(source.isActive, isFalse);
       });

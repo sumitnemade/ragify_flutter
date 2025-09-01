@@ -62,7 +62,10 @@ void main() {
       final initial = source.getParallelQueryConfig();
       expect(initial.maxConcurrentQueries, greaterThan(0));
 
-      final updated = ParallelQueryConfig(maxConcurrentQueries: 8, batchSize: 50);
+      final updated = ParallelQueryConfig(
+        maxConcurrentQueries: 8,
+        batchSize: 50,
+      );
       source.setParallelQueryConfig(updated);
       final current = source.getParallelQueryConfig();
       expect(current.maxConcurrentQueries, 8);
@@ -98,11 +101,17 @@ void main() {
       });
 
       test('fetchData throws StateError', () async {
-        expect(() => source.fetchData(query: 'SELECT 1'), throwsA(isA<StateError>()));
+        expect(
+          () => source.fetchData(query: 'SELECT 1'),
+          throwsA(isA<StateError>()),
+        );
       });
 
       test('executeQuery throws StateError', () async {
-        expect(() => source.executeQuery('SELECT 1', []), throwsA(isA<StateError>()));
+        expect(
+          () => source.executeQuery('SELECT 1', []),
+          throwsA(isA<StateError>()),
+        );
       });
 
       test('storeChunks throws StateError', () async {
