@@ -30,15 +30,13 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 build/
 
-# Coverage files
-coverage/html/
-coverage/*.lcov
-coverage/*.info
-# Keep coverage/lcov.info as it's the main coverage report
-
 # Cursor IDE
 .cursor/
 
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
 
 # Environment files
 .env

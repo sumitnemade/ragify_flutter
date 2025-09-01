@@ -1,35 +1,31 @@
-# Test files and coverage
-test/
+# Coverage files - exclude from package publication
 coverage/
-*.test.dart
-*.spec.dart
+*.lcov
+*.info
+
+# Generated documentation
+doc/
+
+# Test files
+test/
 
 # Build artifacts
 build/
 .dart_tool/
 
-# IDE and editor files
-.idea/
+# IDE files
 .vscode/
-*.iml
+.idea/
 .cursor/
 
-# Git files
-.git/
-.gitignore
+# OS files
+.DS_Store
+Thumbs.db
 
-# Documentation that's not needed in the package
-RAGIFY_FLUTTER_API_REFERENCE.md
-example/STRUCTURE_SUMMARY.md
-
-# Performance benchmarks
-test/performance/
+# Logs
+*.log
+logs/
 
 # Temporary files
 *.tmp
 *.temp
-*.log
-
-# OS generated files
-.DS_Store
-Thumbs.db
