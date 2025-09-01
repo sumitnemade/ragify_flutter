@@ -1,3 +1,12 @@
+## 0.0.3
+
+* Testing: Fix test isolation across suites (AdvancedFusionEngine, DocumentSource)
+* Quality: Add `lints` package and resolve all analyzer issues
+* Formatting: Run `dart format` over source and tests
+* Packaging: Update `.pubignore` to include generated `*.g.dart` files
+* Stability: Ensure generated files are up to date via build runner
+* Misc: Minor refactors and reliability improvements
+
 ## 0.0.2
 
 * **Major Package Score Improvement**: Achieved perfect 160/160 pub.dev score
