@@ -138,12 +138,16 @@ void main() {
 
     group('Audit Logging Requirements Tests', () {
       test('should require audit logging for enterprise level', () {
-        final result = PrivacyUtils.requiresAuditLogging(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.requiresAuditLogging(
+          PrivacyLevel.enterprise,
+        );
         expect(result, isTrue);
       });
 
       test('should require audit logging for restricted level', () {
-        final result = PrivacyUtils.requiresAuditLogging(PrivacyLevel.restricted);
+        final result = PrivacyUtils.requiresAuditLogging(
+          PrivacyLevel.restricted,
+        );
         expect(result, isTrue);
       });
 
@@ -165,12 +169,16 @@ void main() {
       });
 
       test('should require user consent for enterprise level', () {
-        final result = PrivacyUtils.requiresUserConsent(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.requiresUserConsent(
+          PrivacyLevel.enterprise,
+        );
         expect(result, isTrue);
       });
 
       test('should require user consent for restricted level', () {
-        final result = PrivacyUtils.requiresUserConsent(PrivacyLevel.restricted);
+        final result = PrivacyUtils.requiresUserConsent(
+          PrivacyLevel.restricted,
+        );
         expect(result, isTrue);
       });
 
@@ -192,12 +200,16 @@ void main() {
       });
 
       test('should return enterprise for enterprise data level', () {
-        final result = PrivacyUtils.getMinimumUserLevel(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getMinimumUserLevel(
+          PrivacyLevel.enterprise,
+        );
         expect(result, equals(PrivacyLevel.enterprise));
       });
 
       test('should return restricted for restricted data level', () {
-        final result = PrivacyUtils.getMinimumUserLevel(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getMinimumUserLevel(
+          PrivacyLevel.restricted,
+        );
         expect(result, equals(PrivacyLevel.restricted));
       });
     });
@@ -254,26 +266,34 @@ void main() {
 
     group('Privacy Level Description Tests', () {
       test('should return description for public level', () {
-        final result = PrivacyUtils.getPrivacyLevelDescription(PrivacyLevel.public);
+        final result = PrivacyUtils.getPrivacyLevelDescription(
+          PrivacyLevel.public,
+        );
         expect(result, contains('Public'));
         expect(result, contains('Accessible to anyone'));
       });
 
       test('should return description for private level', () {
-        final result = PrivacyUtils.getPrivacyLevelDescription(PrivacyLevel.private);
+        final result = PrivacyUtils.getPrivacyLevelDescription(
+          PrivacyLevel.private,
+        );
         expect(result, contains('Private'));
         expect(result, contains('Requires user authentication'));
       });
 
       test('should return description for enterprise level', () {
-        final result = PrivacyUtils.getPrivacyLevelDescription(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getPrivacyLevelDescription(
+          PrivacyLevel.enterprise,
+        );
         expect(result, contains('Enterprise'));
         expect(result, contains('Requires enterprise authentication'));
         expect(result, contains('audit logging'));
       });
 
       test('should return description for restricted level', () {
-        final result = PrivacyUtils.getPrivacyLevelDescription(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getPrivacyLevelDescription(
+          PrivacyLevel.restricted,
+        );
         expect(result, contains('Restricted'));
         expect(result, contains('Requires special authorization'));
         expect(result, contains('full audit trail'));
@@ -292,12 +312,16 @@ void main() {
       });
 
       test('should return icon for enterprise level', () {
-        final result = PrivacyUtils.getPrivacyLevelIcon(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getPrivacyLevelIcon(
+          PrivacyLevel.enterprise,
+        );
         expect(result, equals('🏢'));
       });
 
       test('should return icon for restricted level', () {
-        final result = PrivacyUtils.getPrivacyLevelIcon(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getPrivacyLevelIcon(
+          PrivacyLevel.restricted,
+        );
         expect(result, equals('🚫'));
       });
     });
@@ -351,19 +375,25 @@ void main() {
 
     group('Required Consent Types Tests', () {
       test('should return no consent types for public level', () {
-        final result = PrivacyUtils.getRequiredConsentTypes(PrivacyLevel.public);
+        final result = PrivacyUtils.getRequiredConsentTypes(
+          PrivacyLevel.public,
+        );
         expect(result, isEmpty);
       });
 
       test('should return basic consent types for private level', () {
-        final result = PrivacyUtils.getRequiredConsentTypes(PrivacyLevel.private);
+        final result = PrivacyUtils.getRequiredConsentTypes(
+          PrivacyLevel.private,
+        );
         expect(result, contains('data_access'));
         expect(result, contains('data_processing'));
         expect(result.length, equals(2));
       });
 
       test('should return extended consent types for enterprise level', () {
-        final result = PrivacyUtils.getRequiredConsentTypes(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getRequiredConsentTypes(
+          PrivacyLevel.enterprise,
+        );
         expect(result, contains('data_access'));
         expect(result, contains('data_processing'));
         expect(result, contains('data_sharing'));
@@ -372,7 +402,9 @@ void main() {
       });
 
       test('should return all consent types for restricted level', () {
-        final result = PrivacyUtils.getRequiredConsentTypes(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getRequiredConsentTypes(
+          PrivacyLevel.restricted,
+        );
         expect(result, contains('data_access'));
         expect(result, contains('data_processing'));
         expect(result, contains('data_sharing'));
@@ -428,28 +460,36 @@ void main() {
 
     group('Data Retention Requirements Tests', () {
       test('should return retention requirements for public level', () {
-        final result = PrivacyUtils.getDataRetentionRequirements(PrivacyLevel.public);
+        final result = PrivacyUtils.getDataRetentionRequirements(
+          PrivacyLevel.public,
+        );
         expect(result['retention_period'], equals('indefinite'));
         expect(result['backup_required'], isFalse);
         expect(result['archival_required'], isFalse);
       });
 
       test('should return retention requirements for private level', () {
-        final result = PrivacyUtils.getDataRetentionRequirements(PrivacyLevel.private);
+        final result = PrivacyUtils.getDataRetentionRequirements(
+          PrivacyLevel.private,
+        );
         expect(result['retention_period'], equals('7_years'));
         expect(result['backup_required'], isTrue);
         expect(result['archival_required'], isFalse);
       });
 
       test('should return retention requirements for enterprise level', () {
-        final result = PrivacyUtils.getDataRetentionRequirements(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getDataRetentionRequirements(
+          PrivacyLevel.enterprise,
+        );
         expect(result['retention_period'], equals('10_years'));
         expect(result['backup_required'], isTrue);
         expect(result['archival_required'], isTrue);
       });
 
       test('should return retention requirements for restricted level', () {
-        final result = PrivacyUtils.getDataRetentionRequirements(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getDataRetentionRequirements(
+          PrivacyLevel.restricted,
+        );
         expect(result['retention_period'], equals('indefinite'));
         expect(result['backup_required'], isTrue);
         expect(result['archival_required'], isTrue);
@@ -458,12 +498,16 @@ void main() {
 
     group('Data Anonymization Tests', () {
       test('should require anonymization for enterprise level', () {
-        final result = PrivacyUtils.requiresAnonymization(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.requiresAnonymization(
+          PrivacyLevel.enterprise,
+        );
         expect(result, isTrue);
       });
 
       test('should require anonymization for restricted level', () {
-        final result = PrivacyUtils.requiresAnonymization(PrivacyLevel.restricted);
+        final result = PrivacyUtils.requiresAnonymization(
+          PrivacyLevel.restricted,
+        );
         expect(result, isTrue);
       });
 
@@ -480,18 +524,24 @@ void main() {
 
     group('Compliance Frameworks Tests', () {
       test('should return no frameworks for public level', () {
-        final result = PrivacyUtils.getComplianceFrameworks(PrivacyLevel.public);
+        final result = PrivacyUtils.getComplianceFrameworks(
+          PrivacyLevel.public,
+        );
         expect(result, isEmpty);
       });
 
       test('should return GDPR for private level', () {
-        final result = PrivacyUtils.getComplianceFrameworks(PrivacyLevel.private);
+        final result = PrivacyUtils.getComplianceFrameworks(
+          PrivacyLevel.private,
+        );
         expect(result, contains('GDPR'));
         expect(result.length, equals(1));
       });
 
       test('should return multiple frameworks for enterprise level', () {
-        final result = PrivacyUtils.getComplianceFrameworks(PrivacyLevel.enterprise);
+        final result = PrivacyUtils.getComplianceFrameworks(
+          PrivacyLevel.enterprise,
+        );
         expect(result, contains('GDPR'));
         expect(result, contains('CCPA'));
         expect(result, contains('SOX'));
@@ -499,7 +549,9 @@ void main() {
       });
 
       test('should return all frameworks for restricted level', () {
-        final result = PrivacyUtils.getComplianceFrameworks(PrivacyLevel.restricted);
+        final result = PrivacyUtils.getComplianceFrameworks(
+          PrivacyLevel.restricted,
+        );
         expect(result, contains('GDPR'));
         expect(result, contains('CCPA'));
         expect(result, contains('SOX'));
@@ -544,9 +596,18 @@ void main() {
           expect(PrivacyUtils.requiresAnonymization(level), isA<bool>());
           expect(PrivacyUtils.getPrivacyLevelDescription(level), isA<String>());
           expect(PrivacyUtils.getPrivacyLevelIcon(level), isA<String>());
-          expect(PrivacyUtils.getRequiredConsentTypes(level), isA<List<String>>());
-          expect(PrivacyUtils.getDataRetentionRequirements(level), isA<Map<String, dynamic>>());
-          expect(PrivacyUtils.getComplianceFrameworks(level), isA<List<String>>());
+          expect(
+            PrivacyUtils.getRequiredConsentTypes(level),
+            isA<List<String>>(),
+          );
+          expect(
+            PrivacyUtils.getDataRetentionRequirements(level),
+            isA<Map<String, dynamic>>(),
+          );
+          expect(
+            PrivacyUtils.getComplianceFrameworks(level),
+            isA<List<String>>(),
+          );
         }
       });
     });

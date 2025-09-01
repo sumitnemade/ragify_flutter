@@ -15,14 +15,22 @@ class ContextChunk {
   final String content;
 
   /// Source information for this chunk
-  @JsonKey(name: 'source', fromJson: ContextSource.fromJson, toJson: _sourceToJson)
+  @JsonKey(
+    name: 'source',
+    fromJson: ContextSource.fromJson,
+    toJson: _sourceToJson,
+  )
   final ContextSource source;
 
   /// Additional metadata about the chunk
   final Map<String, dynamic> metadata;
 
   /// Relevance score for this chunk
-  @JsonKey(name: 'relevance_score', fromJson: RelevanceScore.fromJson, toJson: _relevanceScoreToJson)
+  @JsonKey(
+    name: 'relevance_score',
+    fromJson: RelevanceScore.fromJson,
+    toJson: _relevanceScoreToJson,
+  )
   final RelevanceScore? relevanceScore;
 
   /// When the chunk was created
@@ -92,10 +100,12 @@ class ContextChunk {
   Map<String, dynamic> toJson() => _$ContextChunkToJson(this);
 
   /// Helper method for JSON serialization of ContextSource
-  static Map<String, dynamic> _sourceToJson(ContextSource source) => source.toJson();
+  static Map<String, dynamic> _sourceToJson(ContextSource source) =>
+      source.toJson();
 
   /// Helper method for JSON serialization of RelevanceScore
-  static Map<String, dynamic>? _relevanceScoreToJson(RelevanceScore? score) => score?.toJson();
+  static Map<String, dynamic>? _relevanceScoreToJson(RelevanceScore? score) =>
+      score?.toJson();
 
   /// Create a copy with updated fields
   ContextChunk copyWith({

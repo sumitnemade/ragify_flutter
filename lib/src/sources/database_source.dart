@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'dart:collection';
 import 'package:logger/logger.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:postgres/postgres.dart';
-import 'package:mysql1/mysql1.dart';
+import 'package:postgres/postgres.dart' as postgres;
+import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'dart:math' as math;
 
@@ -228,9 +228,9 @@ class DatabaseConnectionPool {
       try {
         if (connection is Database) {
           await connection.close();
-        } else if (connection is PostgreSQLConnection) {
+        } else if (connection is postgres.Connection) {
           await connection.close();
-        } else if (connection is MySqlConnection) {
+        } else if (connection is mysql.MySqlConnection) {
           await connection.close();
         } else if (connection is Db) {
           await connection.close();
@@ -481,16 +481,18 @@ class DatabaseSource implements BaseDataSource {
           onCreate: _onCreateSQLite,
         );
       case 'postgresql':
-        return PostgreSQLConnection(
-          databaseConfig.host,
-          databaseConfig.port,
-          databaseConfig.database,
-          username: databaseConfig.username,
-          password: databaseConfig.password,
+        return postgres.Connection.open(
+          postgres.Endpoint(
+            host: databaseConfig.host,
+            port: databaseConfig.port,
+            database: databaseConfig.database,
+            username: databaseConfig.username,
+            password: databaseConfig.password,
+          ),
         );
       case 'mysql':
-        return await MySqlConnection.connect(
-          ConnectionSettings(
+        return await mysql.MySqlConnection.connect(
+          mysql.ConnectionSettings(
             host: databaseConfig.host,
             port: databaseConfig.port,
             user: databaseConfig.username,
@@ -584,7 +586,7 @@ class DatabaseSource implements BaseDataSource {
   }
 
   /// **NEW: Initialize PostgreSQL tables**
-  Future<void> _initializePostgreSQLTables(PostgreSQLConnection db) async {
+  Future<void> _initializePostgreSQLTables(postgres.Connection db) async {
     await db.execute('''
       CREATE TABLE IF NOT EXISTS context_chunks (
         id VARCHAR(255) PRIMARY KEY,
@@ -610,7 +612,7 @@ class DatabaseSource implements BaseDataSource {
   }
 
   /// **NEW: Initialize MySQL tables**
-  Future<void> _initializeMySQLTables(MySqlConnection db) async {
+  Future<void> _initializeMySQLTables(mysql.MySqlConnection db) async {
     await db.query('''
       CREATE TABLE IF NOT EXISTS context_chunks (
         id VARCHAR(255) PRIMARY KEY,
@@ -1032,7 +1034,7 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Fetch data from PostgreSQL**
   Future<List<ContextChunk>> _fetchFromPostgreSQL(
-    PostgreSQLConnection db,
+    postgres.Connection db,
     String? query,
     Map<String, dynamic>? filters,
     int? limit,
@@ -1076,20 +1078,14 @@ class DatabaseSource implements BaseDataSource {
       paramIndex++;
     }
 
-    final results = await db.query(
-      sql,
-      substitutionValues: Map.fromIterables(
-        List.generate(args.length, (i) => '\$${i + 1}'),
-        args,
-      ),
-    );
+    final results = await db.execute(sql, parameters: args);
 
     return results.map((row) => _mapPostgreSQLRowToContextChunk(row)).toList();
   }
 
   /// **NEW: Fetch data from MySQL**
   Future<List<ContextChunk>> _fetchFromMySQL(
-    MySqlConnection db,
+    mysql.MySqlConnection db,
     String? query,
     Map<String, dynamic>? filters,
     int? limit,
@@ -1238,7 +1234,7 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Store chunks in PostgreSQL**
   Future<void> _storeInPostgreSQL(
-    PostgreSQLConnection db,
+    postgres.Connection db,
     List<ContextChunk> chunks,
   ) async {
     for (final chunk in chunks) {
@@ -1253,23 +1249,22 @@ class DatabaseSource implements BaseDataSource {
           privacy_level = EXCLUDED.privacy_level,
           updated_at = EXCLUDED.updated_at
       ''',
-        substitutionValues:
-            Map.fromIterables(List.generate(7, (i) => '\$${i + 1}'), [
-              chunk.id,
-              chunk.content,
-              jsonEncode(chunk.metadata),
-              chunk.source.name,
-              chunk.source.privacyLevel.value,
-              chunk.createdAt,
-              chunk.updatedAt,
-            ]),
+        parameters: [
+          chunk.id,
+          chunk.content,
+          jsonEncode(chunk.metadata),
+          chunk.source.name,
+          chunk.source.privacyLevel.value,
+          chunk.createdAt,
+          chunk.updatedAt,
+        ],
       );
     }
   }
 
   /// **NEW: Store chunks in MySQL**
   Future<void> _storeInMySQL(
-    MySqlConnection db,
+    mysql.MySqlConnection db,
     List<ContextChunk> chunks,
   ) async {
     for (final chunk in chunks) {
@@ -1334,7 +1329,7 @@ class DatabaseSource implements BaseDataSource {
   }
 
   /// **NEW: Map PostgreSQL row to ContextChunk**
-  ContextChunk _mapPostgreSQLRowToContextChunk(PostgreSQLResultRow row) {
+  ContextChunk _mapPostgreSQLRowToContextChunk(postgres.ResultRow row) {
     return ContextChunk(
       id: row[0] as String,
       content: row[1] as String,
@@ -1351,7 +1346,7 @@ class DatabaseSource implements BaseDataSource {
   }
 
   /// **NEW: Map MySQL row to ContextChunk**
-  ContextChunk _mapMySQLRowToContextChunk(ResultRow row) {
+  ContextChunk _mapMySQLRowToContextChunk(mysql.ResultRow row) {
     return ContextChunk(
       id: row[0] as String,
       content: row[1] as String,
@@ -1430,23 +1425,17 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Execute PostgreSQL query**
   Future<List<Map<String, dynamic>>> _executePostgreSQLQuery(
-    PostgreSQLConnection db,
+    postgres.Connection db,
     String sql,
     List<dynamic> params,
   ) async {
-    final results = await db.query(
-      sql,
-      substitutionValues: Map.fromIterables(
-        List.generate(params.length, (i) => '\$${i + 1}'),
-        params,
-      ),
-    );
+    final results = await db.execute(sql, parameters: params);
     return results.map((row) => row.toColumnMap()).toList();
   }
 
   /// **NEW: Execute MySQL query**
   Future<List<Map<String, dynamic>>> _executeMySQLQuery(
-    MySqlConnection db,
+    mysql.MySqlConnection db,
     String sql,
     List<dynamic> params,
   ) async {

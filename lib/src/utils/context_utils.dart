@@ -203,12 +203,14 @@ class ContextUtils {
     if (text1.isEmpty || text2.isEmpty) return 0.0;
 
     // Clean words by removing punctuation and converting to lowercase
-    final words1 = text1.toLowerCase()
+    final words1 = text1
+        .toLowerCase()
         .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
         .split(' ')
         .where((word) => word.isNotEmpty) // Remove empty strings
         .toSet();
-    final words2 = text2.toLowerCase()
+    final words2 = text2
+        .toLowerCase()
         .replaceAll(RegExp(r'[^\w\s]'), '') // Remove punctuation
         .split(' ')
         .where((word) => word.isNotEmpty) // Remove empty strings

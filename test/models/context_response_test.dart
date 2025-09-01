@@ -85,13 +85,13 @@ void main() {
         expect(response.id, equals('response1'));
         expect(response.query, equals('Test query'));
         expect(response.chunks, equals(testChunks));
-      expect(response.userId, equals('user123'));
-      expect(response.sessionId, equals('session456'));
+        expect(response.userId, equals('user123'));
+        expect(response.sessionId, equals('session456'));
         expect(response.maxTokens, equals(1000));
         expect(response.privacyLevel, equals(PrivacyLevel.public));
         expect(response.metadata, equals({'source': 'test'}));
-      expect(response.processingTimeMs, equals(150));
-    });
+        expect(response.processingTimeMs, equals(150));
+      });
 
       test('should use default values for optional parameters', () {
         final responseWithDefaults = ContextResponse(
@@ -225,9 +225,9 @@ void main() {
           privacyLevel: PrivacyLevel.public,
           authorityScore: 0.7,
           freshnessScore: 0.8,
-      );
+        );
 
-      final chunk2 = ContextChunk(
+        final chunk2 = ContextChunk(
           id: 'chunk2',
           content: 'Content from source 2',
           source: source2,
@@ -317,7 +317,7 @@ void main() {
       test('should get chunks from specific source', () {
         final chunksFromSource = response.getChunksFromSource('Test Source');
         expect(chunksFromSource.length, equals(3));
-      expect(
+        expect(
           chunksFromSource.every((chunk) => chunk.source.name == 'Test Source'),
           isTrue,
         );
@@ -415,8 +415,8 @@ void main() {
           query: 'Different query',
           chunks: [],
           maxTokens: 2000,
-        privacyLevel: PrivacyLevel.private,
-      );
+          privacyLevel: PrivacyLevel.private,
+        );
 
         expect(response, equals(response2));
         expect(response.hashCode, equals(response2.hashCode));
@@ -590,7 +590,7 @@ void main() {
           final responseWithLimit = ContextResponse(
             id: 'limit_$limit',
             query: 'Token limit test',
-        chunks: [],
+            chunks: [],
             maxTokens: limit,
             privacyLevel: PrivacyLevel.public,
           );
@@ -610,7 +610,7 @@ void main() {
 
         stopwatch.stop();
 
-      expect(
+        expect(
           stopwatch.elapsedMilliseconds,
           lessThan(100),
         ); // Should be very fast
@@ -633,7 +633,7 @@ void main() {
 
         stopwatch.stop();
 
-      expect(
+        expect(
           stopwatch.elapsedMilliseconds,
           lessThan(50),
         ); // Should be very fast
@@ -663,7 +663,7 @@ void main() {
         stopwatch.stop();
 
         expect(sortedChunks.length, equals(1000));
-      expect(
+        expect(
           stopwatch.elapsedMilliseconds,
           lessThan(100),
         ); // Should be reasonably fast

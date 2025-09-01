@@ -27,7 +27,10 @@ void main() {
       test('should handle orthogonal vectors', () {
         final orthogonal1 = [1.0, 0.0];
         final orthogonal2 = [0.0, 1.0];
-        final similarity = EmbeddingUtils.cosineSimilarity(orthogonal1, orthogonal2);
+        final similarity = EmbeddingUtils.cosineSimilarity(
+          orthogonal1,
+          orthogonal2,
+        );
         expect(similarity, closeTo(0.0, 0.001));
       });
 
@@ -37,12 +40,18 @@ void main() {
       });
 
       test('should handle zero vectors', () {
-        final similarity = EmbeddingUtils.cosineSimilarity(zeroVector, zeroVector);
+        final similarity = EmbeddingUtils.cosineSimilarity(
+          zeroVector,
+          zeroVector,
+        );
         expect(similarity, equals(0.0));
       });
 
       test('should handle empty vectors', () {
-        final similarity = EmbeddingUtils.cosineSimilarity(emptyVector, emptyVector);
+        final similarity = EmbeddingUtils.cosineSimilarity(
+          emptyVector,
+          emptyVector,
+        );
         expect(similarity, equals(0.0));
       });
 
@@ -66,12 +75,18 @@ void main() {
       });
 
       test('should handle zero vectors', () {
-        final distance = EmbeddingUtils.euclideanDistance(zeroVector, zeroVector);
+        final distance = EmbeddingUtils.euclideanDistance(
+          zeroVector,
+          zeroVector,
+        );
         expect(distance, equals(0.0));
       });
 
       test('should handle empty vectors', () {
-        final distance = EmbeddingUtils.euclideanDistance(emptyVector, emptyVector);
+        final distance = EmbeddingUtils.euclideanDistance(
+          emptyVector,
+          emptyVector,
+        );
         expect(distance, equals(0.0));
       });
 
@@ -85,14 +100,20 @@ void main() {
       test('should handle small vectors (<=16)', () {
         final smallVector1 = [1.0, 2.0, 3.0];
         final smallVector2 = [4.0, 5.0, 6.0];
-        final distance = EmbeddingUtils.euclideanDistance(smallVector1, smallVector2);
+        final distance = EmbeddingUtils.euclideanDistance(
+          smallVector1,
+          smallVector2,
+        );
         expect(distance, greaterThan(0.0));
       });
 
       test('should handle large vectors (>16)', () {
         final largeVector1 = List.generate(20, (i) => i.toDouble());
         final largeVector2 = List.generate(20, (i) => (i + 1).toDouble());
-        final distance = EmbeddingUtils.euclideanDistance(largeVector1, largeVector2);
+        final distance = EmbeddingUtils.euclideanDistance(
+          largeVector1,
+          largeVector2,
+        );
         expect(distance, greaterThan(0.0));
       });
     });
@@ -109,12 +130,18 @@ void main() {
       });
 
       test('should handle zero vectors', () {
-        final distance = EmbeddingUtils.manhattanDistance(zeroVector, zeroVector);
+        final distance = EmbeddingUtils.manhattanDistance(
+          zeroVector,
+          zeroVector,
+        );
         expect(distance, equals(0.0));
       });
 
       test('should handle empty vectors', () {
-        final distance = EmbeddingUtils.manhattanDistance(emptyVector, emptyVector);
+        final distance = EmbeddingUtils.manhattanDistance(
+          emptyVector,
+          emptyVector,
+        );
         expect(distance, equals(0.0));
       });
 
@@ -147,10 +174,7 @@ void main() {
         final normalized = EmbeddingUtils.normalizeVector(vector1);
         for (int i = 0; i < vector1.length; i++) {
           if (vector1[i] != 0.0) {
-            expect(
-              (normalized[i] > 0) == (vector1[i] > 0),
-              isTrue,
-            );
+            expect((normalized[i] > 0) == (vector1[i] > 0), isTrue);
           }
         }
       });
@@ -245,14 +269,20 @@ void main() {
       test('should handle small vectors (<=16)', () {
         final smallVector1 = [5.0, 6.0];
         final smallVector2 = [1.0, 2.0];
-        final result = EmbeddingUtils.subtractVectors(smallVector1, smallVector2);
+        final result = EmbeddingUtils.subtractVectors(
+          smallVector1,
+          smallVector2,
+        );
         expect(result, equals([4.0, 4.0]));
       });
 
       test('should handle large vectors (>16)', () {
         final largeVector1 = List.generate(20, (i) => (i + 10).toDouble());
         final largeVector2 = List.generate(20, (i) => i.toDouble());
-        final result = EmbeddingUtils.subtractVectors(largeVector1, largeVector2);
+        final result = EmbeddingUtils.subtractVectors(
+          largeVector1,
+          largeVector2,
+        );
         expect(result.length, equals(20));
         expect(result[0], equals(10.0));
         expect(result[19], equals(10.0));
@@ -313,7 +343,10 @@ void main() {
 
       test('should throw error for different length vectors', () {
         expect(
-          () => EmbeddingUtils.averageVectors([vector1, [1.0, 2.0]]),
+          () => EmbeddingUtils.averageVectors([
+            vector1,
+            [1.0, 2.0],
+          ]),
           throwsA(isA<ArgumentError>()),
         );
       });
@@ -381,7 +414,11 @@ void main() {
 
       test('should handle tolerance', () {
         final nearlyEqual = [1.0, 2.0, 3.0, 4.0000000001];
-        final result = EmbeddingUtils.vectorsAreEqual(vector1, nearlyEqual, tolerance: 1e-9);
+        final result = EmbeddingUtils.vectorsAreEqual(
+          vector1,
+          nearlyEqual,
+          tolerance: 1e-9,
+        );
         expect(result, isTrue);
       });
     });
@@ -396,10 +433,16 @@ void main() {
       test('should use provided random number generator', () {
         final random1 = Random(42); // Fixed seed for deterministic test
         final random2 = Random(42); // Same seed, different instance
-        
-        final randomVector1 = EmbeddingUtils.generateRandomVector(4, random: random1);
-        final randomVector2 = EmbeddingUtils.generateRandomVector(4, random: random2);
-        
+
+        final randomVector1 = EmbeddingUtils.generateRandomVector(
+          4,
+          random: random1,
+        );
+        final randomVector2 = EmbeddingUtils.generateRandomVector(
+          4,
+          random: random2,
+        );
+
         // Same seed should produce same sequence of random numbers
         expect(randomVector1, equals(randomVector2));
       });
@@ -437,21 +480,30 @@ void main() {
     group('Batch Similarity Tests', () {
       test('should calculate batch cosine similarity', () {
         final candidates = [vector2, vector3];
-        final similarities = EmbeddingUtils.batchCosineSimilarity(vector1, candidates);
+        final similarities = EmbeddingUtils.batchCosineSimilarity(
+          vector1,
+          candidates,
+        );
         expect(similarities.length, equals(2));
         expect(similarities.every((s) => s >= -1.0 && s <= 1.0), isTrue);
       });
 
-      test('should handle zero magnitude vectors in batch cosine similarity', () {
-        // Create a zero vector to test the else branch
-        final zeroCandidate = List.filled(4, 0.0);
-        final candidates = [vector2, zeroCandidate, vector3];
-        final similarities = EmbeddingUtils.batchCosineSimilarity(vector1, candidates);
-        expect(similarities.length, equals(3));
-        // The zero vector should result in 0.0 similarity
-        expect(similarities[1], equals(0.0));
-        expect(similarities.every((s) => s >= -1.0 && s <= 1.0), isTrue);
-      });
+      test(
+        'should handle zero magnitude vectors in batch cosine similarity',
+        () {
+          // Create a zero vector to test the else branch
+          final zeroCandidate = List.filled(4, 0.0);
+          final candidates = [vector2, zeroCandidate, vector3];
+          final similarities = EmbeddingUtils.batchCosineSimilarity(
+            vector1,
+            candidates,
+          );
+          expect(similarities.length, equals(3));
+          // The zero vector should result in 0.0 similarity
+          expect(similarities[1], equals(0.0));
+          expect(similarities.every((s) => s >= -1.0 && s <= 1.0), isTrue);
+        },
+      );
 
       test('should handle empty candidates list', () {
         final similarities = EmbeddingUtils.batchCosineSimilarity(vector1, []);
@@ -459,13 +511,19 @@ void main() {
       });
 
       test('should handle zero query vector', () {
-        final similarities = EmbeddingUtils.batchCosineSimilarity(zeroVector, [vector1, vector2]);
+        final similarities = EmbeddingUtils.batchCosineSimilarity(zeroVector, [
+          vector1,
+          vector2,
+        ]);
         expect(similarities.every((s) => s == 0.0), isTrue);
       });
 
       test('should calculate batch Euclidean distance', () {
         final candidates = [vector2, vector3];
-        final distances = EmbeddingUtils.batchEuclideanDistance(vector1, candidates);
+        final distances = EmbeddingUtils.batchEuclideanDistance(
+          vector1,
+          candidates,
+        );
         expect(distances.length, equals(2));
         expect(distances.every((d) => d >= 0.0), isTrue);
       });
@@ -479,11 +537,14 @@ void main() {
         // Create large vectors to test chunked processing paths
         final largeVector1 = List.generate(20, (i) => (i + 1) * 1.0);
         final largeVector2 = List.generate(20, (i) => (i + 1) * 2.0);
-        
+
         // Test optimized dot product with large vectors
-        final dotProduct = EmbeddingUtils.dotProduct(largeVector1, largeVector2);
+        final dotProduct = EmbeddingUtils.dotProduct(
+          largeVector1,
+          largeVector2,
+        );
         expect(dotProduct, greaterThan(0));
-        
+
         // Test optimized magnitude with large vectors
         final magnitude1 = EmbeddingUtils.vectorMagnitude(largeVector1);
         final magnitude2 = EmbeddingUtils.vectorMagnitude(largeVector2);
@@ -495,11 +556,14 @@ void main() {
         // Create very large vectors to ensure chunked processing is used
         final veryLargeVector1 = List.generate(25, (i) => (i + 1) * 1.0);
         final veryLargeVector2 = List.generate(25, (i) => (i + 1) * 2.0);
-        
+
         // Test optimized dot product with very large vectors (>16)
-        final dotProduct = EmbeddingUtils.dotProduct(veryLargeVector1, veryLargeVector2);
+        final dotProduct = EmbeddingUtils.dotProduct(
+          veryLargeVector1,
+          veryLargeVector2,
+        );
         expect(dotProduct, greaterThan(0));
-        
+
         // Test optimized magnitude with very large vectors (>16)
         final magnitude1 = EmbeddingUtils.vectorMagnitude(veryLargeVector1);
         final magnitude2 = EmbeddingUtils.vectorMagnitude(veryLargeVector2);
@@ -539,7 +603,8 @@ void main() {
           vector1,
           candidates,
           2,
-          similarityFunction: (a, b) => 1.0 - EmbeddingUtils.euclideanDistance(a, b),
+          similarityFunction: (a, b) =>
+              1.0 - EmbeddingUtils.euclideanDistance(a, b),
         );
         expect(topK.length, equals(2));
       });
@@ -550,7 +615,7 @@ void main() {
         // First, generate some vectors to populate cache
         EmbeddingUtils.generateRandomVector(100);
         EmbeddingUtils.generateRandomVector(100);
-        
+
         EmbeddingUtils.clearCache();
         final stats = EmbeddingUtils.getCacheStats();
         expect(stats['cache_size'], equals(0));

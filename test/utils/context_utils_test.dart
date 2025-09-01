@@ -169,7 +169,10 @@ void main() {
         final chunks = [testChunk1, testChunk2, testChunk3]; // 0.9, 0.7, 0.8
         final filtered = ContextUtils.filterByRelevance(chunks, 0.8);
         expect(filtered.length, equals(2));
-        expect(filtered.every((c) => (c.relevanceScore?.score ?? 0.0) >= 0.8), isTrue);
+        expect(
+          filtered.every((c) => (c.relevanceScore?.score ?? 0.0) >= 0.8),
+          isTrue,
+        );
       });
 
       test('should handle chunks with null relevance score', () {
@@ -359,7 +362,8 @@ void main() {
       test('should deduplicate chunks with similar content', () {
         final similarChunk = ContextChunk(
           id: 'similar',
-          content: 'This is the first test chunk with some content!', // Very similar
+          content:
+              'This is the first test chunk with some content!', // Very similar
           source: testSource,
         );
         final chunks = [testChunk1, similarChunk, testChunk2];
@@ -381,7 +385,10 @@ void main() {
       test('should handle very low similarity threshold', () {
         final chunks = [testChunk1, testChunk2, testChunk3];
         final deduplicated = ContextUtils.deduplicateChunks(chunks, 0.1);
-        expect(deduplicated.length, equals(1)); // All chunks are similar with very low threshold
+        expect(
+          deduplicated.length,
+          equals(1),
+        ); // All chunks are similar with very low threshold
       });
     });
 
