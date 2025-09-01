@@ -10,16 +10,9 @@ documentation: https://github.com/sumitnemade/ragify_flutter/blob/main/README.md
 topics:
   - ai
   - rag
-  - retrieval-augmented-generation
   - context-management
-  - data-fusion
-  - privacy
-  - flutter
+  - retrieval-augmented-generation
   - llm
-  - machine-learning
-  - vector-search
-  - document-processing
-  - real-time-data
 
 environment:
   sdk: ^3.8.1
