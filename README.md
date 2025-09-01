@@ -1,5 +1,8 @@
 # 🚀 RAGify Flutter
 
+[![Pub Version](https://img.shields.io/pub/v/ragify_flutter.svg)](https://pub.dev/packages/ragify_flutter)
+[![License: BSD 3-Clause](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)]
+
 **Intelligent Context Orchestration Framework for Flutter - Smart Context for LLM-Powered Applications**
 
 A Flutter package that combines data from multiple sources (documents, APIs, databases, real-time) and resolves conflicts intelligently. Built specifically for **LLM-powered Flutter applications** that need accurate, current information.
@@ -36,7 +39,7 @@ RAGify Flutter solves these problems with a unified, production-ready framework.
 
 ```yaml
 dependencies:
-  ragify_flutter: ^0.1.0
+  ragify_flutter: ^0.0.2
 ```
 
 ### **2. Import Package**
