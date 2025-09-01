@@ -23,10 +23,11 @@ dependencies:
   # Using AI Model APIs only - no local models
   
   # Cross-platform database and storage
-  # Mobile: sqflite + shared_preferences, Web: localStorage (placeholder), Desktop: sqflite + file_system
-  sqflite: ^2.3.0
-  path_provider: ^2.1.1
+  # Mobile: Hive + shared_preferences, Web: Hive, Desktop: Hive + file_system
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
   shared_preferences: ^2.2.2
+  sqflite: ^2.4.2
   
   # Cross-platform database drivers
   postgres: ^2.6.3
