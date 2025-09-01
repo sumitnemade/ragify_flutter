@@ -18,9 +18,6 @@ topics:
   - flutter
   - dart
 
-# Exclude coverage directory from publishing
-publish_to: none
-
 environment:
   sdk: ^3.8.1
   flutter: ">=3.10.0"
