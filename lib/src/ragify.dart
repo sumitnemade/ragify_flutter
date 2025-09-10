@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:logger/logger.dart';
 
 import 'core/context_orchestrator.dart';
@@ -74,51 +75,6 @@ class RAGify {
     _initializeComponents(isTestMode);
   }
 
-  /// Initialize all components
-  void _initializeComponents(bool isTestMode) {
-    // Initialize vector database first
-    _vectorDatabase = VectorDatabase(
-      vectorDbUrl: config.vectorDbUrl ?? 'memory://',
-    );
-
-    // Initialize context orchestrator with vector database
-    _orchestrator = ContextOrchestrator(
-      config: config,
-      logger: logger,
-      isTestMode: isTestMode,
-      vectorDatabase: _vectorDatabase,
-    );
-
-    // Initialize cache manager
-    _cacheManager = CacheManager(
-      config: {
-        'max_memory_mb':
-            config.maxContextSize ~/ 1000, // Scale cache with context size
-        'default_ttl_seconds': config.cacheTtl,
-        'enable_redis': config.cacheUrl != null,
-        'redis_url': config.cacheUrl,
-      },
-    );
-
-    // Initialize privacy manager
-    _privacyManager = PrivacyManager();
-
-    // Initialize security manager
-    _securityManager = SecurityManager(initialLevel: SecurityLevel.medium);
-
-    // Initialize advanced scoring engine
-    _advancedScoringEngine = AdvancedScoringEngine(
-      cacheManager: _cacheManager,
-      vectorDatabase: _vectorDatabase,
-    );
-
-    // Initialize advanced fusion engine
-    _advancedFusionEngine = AdvancedFusionEngine(
-      cacheManager: _cacheManager,
-      vectorDatabase: _vectorDatabase,
-    );
-  }
-
   /// Initialize RAGify and all components
   Future<void> initialize() async {
     if (_isInitialized) {
@@ -165,18 +121,6 @@ class RAGify {
       logger.e('Failed to initialize RAGify', error: e, stackTrace: stackTrace);
       rethrow;
     }
-  }
-
-  /// Add a data source to RAGify
-  void addDataSource(BaseDataSource source) {
-    _orchestrator.addSource(source);
-    logger.i('Added data source: ${source.name}');
-  }
-
-  /// Remove a data source from RAGify
-  void removeDataSource(String sourceName) {
-    _orchestrator.removeSource(sourceName);
-    logger.i('Removed data source: $sourceName');
   }
 
   /// Get context for a query with full feature integration
@@ -320,208 +264,6 @@ class RAGify {
         return errorResponse;
       }
     }
-  }
-
-  /// Store context chunks in the vector database
-  Future<void> storeChunks(List<ContextChunk> chunks) async {
-    if (!_isInitialized) {
-      await initialize();
-    }
-
-    // Skip vector database operations in test mode
-    if (_isTestMode) {
-      logger.i('Skipping vector database operations in test mode');
-      return;
-    }
-
-    try {
-      logger.i('Storing ${chunks.length} chunks in vector database');
-
-      // Convert chunks to vector data format
-      final vectorDataList = <VectorData>[];
-
-      for (final chunk in chunks) {
-        // Generate embedding for the chunk content
-        final embedding = await _generateEmbedding(chunk.content);
-
-        // Create vector data
-        final vectorData = VectorData(
-          id: chunk.id,
-          chunkId: chunk.id,
-          embedding: embedding,
-          metadata: {
-            'content': chunk.content,
-            'source': chunk.source.name,
-            'sourceType': chunk.source.sourceType.value,
-            'tags': chunk.tags,
-            'createdAt': chunk.createdAt.millisecondsSinceEpoch,
-            'relevanceScore': chunk.relevanceScore?.score,
-          },
-        );
-
-        vectorDataList.add(vectorData);
-      }
-
-      // Store vectors in the database
-      await _vectorDatabase.addVectors(vectorDataList);
-
-      logger.i(
-        'Successfully stored ${chunks.length} chunks in vector database',
-      );
-    } catch (e) {
-      logger.e('Failed to store chunks in vector database: $e');
-      rethrow;
-    }
-  }
-
-  /// Generate embedding for text content
-  Future<List<double>> _generateEmbedding(String text) async {
-    try {
-      // For web platform, use a simple hash-based embedding
-      if (PlatformDetector.isWeb) {
-        return _generateSimpleEmbedding(text);
-      }
-
-      // For native platforms, use proper embedding generation
-      // This would integrate with TensorFlow Lite or other ML libraries
-      return _generateSimpleEmbedding(text);
-    } catch (e) {
-      logger.w('Failed to generate embedding, using fallback: $e');
-      return _generateSimpleEmbedding(text);
-    }
-  }
-
-  /// Generate simple embedding using hash-based approach
-  List<double> _generateSimpleEmbedding(String text) {
-    // Create a 384-dimensional embedding based on text characteristics
-    final embedding = List<double>.filled(384, 0.0);
-
-    if (text.isEmpty) return embedding;
-
-    final normalizedText = text.toLowerCase().trim();
-    final words = normalizedText
-        .split(RegExp(r'\s+'))
-        .where((w) => w.isNotEmpty)
-        .toList();
-    final chars = normalizedText.split('');
-
-    // Word-level analysis with exact matching priority (first 256 dimensions)
-    if (words.isNotEmpty) {
-      final wordFreq = <String, int>{};
-      for (final word in words) {
-        wordFreq[word] = (wordFreq[word] ?? 0) + 1;
-      }
-
-      int index = 0;
-      final uniqueWords = words.toSet().toList();
-
-      // Process each unique word with high priority
-      for (int i = 0; i < uniqueWords.length && index < 200; i++) {
-        final word = uniqueWords[i];
-        final freq = wordFreq[word]!;
-
-        // Create a strong signature for each word
-        final wordHash = word.hashCode;
-        final wordCode = word.codeUnits.fold(0, (a, b) => a + b);
-
-        // Use multiple dimensions per word for better discrimination
-        embedding[index] = (wordHash % 1000) / 1000.0;
-        if (index + 1 < 200) {
-          embedding[index + 1] = (wordCode % 1000) / 1000.0;
-          index += 2;
-        } else {
-          index++;
-        }
-
-        // Add frequency information
-        if (index < 200) {
-          embedding[index] = (freq * 10 % 1000) / 1000.0;
-          index++;
-        }
-
-        // Add word length information
-        if (index < 200) {
-          embedding[index] = (word.length % 100) / 100.0;
-          index++;
-        }
-      }
-
-      // Fill remaining word dimensions with zeros to ensure different words don't match
-      while (index < 200) {
-        embedding[index] = 0.0;
-        index++;
-      }
-    }
-
-    // Character frequency analysis (next 64 dimensions)
-    final charFreq = <String, int>{};
-    for (final char in chars) {
-      charFreq[char] = (charFreq[char] ?? 0) + 1;
-    }
-
-    int index = 200;
-    final sortedChars = charFreq.keys.toList()..sort();
-    for (int i = 0; i < sortedChars.length && index < 264; i++) {
-      final char = sortedChars[i];
-      final freq = charFreq[char]!;
-      final charCode = char.codeUnitAt(0);
-
-      embedding[index] = (charCode % 100) / 100.0;
-      if (index + 1 < 264) {
-        embedding[index + 1] = (freq % 100) / 100.0;
-        index += 2;
-      } else {
-        index++;
-      }
-    }
-
-    // Text statistics (next 64 dimensions)
-    index = 264;
-    final textLength = text.length;
-    final wordCount = words.length;
-    final avgWordLength = wordCount > 0 ? textLength / wordCount : 0.0;
-    final uniqueChars = charFreq.length;
-    final uniqueWords = words.toSet().length;
-
-    // Fill with text statistics
-    final stats = [
-      textLength / 1000.0, // Normalized text length
-      wordCount / 100.0, // Normalized word count
-      avgWordLength / 20.0, // Normalized average word length
-      uniqueChars / 50.0, // Normalized unique character count
-      uniqueWords / 50.0, // Normalized unique word count
-    ];
-
-    for (int i = 0; i < stats.length && index < 320; i++) {
-      embedding[index] = stats[i].clamp(0.0, 1.0);
-      index++;
-    }
-
-    // Position-based features (remaining dimensions)
-    index = 320;
-    for (int i = 0; i < chars.length && index < 384; i++) {
-      final char = chars[i];
-      final charCode = char.codeUnitAt(0);
-      final position = i / chars.length; // Normalized position
-
-      embedding[index] = ((charCode + i) % 100) / 100.0;
-      if (index + 1 < 384) {
-        embedding[index + 1] = position;
-        index += 2;
-      } else {
-        index++;
-      }
-    }
-
-    // Normalize the embedding to unit length
-    final magnitude = sqrt(embedding.map((x) => x * x).reduce((a, b) => a + b));
-    if (magnitude > 0) {
-      for (int i = 0; i < embedding.length; i++) {
-        embedding[i] = embedding[i] / magnitude;
-      }
-    }
-
-    return embedding;
   }
 
   /// Search for similar chunks using vector similarity
@@ -710,11 +452,69 @@ class RAGify {
     }
   }
 
-  /// Get the advanced scoring engine instance
-  AdvancedScoringEngine get advancedScoringEngine => _advancedScoringEngine;
+  /// Store context chunks in the vector database
+  Future<void> storeChunks(List<ContextChunk> chunks) async {
+    if (!_isInitialized) {
+      await initialize();
+    }
 
-  /// Get the advanced fusion engine instance
-  AdvancedFusionEngine get advancedFusionEngine => _advancedFusionEngine;
+    // Skip vector database operations in test mode
+    if (_isTestMode) {
+      logger.i('Skipping vector database operations in test mode');
+      return;
+    }
+
+    try {
+      logger.i('Storing ${chunks.length} chunks in vector database');
+
+      // Convert chunks to vector data format
+      final vectorDataList = <VectorData>[];
+
+      for (final chunk in chunks) {
+        // Generate embedding for the chunk content
+        final embedding = await _generateEmbedding(chunk.content);
+
+        // Create vector data
+        final vectorData = VectorData(
+          id: chunk.id,
+          chunkId: chunk.id,
+          embedding: embedding,
+          metadata: {
+            'content': chunk.content,
+            'source': chunk.source.name,
+            'sourceType': chunk.source.sourceType.value,
+            'tags': chunk.tags,
+            'createdAt': chunk.createdAt.millisecondsSinceEpoch,
+            'relevanceScore': chunk.relevanceScore?.score,
+          },
+        );
+
+        vectorDataList.add(vectorData);
+      }
+
+      // Store vectors in the database
+      await _vectorDatabase.addVectors(vectorDataList);
+
+      logger.i(
+        'Successfully stored ${chunks.length} chunks in vector database',
+      );
+    } catch (e) {
+      logger.e('Failed to store chunks in vector database: $e');
+      rethrow;
+    }
+  }
+
+  /// Add a data source to RAGify
+  void addDataSource(BaseDataSource source) {
+    _orchestrator.addSource(source);
+    logger.i('Added data source: ${source.name}');
+  }
+
+  /// Remove a data source from RAGify
+  void removeDataSource(String sourceName) {
+    _orchestrator.removeSource(sourceName);
+    logger.i('Removed data source: $sourceName');
+  }
 
   /// Calculate advanced relevance score for a context chunk
   Future<RelevanceScore> calculateAdvancedScore(
@@ -820,38 +620,6 @@ class RAGify {
     }
   }
 
-  /// Generate cache key for context requests
-  String _generateCacheKey(
-    String query,
-    String? userId,
-    String? sessionId,
-    PrivacyLevel privacyLevel,
-  ) {
-    final components = [
-      'context',
-      query.hashCode.toString(),
-      userId ?? 'anonymous',
-      sessionId ?? 'no_session',
-      privacyLevel.value,
-    ];
-    return components.join('_');
-  }
-
-  /// Get the context orchestrator (for advanced usage)
-  ContextOrchestrator get orchestrator => _orchestrator;
-
-  /// Get the cache manager (for advanced usage)
-  CacheManager get cacheManager => _cacheManager;
-
-  /// Get the privacy manager (for advanced usage)
-  PrivacyManager get privacyManager => _privacyManager;
-
-  /// Get the security manager (for advanced usage)
-  SecurityManager get securityManager => _securityManager;
-
-  /// Get the vector database (for advanced usage)
-  VectorDatabase get vectorDatabase => _vectorDatabase;
-
   /// Add a database source to the system
   void addDatabaseSource(DatabaseSource source) {
     _orchestrator.addSource(source);
@@ -941,21 +709,246 @@ class RAGify {
     return allChunks;
   }
 
-  /// Get database source statistics
-  Map<String, dynamic> getDatabaseStats() {
-    final databaseSources = getDatabaseSources();
-    final stats = <String, dynamic>{};
+  /// Get the context orchestrator (for testing only)
+  ///
+  /// **INTERNAL USE ONLY**: This getter is only for testing purposes.
+  /// Do not use in production code.
+  @visibleForTesting
+  ContextOrchestrator get orchestrator => _orchestrator;
 
-    for (final source in databaseSources) {
-      stats[source.name] = {
-        'database_type': source.databaseType,
-        'host': source.databaseConfig.host,
-        'port': source.databaseConfig.port,
-        'database': source.databaseConfig.database,
-        'is_active': source.isActive,
-      };
+  /// Get the cache manager (for advanced usage)
+  @visibleForTesting
+  CacheManager get cacheManager => _cacheManager;
+
+  /// Get the privacy manager (for advanced usage)
+  @visibleForTesting
+  PrivacyManager get privacyManager => _privacyManager;
+
+  /// Get the security manager (for advanced usage)
+  @visibleForTesting
+  SecurityManager get securityManager => _securityManager;
+
+  /// Get the vector database (for advanced usage)
+  @visibleForTesting
+  VectorDatabase get vectorDatabase => _vectorDatabase;
+
+  /// Get the advanced scoring engine instance
+  @visibleForTesting
+  AdvancedScoringEngine get advancedScoringEngine => _advancedScoringEngine;
+
+  /// Get the advanced fusion engine instance
+  @visibleForTesting
+  AdvancedFusionEngine get advancedFusionEngine => _advancedFusionEngine;
+
+  /// Initialize all components
+  void _initializeComponents(bool isTestMode) {
+    // Initialize vector database first
+    _vectorDatabase = VectorDatabase(
+      vectorDbUrl: config.vectorDbUrl ?? 'memory://',
+    );
+
+    // Initialize context orchestrator with vector database
+    _orchestrator = ContextOrchestrator(
+      config: config,
+      logger: logger,
+      isTestMode: isTestMode,
+      vectorDatabase: _vectorDatabase,
+    );
+
+    // Initialize cache manager
+    _cacheManager = CacheManager(
+      config: {
+        'max_memory_mb':
+            config.maxContextSize ~/ 1000, // Scale cache with context size
+        'default_ttl_seconds': config.cacheTtl,
+        'enable_redis': config.cacheUrl != null,
+        'redis_url': config.cacheUrl,
+      },
+    );
+
+    // Initialize privacy manager
+    _privacyManager = PrivacyManager();
+
+    // Initialize security manager
+    _securityManager = SecurityManager(initialLevel: SecurityLevel.medium);
+
+    // Initialize advanced scoring engine
+    _advancedScoringEngine = AdvancedScoringEngine(
+      cacheManager: _cacheManager,
+      vectorDatabase: _vectorDatabase,
+    );
+
+    // Initialize advanced fusion engine
+    _advancedFusionEngine = AdvancedFusionEngine(
+      cacheManager: _cacheManager,
+      vectorDatabase: _vectorDatabase,
+    );
+  }
+
+  /// Generate embedding for text content
+  Future<List<double>> _generateEmbedding(String text) async {
+    try {
+      // For web platform, use a simple hash-based embedding
+      if (PlatformDetector.isWeb) {
+        return _generateSimpleEmbedding(text);
+      }
+
+      // For native platforms, use proper embedding generation
+      // This would integrate with TensorFlow Lite or other ML libraries
+      return _generateSimpleEmbedding(text);
+    } catch (e) {
+      logger.w('Failed to generate embedding, using fallback: $e');
+      return _generateSimpleEmbedding(text);
+    }
+  }
+
+  /// Generate simple embedding using hash-based approach
+  List<double> _generateSimpleEmbedding(String text) {
+    // Create a 384-dimensional embedding based on text characteristics
+    final embedding = List<double>.filled(384, 0.0);
+
+    if (text.isEmpty) return embedding;
+
+    final normalizedText = text.toLowerCase().trim();
+    final words = normalizedText
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    final chars = normalizedText.split('');
+
+    // Word-level analysis with exact matching priority (first 256 dimensions)
+    if (words.isNotEmpty) {
+      final wordFreq = <String, int>{};
+      for (final word in words) {
+        wordFreq[word] = (wordFreq[word] ?? 0) + 1;
+      }
+
+      int index = 0;
+      final uniqueWords = words.toSet().toList();
+
+      // Process each unique word with high priority
+      for (int i = 0; i < uniqueWords.length && index < 200; i++) {
+        final word = uniqueWords[i];
+        final freq = wordFreq[word]!;
+
+        // Create a strong signature for each word
+        final wordHash = word.hashCode;
+        final wordCode = word.codeUnits.fold(0, (a, b) => a + b);
+
+        // Use multiple dimensions per word for better discrimination
+        embedding[index] = (wordHash % 1000) / 1000.0;
+        if (index + 1 < 200) {
+          embedding[index + 1] = (wordCode % 1000) / 1000.0;
+          index += 2;
+        } else {
+          index++;
+        }
+
+        // Add frequency information
+        if (index < 200) {
+          embedding[index] = (freq * 10 % 1000) / 1000.0;
+          index++;
+        }
+
+        // Add word length information
+        if (index < 200) {
+          embedding[index] = (word.length % 100) / 100.0;
+          index++;
+        }
+      }
+
+      // Fill remaining word dimensions with zeros to ensure different words don't match
+      while (index < 200) {
+        embedding[index] = 0.0;
+        index++;
+      }
     }
 
-    return stats;
+    // Character frequency analysis (next 64 dimensions)
+    final charFreq = <String, int>{};
+    for (final char in chars) {
+      charFreq[char] = (charFreq[char] ?? 0) + 1;
+    }
+
+    int index = 200;
+    final sortedChars = charFreq.keys.toList()..sort();
+    for (int i = 0; i < sortedChars.length && index < 264; i++) {
+      final char = sortedChars[i];
+      final freq = charFreq[char]!;
+      final charCode = char.codeUnitAt(0);
+
+      embedding[index] = (charCode % 100) / 100.0;
+      if (index + 1 < 264) {
+        embedding[index + 1] = (freq % 100) / 100.0;
+        index += 2;
+      } else {
+        index++;
+      }
+    }
+
+    // Text statistics (next 64 dimensions)
+    index = 264;
+    final textLength = text.length;
+    final wordCount = words.length;
+    final avgWordLength = wordCount > 0 ? textLength / wordCount : 0.0;
+    final uniqueChars = charFreq.length;
+    final uniqueWords = words.toSet().length;
+
+    // Fill with text statistics
+    final stats = [
+      textLength / 1000.0, // Normalized text length
+      wordCount / 100.0, // Normalized word count
+      avgWordLength / 20.0, // Normalized average word length
+      uniqueChars / 50.0, // Normalized unique character count
+      uniqueWords / 50.0, // Normalized unique word count
+    ];
+
+    for (int i = 0; i < stats.length && index < 320; i++) {
+      embedding[index] = stats[i].clamp(0.0, 1.0);
+      index++;
+    }
+
+    // Position-based features (remaining dimensions)
+    index = 320;
+    for (int i = 0; i < chars.length && index < 384; i++) {
+      final char = chars[i];
+      final charCode = char.codeUnitAt(0);
+      final position = i / chars.length; // Normalized position
+
+      embedding[index] = ((charCode + i) % 100) / 100.0;
+      if (index + 1 < 384) {
+        embedding[index + 1] = position;
+        index += 2;
+      } else {
+        index++;
+      }
+    }
+
+    // Normalize the embedding to unit length
+    final magnitude = sqrt(embedding.map((x) => x * x).reduce((a, b) => a + b));
+    if (magnitude > 0) {
+      for (int i = 0; i < embedding.length; i++) {
+        embedding[i] = embedding[i] / magnitude;
+      }
+    }
+
+    return embedding;
+  }
+
+  /// Generate cache key for context requests
+  String _generateCacheKey(
+    String query,
+    String? userId,
+    String? sessionId,
+    PrivacyLevel privacyLevel,
+  ) {
+    final components = [
+      'context',
+      query.hashCode.toString(),
+      userId ?? 'anonymous',
+      sessionId ?? 'no_session',
+      privacyLevel.value,
+    ];
+    return components.join('_');
   }
 }

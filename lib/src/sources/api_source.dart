@@ -70,6 +70,9 @@ class APISource implements BaseDataSource {
   DateTime? _lastRequestTime;
   Duration? _lastResponseTime;
 
+  /// HTTP method to use for requests
+  final String httpMethod;
+
   /// Create a new API source
   APISource({
     required this.name,
@@ -82,6 +85,7 @@ class APISource implements BaseDataSource {
     RateLimitConfig? rateLimit,
     AdaptiveTimeoutConfig? adaptiveTimeout,
     http.Client? httpClient,
+    this.httpMethod = 'POST',
   }) : logger = logger ?? Logger(),
        config = config ?? {},
        metadata = metadata ?? {},
@@ -195,7 +199,10 @@ class APISource implements BaseDataSource {
   Future<Map<String, dynamic>> _makeAPIRequest(
     Map<String, dynamic> request,
   ) async {
-    final url = Uri.parse('$baseUrl/query');
+    // Use baseUrl directly for GET requests, add /query for POST requests
+    final url = httpMethod.toUpperCase() == 'GET'
+        ? Uri.parse(baseUrl)
+        : Uri.parse('$baseUrl/query');
 
     final headers = <String, String>{
       'Content-Type': 'application/json',
@@ -214,16 +221,34 @@ class APISource implements BaseDataSource {
       _lastResponseTime,
     );
 
-    final response = await _httpClient
-        .post(url, headers: headers, body: jsonEncode(request))
-        .timeout(adaptiveTimeoutDuration);
+    // Make request based on HTTP method
+    http.Response response;
+    if (httpMethod.toUpperCase() == 'GET') {
+      response = await _httpClient
+          .get(url, headers: headers)
+          .timeout(adaptiveTimeoutDuration);
+    } else {
+      response = await _httpClient
+          .post(url, headers: headers, body: jsonEncode(request))
+          .timeout(adaptiveTimeoutDuration);
+    }
 
     _lastRequestTime = DateTime.now();
     _lastResponseTime = DateTime.now().difference(_lastRequestTime!);
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data;
+      final decoded = jsonDecode(response.body);
+
+      // Handle both List and Map responses
+      if (decoded is List) {
+        // For APIs that return arrays directly (like JSONPlaceholder)
+        return {'data': decoded};
+      } else if (decoded is Map<String, dynamic>) {
+        // For APIs that return objects
+        return decoded;
+      } else {
+        throw Exception('Unexpected response format: ${decoded.runtimeType}');
+      }
     } else if (response.statusCode == 401) {
       throw SourceConnectionException(name, 'authentication_failed');
     } else if (response.statusCode == 429) {
@@ -246,7 +271,11 @@ class APISource implements BaseDataSource {
     final chunks = <ContextChunk>[];
 
     try {
-      final results = response['results'] as List<dynamic>? ?? [];
+      // Handle both 'data' (for arrays) and 'results' (for objects) fields
+      final results =
+          response['data'] as List<dynamic>? ??
+          response['results'] as List<dynamic>? ??
+          [];
 
       for (final result in results) {
         if (result is Map<String, dynamic>) {
@@ -281,8 +310,26 @@ class APISource implements BaseDataSource {
     Map<String, dynamic> result,
     String query,
   ) {
-    final content = result['content'] as String? ?? '';
-    final score = (result['score'] as num?)?.toDouble() ?? 0.0;
+    // Handle different data structures
+    String content;
+    if (result.containsKey('content')) {
+      // Standard API response format
+      content = result['content'] as String? ?? '';
+    } else if (result.containsKey('title') && result.containsKey('body')) {
+      // JSONPlaceholder format
+      final title = result['title'] as String? ?? '';
+      final body = result['body'] as String? ?? '';
+      content = '$title\n\n$body';
+    } else if (result.containsKey('text')) {
+      // Alternative text field
+      content = result['text'] as String? ?? '';
+    } else {
+      // Fallback: use first string value found
+      content = result.values.whereType<String>().firstOrNull ?? '';
+    }
+
+    // Calculate relevance score based on content matching
+    final score = _calculateRelevanceScore(content, query);
 
     // Create metadata from result
     final metadata = <String, dynamic>{
@@ -326,6 +373,27 @@ class APISource implements BaseDataSource {
       relevanceScore: RelevanceScore(score: score),
       tags: tags.where((tag) => tag.isNotEmpty).toList(),
     );
+  }
+
+  /// Calculate relevance score based on word matches
+  double _calculateRelevanceScore(String content, String query) {
+    final contentLower = content.toLowerCase();
+    final queryLower = query.toLowerCase();
+    final queryWords = queryLower
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+
+    if (queryWords.isEmpty) return 0.0;
+
+    int matches = 0;
+    for (final word in queryWords) {
+      if (contentLower.contains(word)) {
+        matches++;
+      }
+    }
+
+    return matches / queryWords.length;
   }
 
   /// Check rate limiting before making request

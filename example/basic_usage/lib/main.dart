@@ -54,12 +54,26 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
   PrivacyLevel _privacyLevel = PrivacyLevel.public;
   bool _useCache = false;
 
+  // Data Source management
+  final TextEditingController _dataSourceNameController =
+      TextEditingController();
+  final TextEditingController _dataSourceUrlController =
+      TextEditingController();
+  final List<String> _dataSourceNames = [];
+  bool _isLoadingDataSource = false;
+
+  // Data Source Context testing
+  final TextEditingController _dataSourceQueryController =
+      TextEditingController();
+  String _dataSourceContextResponse = '';
+  bool _isLoadingDataSourceContext = false;
+
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _initializeRAGify();
   }
 
@@ -73,6 +87,9 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
     _minRelevanceController.dispose();
     _userIdController.dispose();
     _sessionIdController.dispose();
+    _dataSourceNameController.dispose();
+    _dataSourceUrlController.dispose();
+    _dataSourceQueryController.dispose();
     _tabController.dispose();
     super.dispose();
   }
@@ -101,7 +118,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
       await _addSampleContent();
 
       // Clear cache to ensure fresh results
-      _ragify.cacheManager.clear();
+      // Note: Cache clearing is handled internally by RAGify
 
       setState(() {
         _isInitialized = true;
@@ -289,6 +306,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
           tabs: const [
             Tab(icon: Icon(Icons.search), text: 'Search'),
             Tab(icon: Icon(Icons.psychology), text: 'Context'),
+            Tab(icon: Icon(Icons.storage), text: 'Data Sources'),
           ],
         ),
       ),
@@ -299,6 +317,8 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
           _buildSearchTab(),
           // Context Tab
           _buildContextTab(),
+          // Data Sources Tab
+          _buildDataSourcesTab(),
         ],
       ),
     );
@@ -791,6 +811,333 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                       ),
                     ),
                   ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _addDataSource() async {
+    final name = _dataSourceNameController.text.trim();
+    final url = _dataSourceUrlController.text.trim();
+
+    if (name.isEmpty || url.isEmpty) {
+      _logs.add('❌ Error: Both name and URL are required');
+      setState(() {});
+      return;
+    }
+
+    if (_dataSourceNames.contains(name)) {
+      _logs.add('❌ Error: Data source "$name" already exists');
+      setState(() {});
+      return;
+    }
+
+    setState(() {
+      _isLoadingDataSource = true;
+    });
+
+    try {
+      // Create super powerful API data source for HTTP URLs
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        final dataSource = APISource(
+          name: name,
+          baseUrl: url,
+          httpMethod: 'GET',
+          authHeaders: {'Content-Type': 'application/json'},
+        );
+        _ragify.addDataSource(dataSource);
+      } else {
+        _logs.add('❌ Error: Only HTTP/HTTPS URLs are supported');
+        setState(() {});
+        return;
+      }
+
+      setState(() {
+        _dataSourceNames.add(name);
+        _dataSourceNameController.clear();
+        _dataSourceUrlController.clear();
+      });
+
+      _logs.add('✅ Added data source: $name');
+    } catch (e) {
+      _logs.add('❌ Error adding data source: $e');
+    } finally {
+      setState(() {
+        _isLoadingDataSource = false;
+      });
+    }
+  }
+
+  void _removeDataSource(String name) {
+    try {
+      _ragify.removeDataSource(name);
+
+      setState(() {
+        _dataSourceNames.remove(name);
+      });
+
+      _logs.add('✅ Removed data source: $name');
+    } catch (e) {
+      _logs.add('❌ Error removing data source: $e');
+    }
+  }
+
+  Future<void> _getDataSourceContext() async {
+    final query = _dataSourceQueryController.text.trim();
+
+    if (query.isEmpty) {
+      _logs.add('❌ Error: Query is required');
+      setState(() {});
+      return;
+    }
+
+    if (_dataSourceNames.isEmpty) {
+      _logs.add('❌ Error: No data sources available. Add a data source first.');
+      setState(() {});
+      return;
+    }
+
+    setState(() {
+      _isLoadingDataSourceContext = true;
+    });
+
+    try {
+      _logs.add('🔍 Getting context from data sources for query: "$query"');
+
+      final response = await _ragify.getContext(
+        query: query,
+        maxChunks: 10,
+        minRelevance: 0.1,
+        useCache: false,
+        userId: 'test_user',
+        sessionId: 'test_session',
+        privacyLevel: PrivacyLevel.public,
+      );
+
+      setState(() {
+        _dataSourceContextResponse = response.chunks
+            .map(
+              (chunk) =>
+                  'Source: ${chunk.source.name}\n'
+                  'Content: ${chunk.content}\n'
+                  'Relevance: ${chunk.relevanceScore?.score.toStringAsFixed(3) ?? 'N/A'}\n'
+                  '---',
+            )
+            .join('\n\n');
+      });
+
+      _logs.add(
+        '✅ Retrieved ${response.chunks.length} context chunks from data sources',
+      );
+    } catch (e) {
+      _logs.add('❌ Error getting context from data sources: $e');
+      setState(() {
+        _dataSourceContextResponse = 'Error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoadingDataSourceContext = false;
+      });
+    }
+  }
+
+  Widget _buildDataSourcesTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Data Source Management',
+            style: Theme.of(context).textTheme.headlineSmall,
+          ),
+          const SizedBox(height: 16),
+
+          // Add Data Source Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Add Data Source',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _dataSourceNameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Data Source Name',
+                      hintText: 'e.g., my_database',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _dataSourceUrlController,
+                    decoration: const InputDecoration(
+                      labelText: 'Data Source URL',
+                      hintText: 'e.g., sqlite://path/to/database.db',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isLoadingDataSource ? null : _addDataSource,
+                    child: _isLoadingDataSource
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Add Data Source'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Current Data Sources Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Current Data Sources (${_dataSourceNames.length})',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  if (_dataSourceNames.isEmpty)
+                    const Text(
+                      'No data sources added yet.',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    )
+                  else
+                    ..._dataSourceNames.map(
+                      (name) => Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        child: ListTile(
+                          leading: const Icon(Icons.storage),
+                          title: Text(name),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () => _removeDataSource(name),
+                          ),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          ),
+
+          // Get Context from Data Sources Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Get Context from Data Sources',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: _dataSourceQueryController,
+                    decoration: const InputDecoration(
+                      labelText: 'Query',
+                      hintText: 'e.g., test query',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _isLoadingDataSourceContext
+                        ? null
+                        : _getDataSourceContext,
+                    child: _isLoadingDataSourceContext
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Get Context'),
+                  ),
+                  if (_dataSourceContextResponse.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      'Context Response:',
+                      style: Theme.of(context).textTheme.titleSmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _dataSourceContextResponse,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Logs Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Data Source Logs',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _logs.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text(
+                            _logs[_logs.length - 1 - index],
+                            // Show newest first
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontFamily: 'monospace'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -47,22 +47,45 @@ void main() {
       () async {
         final client = _FakeHttpClient({
           '/query': (req, body) {
-            jsonDecode(body) as Map<String, dynamic>;
-            // Return two results with different scores
-            return {
-              'status': 200,
-              'body': {
-                'results': [
-                  {
-                    'id': 'a',
-                    'content': 'alpha',
-                    'score': 0.9,
-                    'category': 'cat',
-                  },
-                  {'id': 'b', 'content': 'beta', 'score': 0.3, 'type': 'type'},
-                ],
-              },
-            };
+            final request = jsonDecode(body) as Map<String, dynamic>;
+            final query = request['query'] as String? ?? '';
+
+            // Return results that match the query
+            if (query.contains('query')) {
+              return {
+                'status': 200,
+                'body': {
+                  'results': [
+                    {
+                      'id': 'a',
+                      'content': 'query result alpha',
+                      'score': 0.9,
+                      'category': 'cat',
+                    },
+                    {
+                      'id': 'b',
+                      'content': 'query result beta',
+                      'score': 0.3,
+                      'type': 'type',
+                    },
+                  ],
+                },
+              };
+            } else {
+              return {
+                'status': 200,
+                'body': {
+                  'results': [
+                    {
+                      'id': 'c',
+                      'content': 'other result',
+                      'score': 0.5,
+                      'category': 'other',
+                    },
+                  ],
+                },
+              };
+            }
           },
         });
 
@@ -77,7 +100,7 @@ void main() {
 
         // First call hits network
         final chunks1 = await api.getChunks(
-          query: 'q',
+          query: 'query',
           maxChunks: 1,
           minRelevance: 0.2,
         );
@@ -85,7 +108,7 @@ void main() {
         expect(chunks1.first.metadata['api_source'], 'api');
 
         // Second call should use cache (same query)
-        final chunks2 = await api.getChunks(query: 'q');
+        final chunks2 = await api.getChunks(query: 'query');
         expect(chunks2, isNotEmpty);
 
         // Stats should reflect active and cache size
@@ -96,7 +119,7 @@ void main() {
 
         // Refresh clears cache and remains active
         await api.refresh();
-        final chunks3 = await api.getChunks(query: 'q2');
+        final chunks3 = await api.getChunks(query: 'query2');
         expect(chunks3, isNotEmpty);
       },
     );
@@ -164,7 +187,7 @@ void main() {
         baseUrl: 'https://example.com',
         httpClient: client,
       );
-      final chunks = await api.getChunks(query: 'q');
+      final chunks = await api.getChunks(query: 'query');
       expect(chunks, isEmpty);
     });
 
@@ -177,7 +200,7 @@ void main() {
             'status': 200,
             'body': {
               'results': [
-                {'id': 'x', 'content': 'c', 'score': 0.5},
+                {'id': 'x', 'content': 'query result', 'score': 0.5},
               ],
             },
           };
@@ -191,8 +214,8 @@ void main() {
         rateLimit: const RateLimitConfig(cacheTtl: Duration(milliseconds: 0)),
       );
 
-      await api.getChunks(query: 'q');
-      await api.getChunks(query: 'q'); // cache expired -> hits again
+      await api.getChunks(query: 'query');
+      await api.getChunks(query: 'query'); // cache expired -> hits again
       expect(hits, greaterThanOrEqualTo(2));
     });
 

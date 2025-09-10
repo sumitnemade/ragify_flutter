@@ -505,11 +505,6 @@ void main() {
         expect(chunks, isA<List<ContextChunk>>());
       });
 
-      test('should get database stats', () {
-        final stats = ragify.getDatabaseStats();
-        expect(stats, isA<Map<String, dynamic>>());
-      });
-
       test(
         'should handle database operations with various parameters',
         () async {

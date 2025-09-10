@@ -160,17 +160,8 @@ class _RAGifyAdvancedFeaturesPageState extends State<RAGifyAdvancedFeaturesPage>
         ),
       ];
 
-      // Store in vector database
-      for (final chunk in sampleChunks) {
-        await _ragify!.vectorDatabase.addVectors([
-          VectorData(
-            id: chunk.id,
-            chunkId: chunk.id,
-            embedding: List.filled(384, 0.1), // Placeholder vector
-            metadata: chunk.metadata,
-          ),
-        ]);
-      }
+      // Store chunks in vector database using the storeChunks method
+      await _ragify!.storeChunks(sampleChunks);
 
       setState(() {
         _logs.add('📝 Added ${sampleChunks.length} sample context chunks');
