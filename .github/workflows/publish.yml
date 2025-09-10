@@ -56,6 +56,12 @@ jobs:
           git push origin "v${{ steps.version.outputs.version }}"
           echo "🏷️  Created and pushed tag: v${{ steps.version.outputs.version }}"
           
+      - name: Checkout to tag for publishing
+        if: steps.check-tag.outputs.exists == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        run: |
+          git checkout "v${{ steps.version.outputs.version }}"
+          echo "✅ Checked out tag v${{ steps.version.outputs.version }} for publishing"
+          
       - name: Skip if tag exists
         if: steps.check-tag.outputs.exists == 'true'
         run: |
@@ -78,6 +84,13 @@ jobs:
           sdk: stable
           oidc: true
         
+      - name: Authenticate with pub.dev using OIDC (branch with tag)
+        if: steps.check-tag.outputs.exists == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+          oidc: true
+        
       - name: Publish to pub.dev
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+        if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || (steps.check-tag.outputs.exists == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'))
         run: flutter pub publish --force
