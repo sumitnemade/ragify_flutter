@@ -170,26 +170,58 @@ class APISource implements BaseDataSource {
     String? userId,
     String? sessionId,
   ) {
-    final request = <String, dynamic>{
-      'query': query,
-      'timestamp': DateTime.now().toIso8601String(),
-    };
+    // Check if developer wants full control (no automatic fields)
+    final useCustomRequest = config['use_custom_request'] == true;
 
-    if (userId != null) {
+    if (useCustomRequest) {
+      // Developer has full control - use their template exactly
+      final request = Map<String, dynamic>.from(
+        config['request_template'] ?? <String, dynamic>{},
+      );
+
+      // Only replace query placeholder if it exists
+      if (request.containsKey('{{query}}')) {
+        request['query'] = request.remove('{{query}}');
+        request['query'] = query;
+      }
+
+      return request;
+    }
+
+    // Default behavior: Use developer-defined request template or empty
+    final request = Map<String, dynamic>.from(
+      config['request_template'] ?? <String, dynamic>{},
+    );
+
+    // Only add query if developer wants it (explicit opt-in)
+    if (config['include_query'] == true && !request.containsKey('query')) {
+      request['query'] = query;
+    }
+
+    // Only add timestamp if developer wants it (explicit opt-in)
+    if (config['include_timestamp'] == true &&
+        !request.containsKey('timestamp')) {
+      request['timestamp'] = DateTime.now().toIso8601String();
+    }
+
+    // Only add user_id if developer wants it (explicit opt-in)
+    if (config['include_user_id'] == true &&
+        !request.containsKey('user_id') &&
+        userId != null) {
       request['user_id'] = userId;
     }
 
-    if (sessionId != null) {
+    // Only add session_id if developer wants it (explicit opt-in)
+    if (config['include_session_id'] == true &&
+        !request.containsKey('session_id') &&
+        sessionId != null) {
       request['session_id'] = sessionId;
     }
 
-    // Add configuration-based parameters
-    if (config.containsKey('api_version')) {
-      request['version'] = config['api_version'];
-    }
-
-    if (config.containsKey('language')) {
-      request['language'] = config['language'];
+    // Add any additional configuration parameters
+    if (config.containsKey('additional_params') &&
+        config['additional_params'] is Map) {
+      request.addAll(Map<String, dynamic>.from(config['additional_params']));
     }
 
     return request;
@@ -199,8 +231,10 @@ class APISource implements BaseDataSource {
   Future<Map<String, dynamic>> _makeAPIRequest(
     Map<String, dynamic> request,
   ) async {
-    // Use baseUrl directly for GET requests, add /query for POST requests
-    final url = httpMethod.toUpperCase() == 'GET'
+    // Use baseUrl directly for most APIs
+    // Only append /query if explicitly configured for query-based APIs
+    final shouldAppendQuery = config['append_query_endpoint'] == true;
+    final url = httpMethod.toUpperCase() == 'GET' || !shouldAppendQuery
         ? Uri.parse(baseUrl)
         : Uri.parse('$baseUrl/query');
 

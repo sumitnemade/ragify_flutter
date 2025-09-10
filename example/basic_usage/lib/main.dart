@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:ragify_flutter/ragify_flutter.dart';
 
@@ -61,6 +62,15 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
       TextEditingController();
   final List<String> _dataSourceNames = [];
   bool _isLoadingDataSource = false;
+  String _selectedHttpMethod = 'GET';
+  bool _appendQueryEndpoint = false;
+  bool _useCustomRequest = false;
+  bool _includeQuery = false;
+  bool _includeTimestamp = false;
+  bool _includeUserId = false;
+  bool _includeSessionId = false;
+  final TextEditingController _requestTemplateController =
+      TextEditingController();
 
   // Data Source Context testing
   final TextEditingController _dataSourceQueryController =
@@ -843,11 +853,36 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
     try {
       // Create super powerful API data source for HTTP URLs
       if (url.startsWith('http://') || url.startsWith('https://')) {
+        // Parse custom request template if provided
+        Map<String, dynamic>? requestTemplate;
+        if (_useCustomRequest && _requestTemplateController.text.isNotEmpty) {
+          try {
+            requestTemplate = Map<String, dynamic>.from(
+              jsonDecode(_requestTemplateController.text),
+            );
+          } catch (e) {
+            _logs.add('❌ Error: Invalid JSON in request template: $e');
+            setState(() {});
+            return;
+          }
+        }
+
         final dataSource = APISource(
           name: name,
           baseUrl: url,
-          httpMethod: 'GET',
+          httpMethod: _selectedHttpMethod,
           authHeaders: {'Content-Type': 'application/json'},
+          config: {
+            'append_query_endpoint': _appendQueryEndpoint,
+            'use_custom_request': _useCustomRequest,
+            if (requestTemplate != null) 'request_template': requestTemplate,
+            if (!_useCustomRequest) ...{
+              'include_query': _includeQuery,
+              'include_timestamp': _includeTimestamp,
+              'include_user_id': _includeUserId,
+              'include_session_id': _includeSessionId,
+            },
+          },
         );
         _ragify.addDataSource(dataSource);
       } else {
@@ -862,7 +897,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
         _dataSourceUrlController.clear();
       });
 
-      _logs.add('✅ Added data source: $name');
+      _logs.add('✅ Added data source: $name ($_selectedHttpMethod)');
     } catch (e) {
       _logs.add('❌ Error adding data source: $e');
     } finally {
@@ -982,8 +1017,245 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                     controller: _dataSourceUrlController,
                     decoration: const InputDecoration(
                       labelText: 'Data Source URL',
-                      hintText: 'e.g., sqlite://path/to/database.db',
+                      hintText:
+                          'e.g., https://jsonplaceholder.typicode.com/posts',
                       border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // HTTP Method Selection
+                  DropdownButtonFormField<String>(
+                    value: _selectedHttpMethod,
+                    decoration: const InputDecoration(
+                      labelText: 'HTTP Method',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'GET', child: Text('GET')),
+                      DropdownMenuItem(value: 'POST', child: Text('POST')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _selectedHttpMethod = value ?? 'GET';
+                        // Update URL based on method
+                        if (_selectedHttpMethod == 'POST') {
+                          _dataSourceUrlController.text =
+                              'https://httpbin.org/post';
+                        } else {
+                          _dataSourceUrlController.text =
+                              'https://jsonplaceholder.typicode.com/posts';
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Advanced Options
+                  CheckboxListTile(
+                    title: const Text('Append /query endpoint'),
+                    subtitle: const Text(
+                      'Only for query-based APIs that need /query suffix',
+                    ),
+                    value: _appendQueryEndpoint,
+                    onChanged: (value) {
+                      setState(() {
+                        _appendQueryEndpoint = value ?? false;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  CheckboxListTile(
+                    title: const Text('Use custom request template'),
+                    subtitle: const Text('Full control over API request body'),
+                    value: _useCustomRequest,
+                    onChanged: (value) {
+                      setState(() {
+                        _useCustomRequest = value ?? false;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                  ),
+                  if (!_useCustomRequest) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Optional fields (only added if enabled):',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Include query field'),
+                      subtitle: const Text('Add "query" field to request'),
+                      value: _includeQuery,
+                      onChanged: (value) {
+                        setState(() {
+                          _includeQuery = value ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Include timestamp field'),
+                      subtitle: const Text('Add "timestamp" field to request'),
+                      value: _includeTimestamp,
+                      onChanged: (value) {
+                        setState(() {
+                          _includeTimestamp = value ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Include user_id field'),
+                      subtitle: const Text('Add "user_id" field to request'),
+                      value: _includeUserId,
+                      onChanged: (value) {
+                        setState(() {
+                          _includeUserId = value ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                    CheckboxListTile(
+                      title: const Text('Include session_id field'),
+                      subtitle: const Text('Add "session_id" field to request'),
+                      value: _includeSessionId,
+                      onChanged: (value) {
+                        setState(() {
+                          _includeSessionId = value ?? false;
+                        });
+                      },
+                      controlAffinity: ListTileControlAffinity.leading,
+                    ),
+                  ],
+                  if (_useCustomRequest) ...[
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _requestTemplateController,
+                      decoration: const InputDecoration(
+                        labelText: 'Request Template (JSON)',
+                        hintText: '{"search": "{{query}}", "limit": 10}',
+                        border: OutlineInputBorder(),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Use {{query}} as placeholder for the search query',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            _requestTemplateController.text =
+                                '{"search": "{{query}}", "limit": 10}';
+                          },
+                          child: const Text('Simple Search'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _requestTemplateController.text =
+                                '{"query": "{{query}}", "filters": {"type": "all"}}';
+                          },
+                          child: const Text('With Filters'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _requestTemplateController.text =
+                                '{"text": "{{query}}", "max_results": 5}';
+                          },
+                          child: const Text('Custom Fields'),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  // Quick URL Presets
+                  Text(
+                    'Quick Presets:',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedHttpMethod = 'GET';
+                            _dataSourceUrlController.text =
+                                'https://jsonplaceholder.typicode.com/posts';
+                          });
+                        },
+                        child: const Text('JSONPlaceholder (GET)'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedHttpMethod = 'POST';
+                            _dataSourceUrlController.text =
+                                'https://httpbin.org/post';
+                          });
+                        },
+                        child: const Text('HTTPBin (POST)'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedHttpMethod = 'POST';
+                            _dataSourceUrlController.text =
+                                'https://reqres.in/api/users';
+                          });
+                        },
+                        child: const Text('ReqRes (POST)'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _selectedHttpMethod = 'POST';
+                            _dataSourceUrlController.text =
+                                'https://api.example.com/search';
+                          });
+                        },
+                        child: const Text('Custom Query API'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• JSONPlaceholder: Returns sample blog posts (GET)\n'
+                    '• HTTPBin: Echoes back your request data (POST)\n'
+                    '• ReqRes: User management API (POST)\n'
+                    '• Custom Query API: Example for query-based APIs',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.blue[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.blue[200]!),
+                    ),
+                    child: Text(
+                      '💡 Note: Most APIs use the base URL directly. Only query-based APIs need /query endpoint (configured automatically).',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.blue[800]),
                     ),
                   ),
                   const SizedBox(height: 16),
