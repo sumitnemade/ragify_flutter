@@ -11,6 +11,7 @@ jobs:
     
     permissions:
       id-token: write  # Required for OIDC authentication
+      contents: write  # Required for creating tags
     
     steps:
       - name: Checkout repository
