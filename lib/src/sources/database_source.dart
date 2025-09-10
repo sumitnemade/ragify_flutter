@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'package:logger/logger.dart';
 // SQLite only available on mobile and desktop platforms
 import 'package:sqflite/sqflite.dart'
-    if (dart.library.html) 'dart:html'
+    if (dart.library.html) 'sqflite_web_stub.dart'
     as sqflite_stub;
 import 'package:postgres/postgres.dart' as postgres;
 import 'package:mysql1/mysql1.dart' as mysql;

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:ragify_flutter/ragify_flutter.dart';
 
@@ -76,14 +77,30 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
   final TextEditingController _dataSourceQueryController =
       TextEditingController();
   String _dataSourceContextResponse = '';
+
+  // Document Sources
+  final TextEditingController _documentPathController = TextEditingController();
+  final TextEditingController _documentUrlController = TextEditingController();
+  final TextEditingController _documentQueryController =
+      TextEditingController();
+  final List<String> _documentSourceNames = [];
+  bool _isLoadingDocument = false;
+  String _documentContextResponse = '';
+  int _chunkSize = 1000;
+  bool _enableMetadata = true;
+  String _documentSourceType = 'url'; // 'url' or 'local'
+  PlatformFile? _selectedFile;
   bool _isLoadingDataSourceContext = false;
+
+  /// Holds the last fetched document chunks for rendering in UI
+  List<ContextChunk> _documentChunks = [];
 
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
     _initializeRAGify();
   }
 
@@ -317,6 +334,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
             Tab(icon: Icon(Icons.search), text: 'Search'),
             Tab(icon: Icon(Icons.psychology), text: 'Context'),
             Tab(icon: Icon(Icons.storage), text: 'Data Sources'),
+            Tab(icon: Icon(Icons.description), text: 'Documents'),
           ],
         ),
       ),
@@ -329,6 +347,8 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
           _buildContextTab(),
           // Data Sources Tab
           _buildDataSourcesTab(),
+          // Document Sources Tab
+          _buildDocumentSourcesTab(),
         ],
       ),
     );
@@ -1417,5 +1437,678 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
         ],
       ),
     );
+  }
+
+  Widget _buildDocumentSourcesTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Document Sources Management
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Document Sources Management',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Add Document Source
+                  Text(
+                    'Add Document Source:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Document Source Type Selection
+                  Row(
+                    children: [
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: const Text('Web URL'),
+                          subtitle: const Text('HTTP/HTTPS document'),
+                          value: 'url',
+                          groupValue: _documentSourceType,
+                          onChanged: (value) {
+                            setState(() {
+                              _documentSourceType = value!;
+                            });
+                          },
+                        ),
+                      ),
+                      Expanded(
+                        child: RadioListTile<String>(
+                          title: const Text('Local File'),
+                          subtitle: const Text('File upload (web limited)'),
+                          value: 'local',
+                          groupValue: _documentSourceType,
+                          onChanged: (value) {
+                            setState(() {
+                              _documentSourceType = value!;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Document Input based on type
+                  if (_documentSourceType == 'url') ...[
+                    TextField(
+                      controller: _documentUrlController,
+                      decoration: const InputDecoration(
+                        labelText: 'Document URL',
+                        hintText: 'https://example.com/document.pdf',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.link),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'DocumentSource will download and process the document from the URL',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.blue[700],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ] else ...[
+                    // File picker section
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _documentPathController,
+                            decoration: const InputDecoration(
+                              labelText: 'Selected File',
+                              hintText: 'No file selected',
+                              border: OutlineInputBorder(),
+                              prefixIcon: Icon(Icons.folder),
+                            ),
+                            readOnly: true,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton.icon(
+                          onPressed: _pickFile,
+                          icon: const Icon(Icons.file_upload),
+                          label: const Text('Pick File'),
+                        ),
+                      ],
+                    ),
+                    if (_selectedFile != null) ...[
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          border: Border.all(color: Colors.green[200]!),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green[600],
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _selectedFile!.name,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${(_selectedFile!.size / 1024).toStringAsFixed(1)} KB',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _selectedFile = null;
+                                  _documentPathController.clear();
+                                });
+                              },
+                              icon: const Icon(Icons.close, size: 20),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Select a document file from your device to add as a source.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.blue[700],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+
+                  // Document Configuration
+                  Text(
+                    'Document Configuration:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: const InputDecoration(
+                            labelText: 'Chunk Size',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (value) {
+                            _chunkSize = int.tryParse(value) ?? 1000;
+                          },
+                          controller: TextEditingController(
+                            text: _chunkSize.toString(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: CheckboxListTile(
+                          title: const Text('Enable Metadata'),
+                          value: _enableMetadata,
+                          onChanged: (value) {
+                            setState(() {
+                              _enableMetadata = value ?? true;
+                            });
+                          },
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Quick Presets
+                  Text(
+                    'Quick Presets:',
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      if (_documentSourceType == 'url') ...[
+                        ElevatedButton(
+                          onPressed: () {
+                            _documentUrlController.text =
+                                'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+                          },
+                          child: const Text('Sample PDF URL'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _documentUrlController.text =
+                                'https://raw.githubusercontent.com/microsoft/vscode/main/README.md';
+                          },
+                          child: const Text('Sample Markdown URL'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            _documentUrlController.text =
+                                'https://www.gutenberg.org/files/1342/1342-0.txt';
+                          },
+                          child: const Text('Sample Text URL'),
+                        ),
+                      ] else ...[
+                        ElevatedButton.icon(
+                          onPressed: _pickFile,
+                          icon: const Icon(Icons.file_upload),
+                          label: const Text('Pick PDF File'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _pickFile,
+                          icon: const Icon(Icons.file_upload),
+                          label: const Text('Pick Text File'),
+                        ),
+                        ElevatedButton.icon(
+                          onPressed: _pickFile,
+                          icon: const Icon(Icons.file_upload),
+                          label: const Text('Pick Any File'),
+                        ),
+                      ],
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  ElevatedButton(
+                    onPressed: _addDocumentSource,
+                    child: _isLoadingDocument
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('Add Document Source'),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Document Sources List
+                  Text(
+                    'Active Document Sources:',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  if (_documentSourceNames.isEmpty)
+                    const Text('No document sources added yet')
+                  else
+                    ..._documentSourceNames.map(
+                      (name) => Card(
+                        child: ListTile(
+                          leading: Icon(
+                            _documentSourceType == 'url'
+                                ? Icons.link
+                                : Icons.description,
+                          ),
+                          title: Text(name),
+                          subtitle: Text(
+                            _documentSourceType == 'url'
+                                ? 'Web URL Document'
+                                : 'Local File Document',
+                          ),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete),
+                            onPressed: () => _removeDocumentSource(name),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Document Context Testing
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Test Document Context',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: _documentQueryController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Query',
+                      hintText: 'Enter search query for document sources',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: _getDocumentContext,
+                          child: _isLoadingDocument
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text('Get Context from Documents'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _clearDocumentCache,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orange,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: const Text('Clear Cache'),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  if (_documentContextResponse.isNotEmpty) ...[
+                    Text(
+                      'Document Context Response:',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.grey),
+                      ),
+                      child: Text(
+                        _documentContextResponse,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontFamily: 'monospace',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    if (_documentChunks.isNotEmpty) ...[
+                      Text(
+                        'Top Chunks (${_documentChunks.length}):',
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                      const SizedBox(height: 8),
+                      ..._documentChunks.map(
+                        (chunk) => Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  chunk.source.name,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  chunk.content,
+                                  maxLines: 10,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Relevance: ${chunk.relevanceScore?.score.toStringAsFixed(3) ?? 'N/A'}',
+                                      style: Theme.of(
+                                        context,
+                                      ).textTheme.bodySmall,
+                                    ),
+                                    if (chunk.tags.isNotEmpty)
+                                      Text(
+                                        'Tags: ${chunk.tags.join(', ')}',
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.bodySmall,
+                                      ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Document Source Logs
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Document Source Logs',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ListView.builder(
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _logs.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 2),
+                          child: Text(
+                            _logs[_logs.length - 1 - index],
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(fontFamily: 'monospace'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickFile() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'txt', 'md', 'docx', 'doc'],
+        allowMultiple: false,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        setState(() {
+          _selectedFile = file;
+          _documentPathController.text = file.name;
+        });
+
+        _logs.add('📁 File selected: ${file.name}');
+        _logs.add('📊 File size: ${(file.size / 1024).toStringAsFixed(1)} KB');
+        _logs.add('📄 File extension: ${file.extension}');
+      }
+    } catch (e) {
+      _logs.add('❌ Error picking file: $e');
+    }
+  }
+
+  Future<void> _addDocumentSource() async {
+    String path;
+    String sourceType;
+
+    if (_documentSourceType == 'url') {
+      path = _documentUrlController.text.trim();
+      sourceType = 'Web URL';
+      if (path.isEmpty) {
+        _logs.add('❌ Error: Document URL cannot be empty');
+        setState(() {});
+        return;
+      }
+    } else {
+      if (_selectedFile == null) {
+        _logs.add('❌ Error: Please select a file first');
+        setState(() {});
+        return;
+      }
+      path = _selectedFile!.path ?? _selectedFile!.name;
+      sourceType = 'Local File';
+    }
+
+    setState(() {
+      _isLoadingDocument = true;
+    });
+
+    try {
+      final name = 'Document_${_documentSourceNames.length + 1}';
+
+      // Create DocumentSource
+      final documentSource = DocumentSource(
+        name: name,
+        documentPath: path,
+        config: {
+          'chunkSize': _chunkSize,
+          'enableMetadata': _enableMetadata,
+          'supportedFormats': ['pdf', 'txt', 'md', 'docx'],
+          'sourceType': _documentSourceType,
+        },
+      );
+
+      _ragify.addDataSource(documentSource);
+      _documentSourceNames.add(name);
+
+      _logs.add('✅ Added document source: $name');
+      _logs.add('📁 $sourceType: $path');
+      _logs.add('📊 Chunk size: $_chunkSize');
+      _logs.add('🔍 Metadata enabled: $_enableMetadata');
+      _logs.add('🌐 Source type: $_documentSourceType');
+
+      // Clear the appropriate controller and file
+      if (_documentSourceType == 'url') {
+        _documentUrlController.clear();
+      } else {
+        _documentPathController.clear();
+        _selectedFile = null;
+      }
+    } catch (e) {
+      _logs.add('❌ Error adding document source: $e');
+    } finally {
+      setState(() {
+        _isLoadingDocument = false;
+      });
+    }
+  }
+
+  void _removeDocumentSource(String name) {
+    try {
+      _ragify.removeDataSource(name);
+      _documentSourceNames.remove(name);
+      _logs.add('🗑️ Removed document source: $name');
+    } catch (e) {
+      _logs.add('❌ Error removing document source: $e');
+    }
+    setState(() {});
+  }
+
+  Future<void> _getDocumentContext() async {
+    if (!_isInitialized) return;
+
+    final query = _documentQueryController.text.trim();
+    if (query.isEmpty) {
+      _logs.add('❌ Error: Query cannot be empty');
+      setState(() {});
+      return;
+    }
+
+    if (_documentSourceNames.isEmpty) {
+      _logs.add('❌ Error: No document sources available');
+      setState(() {});
+      return;
+    }
+
+    setState(() {
+      _isLoadingDocument = true;
+      _documentContextResponse = '';
+    });
+
+    try {
+      _logs.add('📄 Getting context from document sources...');
+      _logs.add('🔍 Query: $query');
+      _logs.add('📚 Available sources: ${_documentSourceNames.join(', ')}');
+
+      // Get context using RAGify's getContext method
+      final response = await _ragify.getContext(
+        query: query,
+        maxChunks: 5,
+        minRelevance: 0.1,
+        useCache: false,
+        userId: 'test_user',
+        sessionId: 'test_session',
+        privacyLevel: PrivacyLevel.public,
+      );
+
+      setState(() {
+        _documentContextResponse = response.toString();
+        _documentChunks = response.chunks;
+      });
+
+      _logs.add('✅ Document context retrieved successfully');
+      _logs.add('📊 Found ${response.chunks.length} relevant chunks');
+
+      for (int i = 0; i < response.chunks.length; i++) {
+        final chunk = response.chunks[i];
+        _logs.add('📄 Chunk ${i + 1}: ${chunk.content.substring(0, 50)}...');
+        _logs.add(
+          '📊 Relevance: ${chunk.relevanceScore?.score.toStringAsFixed(3) ?? 'N/A'}',
+        );
+        _logs.add('📁 Source: ${chunk.source.name}');
+      }
+    } catch (e) {
+      _logs.add('❌ Error getting document context: $e');
+      setState(() {
+        _documentContextResponse = 'Error: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoadingDocument = false;
+      });
+    }
+  }
+
+  /// Clear document cache to force reprocessing
+  Future<void> _clearDocumentCache() async {
+    if (!_isInitialized) return;
+
+    try {
+      _logs.add('🗑️ Clearing document cache...');
+
+      // Clear cache for all document sources
+      for (final sourceName in _documentSourceNames) {
+        final source = _ragify.getDataSource(sourceName);
+        if (source is DocumentSource) {
+          source.clearCache();
+        }
+      }
+
+      // Clear the response display
+      setState(() {
+        _documentContextResponse = '';
+        _documentChunks = [];
+      });
+
+      _logs.add('✅ Document cache cleared successfully');
+      _logs.add('🔄 Next search will process documents fresh');
+    } catch (e) {
+      _logs.add('❌ Error clearing document cache: $e');
+    }
   }
 }

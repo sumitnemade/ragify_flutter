@@ -516,6 +516,11 @@ class RAGify {
     logger.i('Removed data source: $sourceName');
   }
 
+  /// Get a data source by name
+  BaseDataSource? getDataSource(String sourceName) {
+    return _orchestrator.getSource(sourceName);
+  }
+
   /// Calculate advanced relevance score for a context chunk
   Future<RelevanceScore> calculateAdvancedScore(
     ContextChunk chunk,

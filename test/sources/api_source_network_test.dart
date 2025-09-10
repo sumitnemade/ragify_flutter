@@ -46,7 +46,7 @@ void main() {
       'getChunks success, caching, and maxChunks/minRelevance filtering',
       () async {
         final client = _FakeHttpClient({
-          '/query': (req, body) {
+          'https://example.com': (req, body) {
             final request = jsonDecode(body) as Map<String, dynamic>;
             final query = request['query'] as String? ?? '';
 
@@ -96,6 +96,7 @@ void main() {
           rateLimit: const RateLimitConfig(
             minInterval: Duration(milliseconds: 1),
           ),
+          config: {'include_query': true},
         );
 
         // First call hits network
@@ -129,7 +130,7 @@ void main() {
       () async {
         int step = 0;
         final client = _FakeHttpClient({
-          '/query': (req, body) {
+          'https://example.com': (req, body) {
             step++;
             if (step == 1) {
               return {
@@ -154,6 +155,7 @@ void main() {
           name: 'api',
           baseUrl: 'https://example.com',
           httpClient: client,
+          config: {'include_query': true},
         );
 
         expect(
@@ -173,7 +175,7 @@ void main() {
 
     test('processAPIResponse handles malformed payload gracefully', () async {
       final client = _FakeHttpClient({
-        '/query': (req, body) {
+        'https://example.com': (req, body) {
           // results is not a list -> triggers catch path in _processAPIResponse
           return {
             'status': 200,
@@ -186,6 +188,7 @@ void main() {
         name: 'api',
         baseUrl: 'https://example.com',
         httpClient: client,
+        config: {'include_query': true},
       );
       final chunks = await api.getChunks(query: 'query');
       expect(chunks, isEmpty);
@@ -194,7 +197,7 @@ void main() {
     test('cache TTL expiration invalidates old entries', () async {
       int hits = 0;
       final client = _FakeHttpClient({
-        '/query': (req, body) {
+        'https://example.com': (req, body) {
           hits++;
           return {
             'status': 200,
@@ -212,6 +215,7 @@ void main() {
         baseUrl: 'https://example.com',
         httpClient: client,
         rateLimit: const RateLimitConfig(cacheTtl: Duration(milliseconds: 0)),
+        config: {'include_query': true},
       );
 
       await api.getChunks(query: 'query');
@@ -222,7 +226,7 @@ void main() {
     test('isHealthy true/false based on /health', () async {
       int step = 0;
       final client = _FakeHttpClient({
-        '/health': (req, body) {
+        'https://example.com/health': (req, body) {
           step++;
           return step == 1
               ? {
@@ -234,7 +238,7 @@ void main() {
                   'body': {'ok': false},
                 };
         },
-        '/query': (req, body) => {
+        'https://example.com': (req, body) => {
           'status': 200,
           'body': {'results': []},
         },
@@ -244,6 +248,7 @@ void main() {
         name: 'api',
         baseUrl: 'https://example.com',
         httpClient: client,
+        config: {'include_query': true},
       );
 
       expect(await api.isHealthy(), isTrue);

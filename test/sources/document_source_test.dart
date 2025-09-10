@@ -71,7 +71,18 @@ void main() {
       });
 
       test('should have correct supported extensions', () {
-        final expectedExtensions = {'.txt', '.md', '.json', '.pdf', '.docx'};
+        final expectedExtensions = {
+          // Text files
+          '.txt', '.md', '.markdown', '.rst', '.log',
+          // Data files
+          '.csv', '.tsv', '.json', '.yaml', '.yml',
+          // Web files
+          '.html', '.htm', '.css', '.js', '.xml',
+          // Config files
+          '.ini', '.cfg', '.conf', '.properties',
+          // Document files
+          '.pdf', '.docx', '.doc',
+        };
         expect(documentSource.supportedExtensions, equals(expectedExtensions));
       });
     });
@@ -93,23 +104,56 @@ void main() {
     group('File Support Detection', () {
       test('should have correct supported extensions', () {
         final extensions = documentSource.supportedExtensions;
+        // Text files
         expect(extensions.contains('.txt'), isTrue);
         expect(extensions.contains('.md'), isTrue);
+        expect(extensions.contains('.markdown'), isTrue);
+        expect(extensions.contains('.rst'), isTrue);
+        expect(extensions.contains('.log'), isTrue);
+        // Data files
         expect(extensions.contains('.json'), isTrue);
+        expect(extensions.contains('.csv'), isTrue);
+        expect(extensions.contains('.tsv'), isTrue);
+        expect(extensions.contains('.yaml'), isTrue);
+        expect(extensions.contains('.yml'), isTrue);
+        // Web files
+        expect(extensions.contains('.html'), isTrue);
+        expect(extensions.contains('.htm'), isTrue);
+        expect(extensions.contains('.css'), isTrue);
+        expect(extensions.contains('.js'), isTrue);
+        expect(extensions.contains('.xml'), isTrue);
+        // Config files
+        expect(extensions.contains('.ini'), isTrue);
+        expect(extensions.contains('.cfg'), isTrue);
+        expect(extensions.contains('.conf'), isTrue);
+        expect(extensions.contains('.properties'), isTrue);
+        // Document files
         expect(extensions.contains('.pdf'), isTrue);
         expect(extensions.contains('.docx'), isTrue);
-        expect(extensions.contains('.doc'), isFalse);
+        expect(extensions.contains('.doc'), isTrue);
+        // Unsupported files
         expect(extensions.contains('.rtf'), isFalse);
-        expect(extensions.contains('.html'), isFalse);
+        expect(extensions.contains('.exe'), isFalse);
       });
 
       test('should check if file is supported', () {
         final extensions = documentSource.supportedExtensions;
+        // Test supported file types
         expect(extensions.contains('.txt'), isTrue);
         expect(extensions.contains('.md'), isTrue);
         expect(extensions.contains('.json'), isTrue);
         expect(extensions.contains('.pdf'), isTrue);
         expect(extensions.contains('.docx'), isTrue);
+        expect(extensions.contains('.doc'), isTrue);
+        expect(extensions.contains('.html'), isTrue);
+        expect(extensions.contains('.csv'), isTrue);
+        expect(extensions.contains('.yaml'), isTrue);
+        expect(extensions.contains('.xml'), isTrue);
+        expect(extensions.contains('.ini'), isTrue);
+        expect(extensions.contains('.css'), isTrue);
+        expect(extensions.contains('.js'), isTrue);
+        expect(extensions.contains('.log'), isTrue);
+        expect(extensions.contains('.properties'), isTrue);
       });
     });
 
@@ -381,6 +425,183 @@ void main() {
         // The source should ignore unsupported files
         final chunks = await documentSource.getChunks(query: 'Content');
         expect(chunks, isEmpty);
+      });
+
+      test('should handle file reading errors gracefully', () async {
+        // Create a file that might cause encoding issues
+        final problematicFile = File('$tempDir/problematic.txt');
+        problematicFile.writeAsStringSync('Content with special chars: éñü');
+
+        // Should handle encoding gracefully
+        final chunks = await documentSource.getChunks(query: 'Content');
+        expect(chunks, isNotEmpty);
+      });
+    });
+
+    group('URL Handling', () {
+      test('should detect URL correctly', () {
+        final urlSource = DocumentSource(
+          name: 'URL Source',
+          documentPath: 'https://example.com/document.pdf',
+        );
+
+        // Test URL detection (this would be tested through private method behavior)
+        expect(urlSource.documentPath, startsWith('https://'));
+      });
+
+      test('should handle URL file extension detection', () {
+        final urlSource = DocumentSource(
+          name: 'URL Source',
+          documentPath: 'https://example.com/document.pdf',
+        );
+
+        expect(urlSource.documentPath, contains('.pdf'));
+      });
+    });
+
+    group('New File Type Support', () {
+      test('should process HTML files', () async {
+        final htmlContent = '''
+        <html>
+          <body>
+            <h1>Test Document</h1>
+            <p>This is a test HTML document with multiple paragraphs.</p>
+            <p>It should be processed correctly by the document source.</p>
+          </body>
+        </html>
+        ''';
+        File('$tempDir/test.html').writeAsStringSync(htmlContent);
+
+        final chunks = await documentSource.getChunks(query: 'test document');
+        expect(chunks, isNotEmpty);
+        // Check if any chunk contains the expected content
+        final hasExpectedContent = chunks.any(
+          (chunk) => chunk.content.contains('Test Document'),
+        );
+        expect(hasExpectedContent, isTrue);
+        expect(chunks.first.tags, contains('html'));
+      });
+
+      test('should process CSV files', () async {
+        final csvContent = '''
+        name,age,city
+        John,25,New York
+        Jane,30,Los Angeles
+        Bob,35,Chicago
+        ''';
+        File('$tempDir/test.csv').writeAsStringSync(csvContent);
+
+        final chunks = await documentSource.getChunks(query: 'John');
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('John'));
+        expect(chunks.first.tags, contains('csv'));
+      });
+
+      test('should process JSON files', () async {
+        final jsonContent = '''
+        {
+          "name": "Test Document",
+          "description": "This is a test JSON document",
+          "data": {
+            "value": 123,
+            "items": ["item1", "item2", "item3"]
+          }
+        }
+        ''';
+        File('$tempDir/test.json').writeAsStringSync(jsonContent);
+
+        final chunks = await documentSource.getChunks(query: 'Test Document');
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('Test Document'));
+        expect(chunks.first.tags, contains('json'));
+      });
+
+      test('should process YAML files', () async {
+        final yamlContent = '''
+        name: Test Document
+        description: This is a test YAML document
+        data:
+          value: 123
+          items:
+            - item1
+            - item2
+            - item3
+        ''';
+        File('$tempDir/test.yaml').writeAsStringSync(yamlContent);
+
+        final chunks = await documentSource.getChunks(query: 'Test Document');
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('Test Document'));
+        expect(chunks.first.tags, contains('yaml'));
+      });
+
+      test('should process XML files', () async {
+        final xmlContent = '''
+        <?xml version="1.0" encoding="UTF-8"?>
+        <document>
+          <title>Test Document</title>
+          <content>This is a test XML document with structured data.</content>
+          <metadata>
+            <author>Test Author</author>
+            <date>2024-01-01</date>
+          </metadata>
+        </document>
+        ''';
+        File('$tempDir/test.xml').writeAsStringSync(xmlContent);
+
+        final chunks = await documentSource.getChunks(query: 'Test Document');
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('Test Document'));
+        expect(chunks.first.tags, contains('xml'));
+      });
+
+      test('should process configuration files', () async {
+        final iniContent = '''
+        [database]
+        host=localhost
+        port=5432
+        name=testdb
+
+        [app]
+        name=Test Application
+        version=1.0.0
+        debug=true
+        ''';
+        File('$tempDir/test.ini').writeAsStringSync(iniContent);
+
+        final chunks = await documentSource.getChunks(
+          query: 'Test Application',
+        );
+        expect(chunks, isNotEmpty);
+        // Check if any chunk contains the expected content
+        final hasExpectedContent = chunks.any(
+          (chunk) => chunk.content.contains('Test Application'),
+        );
+        expect(hasExpectedContent, isTrue);
+        expect(chunks.first.tags, contains('ini'));
+      });
+    });
+
+    group('Encoding Detection', () {
+      test('should handle UTF-8 encoded files', () async {
+        final utf8Content = 'Test content with special characters: éñü中文';
+        File('$tempDir/utf8_test.txt').writeAsStringSync(utf8Content);
+
+        final chunks = await documentSource.getChunks(
+          query: 'special characters',
+        );
+        expect(chunks, isNotEmpty);
+        expect(chunks.first.content, contains('éñü中文'));
+      });
+
+      test('should handle large files with buffered reading', () async {
+        // Create a large file (simulate by creating content that would trigger buffered reading)
+        final largeContent = 'word ' * 2000; // 2000 words
+        File('$tempDir/large_test.txt').writeAsStringSync(largeContent);
+
+        final chunks = await documentSource.getChunks(query: 'word');
+        expect(chunks, isNotEmpty);
+        expect(chunks.length, greaterThan(1)); // Should create multiple chunks
       });
     });
   });
