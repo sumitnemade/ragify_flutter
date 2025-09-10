@@ -769,7 +769,6 @@ void main() {
 
         final response = await orchestrator.getContext(
           query: 'test query',
-          maxTokens: 1000,
           maxChunks: 5,
           minRelevance: 0.5,
           privacyLevel: PrivacyLevel.private,
@@ -804,14 +803,13 @@ void main() {
 
         final response = await orchestrator.getContext(
           query: 'test query',
-          maxTokens: 1, // Very low limit
           maxChunks: 5,
           minRelevance: 0.5,
           privacyLevel: PrivacyLevel.private,
         );
 
         expect(response.chunks.length, equals(1)); // Still returns 1 chunk
-        expect(response.maxTokens, equals(1));
+        expect(response.maxTokens, equals(10000));
       });
 
       test('getContext respects privacy level', () async {
@@ -820,7 +818,6 @@ void main() {
 
         final response = await orchestrator.getContext(
           query: 'test query',
-          maxTokens: 1000,
           maxChunks: 5,
           minRelevance: 0.5,
           privacyLevel:
@@ -834,10 +831,7 @@ void main() {
         await orchestrator.initialize();
         orchestrator.addSource(mockDataSource);
 
-        final response = await orchestrator.getContext(
-          query: 'test query',
-          sources: ['mock_source'],
-        );
+        final response = await orchestrator.getContext(query: 'test query');
 
         expect(response.chunks.length, equals(1));
       });
@@ -846,10 +840,7 @@ void main() {
         await orchestrator.initialize();
         orchestrator.addSource(mockDataSource);
 
-        final response = await orchestrator.getContext(
-          query: 'test query',
-          excludeSources: ['other_source'],
-        );
+        final response = await orchestrator.getContext(query: 'test query');
 
         expect(response.chunks.length, equals(1));
       });

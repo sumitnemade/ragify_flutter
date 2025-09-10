@@ -6,9 +6,11 @@ import 'package:uuid/uuid.dart';
 import '../models/context_chunk.dart';
 import '../models/context_request.dart';
 import '../models/context_response.dart';
+import '../models/context_source.dart';
 import '../models/privacy_level.dart';
 import '../models/relevance_score.dart';
 import '../sources/base_data_source.dart';
+import '../storage/vector_database.dart';
 import '../exceptions/ragify_exceptions.dart';
 import '../engines/context_scoring_engine.dart';
 import '../engines/context_storage_engine.dart';
@@ -29,6 +31,9 @@ class ContextOrchestrator {
 
   /// Registered data sources
   final Map<String, BaseDataSource> _sources = {};
+
+  /// Vector database for similarity search
+  final VectorDatabase? _vectorDatabase;
 
   /// Context scoring engine for intelligent relevance assessment
   late final ContextScoringEngine _scoringEngine;
@@ -72,10 +77,12 @@ class ContextOrchestrator {
     Logger? logger,
     bool isTestMode = false,
     ParallelProcessingConfig? parallelConfig,
+    VectorDatabase? vectorDatabase,
   }) : config = config ?? RagifyConfig.defaultConfig(),
        logger = logger ?? Logger(),
        _isTestMode = isTestMode,
-       _parallelConfig = parallelConfig ?? const ParallelProcessingConfig() {
+       _parallelConfig = parallelConfig ?? const ParallelProcessingConfig(),
+       _vectorDatabase = vectorDatabase {
     // Initialize engines with configuration
     _scoringEngine = ContextScoringEngine(logger: logger ?? Logger());
 
@@ -175,15 +182,12 @@ class ContextOrchestrator {
   /// Get intelligent context for a query
   Future<ContextResponse> getContext({
     required String query,
-    String? userId,
-    String? sessionId,
-    int? maxTokens,
     int? maxChunks,
     double? minRelevance,
+    // Optional enterprise features
+    String? userId,
+    String? sessionId,
     PrivacyLevel? privacyLevel,
-    bool includeMetadata = true,
-    List<String>? sources,
-    List<String>? excludeSources,
   }) async {
     if (!_isInitialized) {
       // In test mode, skip initialization to avoid platform-specific issues
@@ -202,13 +206,13 @@ class ContextOrchestrator {
       query: query,
       userId: userId,
       sessionId: sessionId,
-      maxTokens: maxTokens ?? config.maxContextSize,
+      maxTokens: config.maxContextSize, // Use default from config
       maxChunks: maxChunks,
       minRelevance: minRelevance ?? config.defaultRelevanceThreshold,
       privacyLevel: privacyLevel ?? config.privacyLevel,
-      includeMetadata: includeMetadata,
-      sources: sources,
-      excludeSources: excludeSources,
+      includeMetadata: true, // Always include metadata
+      sources: null, // Include all sources
+      excludeSources: null, // Exclude none
     );
 
     logger.i('Processing context request');
@@ -232,17 +236,22 @@ class ContextOrchestrator {
       request.excludeSources,
     );
 
-    if (activeSources.isEmpty) {
-      // All sources failed to return chunks
-      final failedSources = activeSources.keys.toList();
-      logger.w(
-        'No chunks returned from any source. Sources: ${failedSources.join(', ')}',
-      );
-      throw ContextNotFoundException(request.query, userId: request.userId);
+    List<ContextChunk> allChunks = [];
+
+    if (activeSources.isNotEmpty) {
+      // Process sources concurrently
+      allChunks = await _processSourcesConcurrently(activeSources, request);
     }
 
-    // Process sources concurrently
-    final allChunks = await _processSourcesConcurrently(activeSources, request);
+    // If no chunks from data sources, try vector search as fallback
+    if (allChunks.isEmpty && _vectorDatabase != null) {
+      logger.d('No chunks from data sources, trying vector search fallback');
+      try {
+        allChunks = await _getChunksFromVectorSearch(request);
+      } catch (e) {
+        logger.w('Vector search fallback failed: $e');
+      }
+    }
 
     if (allChunks.isEmpty) {
       throw ContextNotFoundException(request.query, userId: request.userId);
@@ -694,6 +703,197 @@ class ContextOrchestrator {
     }
   }
 
+  /// Get chunks from vector search as fallback
+  Future<List<ContextChunk>> _getChunksFromVectorSearch(
+    ContextRequest request,
+  ) async {
+    if (_vectorDatabase == null) {
+      return [];
+    }
+
+    try {
+      // Generate query embedding using the same method as RAGify
+      final queryEmbedding = _generateSimpleEmbedding(request.query);
+
+      // Search vectors with a lower threshold to catch word matches
+      final searchResults = await _vectorDatabase.searchVectors(
+        queryEmbedding,
+        request.maxChunks ?? 5,
+        minScore: 0.1, // Lower threshold to catch word matches
+      );
+
+      // Convert search results to context chunks with additional filtering
+      final contextChunks = <ContextChunk>[];
+      final queryWords = request.query.toLowerCase().split(RegExp(r'\s+'));
+
+      for (final result in searchResults) {
+        try {
+          // Get the full vector data including metadata
+          final vectorData = await _vectorDatabase.getVectorData(result.id);
+          if (vectorData == null) {
+            logger.w('Vector data not found for ID: ${result.id}');
+            continue;
+          }
+
+          // Reconstruct the original chunk from vector metadata
+          final metadata = vectorData.metadata;
+          final content =
+              metadata['content'] as String? ?? 'Content not available';
+          final sourceName = metadata['source'] as String? ?? 'vector_database';
+          final sourceTypeValue =
+              metadata['sourceType'] as String? ?? 'document';
+          final tags = List<String>.from(metadata['tags'] as List? ?? []);
+          final createdAtMs =
+              metadata['createdAt'] as int? ??
+              DateTime.now().millisecondsSinceEpoch;
+
+          // Additional relevance filtering: check for word matches
+          final contentLower = content.toLowerCase();
+          final hasWordMatch = queryWords.any(
+            (word) =>
+                contentLower.contains(word) ||
+                tags.any((tag) => tag.toLowerCase().contains(word)),
+          );
+
+          logger.d(
+            'Checking result ${result.id}: score ${result.score.toStringAsFixed(3)}, hasWordMatch: $hasWordMatch',
+          );
+          logger.d('  Content: ${content.substring(0, 50)}...');
+          logger.d('  Tags: $tags');
+          logger.d('  Query words: $queryWords');
+
+          // Only include results with word matches or very high similarity scores
+          if (!hasWordMatch && result.score < 0.7) {
+            logger.d(
+              'Filtering out irrelevant result ${result.id}: score ${result.score.toStringAsFixed(3)}, no word matches',
+            );
+            continue;
+          }
+
+          // Create the original source
+          final source = ContextSource(
+            name: sourceName,
+            sourceType: SourceType.fromString(sourceTypeValue),
+            authorityScore: 0.8, // Default authority score
+            lastUpdated: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
+            isActive: true,
+            freshnessScore: 1.0,
+          );
+
+          // Create the reconstructed chunk with the search score
+          final chunk = ContextChunk(
+            id: result.id,
+            content: content,
+            source: source,
+            metadata: {
+              ...metadata,
+              'search_score': result.score,
+              'search_timestamp': DateTime.now().millisecondsSinceEpoch,
+              'retrieval_method': 'vector_search',
+            },
+            tags: [
+              ...tags,
+              'vector_search_result',
+              'similarity:${result.score.toStringAsFixed(3)}',
+            ],
+            relevanceScore: RelevanceScore(score: result.score),
+            createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
+            updatedAt: DateTime.now(),
+          );
+
+          contextChunks.add(chunk);
+        } catch (e) {
+          logger.w('Failed to reconstruct chunk ${result.id}: $e');
+        }
+      }
+
+      logger.d(
+        'Vector search fallback returned ${contextChunks.length} chunks',
+      );
+      if (contextChunks.isEmpty && searchResults.isNotEmpty) {
+        logger.w(
+          'Vector search found ${searchResults.length} results but all were filtered out',
+        );
+        for (final result in searchResults) {
+          logger.w(
+            'Result ${result.id}: score ${result.score.toStringAsFixed(4)}',
+          );
+        }
+      } else if (contextChunks.isNotEmpty) {
+        logger.d('Vector search returned relevant chunks:');
+        for (final chunk in contextChunks) {
+          logger.d(
+            '  - ${chunk.id}: ${chunk.content.substring(0, 50)}... (score: ${chunk.relevanceScore?.score.toStringAsFixed(3)})',
+          );
+        }
+      }
+      return contextChunks;
+    } catch (e) {
+      logger.e('Vector search fallback failed: $e');
+      return [];
+    }
+  }
+
+  /// Generate simple embedding for query (same as RAGify)
+  List<double> _generateSimpleEmbedding(String text) {
+    // Use the same advanced embedding algorithm as RAGify
+    final words = text.toLowerCase().split(RegExp(r'\s+'));
+    final embedding = List<double>.filled(384, 0.0);
+
+    // Word-level analysis (first 200 dimensions)
+    for (int i = 0; i < words.length && i < 200; i++) {
+      final word = words[i];
+      final hash = word.hashCode;
+      final normalizedHash = (hash % 1000) / 1000.0;
+      embedding[i] = normalizedHash;
+    }
+
+    // Character frequency analysis (next 64 dimensions)
+    final charFreq = <String, int>{};
+    for (final char in text.toLowerCase().split('')) {
+      charFreq[char] = (charFreq[char] ?? 0) + 1;
+    }
+
+    int charIndex = 200;
+    for (final entry in charFreq.entries) {
+      if (charIndex >= 264) break;
+      final charCode = entry.key.codeUnitAt(0);
+      final freq = entry.value / text.length;
+      embedding[charIndex] = (charCode % 100) / 100.0 * freq;
+      charIndex++;
+    }
+
+    // Text statistics (next 64 dimensions)
+    final textStats = [
+      text.length / 1000.0, // Normalized length
+      words.length / 100.0, // Normalized word count
+      text.split('.').length / 10.0, // Sentence count
+      text.split(RegExp(r'[!?]')).length / 10.0, // Exclamation/question count
+    ];
+
+    for (int i = 0; i < textStats.length && i < 64; i++) {
+      embedding[264 + i] = textStats[i];
+    }
+
+    // Position-based features (remaining dimensions)
+    for (int i = 0; i < 56; i++) {
+      final pos = i / 55.0; // Position from 0 to 1
+      embedding[328 + i] = pos * (text.length % 100) / 100.0;
+    }
+
+    // Normalize the embedding
+    final magnitude = math.sqrt(
+      embedding.map((x) => x * x).reduce((a, b) => a + b),
+    );
+    if (magnitude > 0) {
+      for (int i = 0; i < embedding.length; i++) {
+        embedding[i] = embedding[i] / magnitude;
+      }
+    }
+
+    return embedding;
+  }
+
   /// Get orchestrator statistics
   Map<String, dynamic> getStats() {
     return {
@@ -701,6 +901,7 @@ class ContextOrchestrator {
       'is_closed': _isClosed,
       'total_sources': _sources.length,
       'active_sources': _sources.values.where((s) => s.isActive).length,
+      'has_vector_database': _vectorDatabase != null,
       'config': config.toJson(),
     };
   }

@@ -341,7 +341,7 @@ class VectorDatabase {
   }
 
   /// **NEW: Get all vector IDs from metadata database**
-  Future<List<String>> _getAllVectorIds() async {
+  Future<List<String>> getAllVectorIds() async {
     if (_metadataDb == null) return [];
 
     try {
@@ -374,6 +374,50 @@ class VectorDatabase {
     }
 
     return vector;
+  }
+
+  /// **NEW: Get full VectorData by ID including metadata**
+  Future<VectorData?> getVectorData(String id) async {
+    if (!_isInitialized) {
+      throw VectorDatabaseException('not_initialized');
+    }
+
+    if (_isClosed) {
+      throw VectorDatabaseException('closed');
+    }
+
+    try {
+      // Get vector embedding
+      final embedding = await _getVector(id);
+      if (embedding == null) return null;
+
+      // Get metadata from database
+      if (_metadataDb == null) return null;
+
+      final results = await _metadataDb!.query(
+        'vectors',
+        where: 'id = ?',
+        whereArgs: [id],
+        limit: 1,
+      );
+
+      if (results.isEmpty) return null;
+
+      final row = results.first;
+      final metadata = row['metadata'] != null
+          ? Map<String, dynamic>.from(jsonDecode(row['metadata'] as String))
+          : <String, dynamic>{};
+
+      return VectorData(
+        id: row['id'] as String,
+        chunkId: row['chunk_id'] as String,
+        embedding: embedding,
+        metadata: metadata,
+      );
+    } catch (e) {
+      logger.e('Failed to get vector data: $id', error: e);
+      return null;
+    }
   }
 
   /// **NEW: Add vector to cache with LRU eviction**
@@ -755,7 +799,7 @@ class _HybridVectorIndex {
 
     try {
       // Get all vector IDs from the database metadata
-      final vectorIds = await vectorDatabase._getAllVectorIds();
+      final vectorIds = await vectorDatabase.getAllVectorIds();
 
       // Calculate similarities for all vectors
       for (final id in vectorIds) {
@@ -763,6 +807,21 @@ class _HybridVectorIndex {
         if (vector == null) continue;
 
         final score = _calculateSimilarity(queryVector, vector);
+
+        // Debug logging to see similarity scores
+        vectorDatabase.logger.d(
+          'Vector $id similarity score: ${score.toStringAsFixed(4)} (minScore: $minScore)',
+        );
+
+        // Get the content for debugging
+        final vectorData = await vectorDatabase.getVectorData(id);
+        if (vectorData != null) {
+          final content =
+              vectorData.metadata['content'] as String? ?? 'No content';
+          vectorDatabase.logger.d(
+            'Vector $id content: ${content.substring(0, 50)}...',
+          );
+        }
 
         if (score >= minScore) {
           results.add(

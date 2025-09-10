@@ -76,11 +76,17 @@ class RAGify {
 
   /// Initialize all components
   void _initializeComponents(bool isTestMode) {
-    // Initialize context orchestrator
+    // Initialize vector database first
+    _vectorDatabase = VectorDatabase(
+      vectorDbUrl: config.vectorDbUrl ?? 'memory://',
+    );
+
+    // Initialize context orchestrator with vector database
     _orchestrator = ContextOrchestrator(
       config: config,
       logger: logger,
       isTestMode: isTestMode,
+      vectorDatabase: _vectorDatabase,
     );
 
     // Initialize cache manager
@@ -99,11 +105,6 @@ class RAGify {
 
     // Initialize security manager
     _securityManager = SecurityManager(initialLevel: SecurityLevel.medium);
-
-    // Initialize vector database
-    _vectorDatabase = VectorDatabase(
-      vectorDbUrl: config.vectorDbUrl ?? 'memory://',
-    );
 
     // Initialize advanced scoring engine
     _advancedScoringEngine = AdvancedScoringEngine(
@@ -160,110 +161,9 @@ class RAGify {
       logger.i(
         'RAGify initialized successfully on ${PlatformDetector.platformName}',
       );
-
-      // Log platform capabilities
-      _logPlatformCapabilities();
     } catch (e, stackTrace) {
       logger.e('Failed to initialize RAGify', error: e, stackTrace: stackTrace);
       rethrow;
-    }
-  }
-
-  /// Log platform capabilities and optimizations
-  void _logPlatformCapabilities() {
-    final capabilities = {
-      'aiModelApis': PlatformDetector.supportsFeature(
-        PlatformFeature.aiModelApis,
-      ),
-      'vectorOperations': PlatformDetector.supportsFeature(
-        PlatformFeature.vectorOperations,
-      ),
-      'sqlite': PlatformDetector.supportsFeature(PlatformFeature.sqlite),
-      'webStorage': PlatformDetector.supportsFeature(
-        PlatformFeature.webStorage,
-      ),
-      'fileSystem': PlatformDetector.supportsFeature(
-        PlatformFeature.fileSystem,
-      ),
-    };
-
-    logger.d('Platform capabilities: $capabilities');
-
-    // Log platform-specific optimizations
-    if (PlatformDetector.isWeb) {
-      logger.i('Web platform: Using IndexedDB + TensorFlow.js optimizations');
-    } else if (PlatformDetector.isMobile) {
-      logger.i('Mobile platform: Using SQLite + TensorFlow Lite optimizations');
-    } else if (PlatformDetector.isDesktop) {
-      logger.i(
-        'Desktop platform: Using File System + TensorFlow Lite optimizations',
-      );
-    } else {
-      logger.i('Other platform: Using fallback implementations');
-    }
-  }
-
-  /// Get platform information and capabilities
-  Map<String, dynamic> getPlatformInfo() {
-    return {
-      'platform': PlatformDetector.platformName,
-      'isWeb': PlatformDetector.isWeb,
-      'isMobile': PlatformDetector.isMobile,
-      'isDesktop': PlatformDetector.isDesktop,
-      'isFuchsia': PlatformDetector.isFuchsia,
-      'features': {
-        'aiModelApis': PlatformDetector.supportsFeature(
-          PlatformFeature.aiModelApis,
-        ),
-        'vectorOperations': PlatformDetector.supportsFeature(
-          PlatformFeature.vectorOperations,
-        ),
-        'sqlite': PlatformDetector.supportsFeature(PlatformFeature.sqlite),
-        'webStorage': PlatformDetector.supportsFeature(
-          PlatformFeature.webStorage,
-        ),
-        'fileSystem': PlatformDetector.supportsFeature(
-          PlatformFeature.fileSystem,
-        ),
-      },
-    };
-  }
-
-  /// Check if a specific platform feature is supported
-  bool supportsPlatformFeature(PlatformFeature feature) {
-    return PlatformDetector.supportsFeature(feature);
-  }
-
-  /// Get platform-specific recommendations for optimal usage
-  Map<String, String> getPlatformRecommendations() {
-    if (PlatformDetector.isWeb) {
-      return {
-        'storage': 'Use IndexedDB for large data, localStorage for small data',
-        'ml': 'Use TensorFlow.js with WebGL acceleration',
-        'performance': 'Optimize for browser limitations',
-        'security': 'Limited by browser security model',
-      };
-    } else if (PlatformDetector.isMobile) {
-      return {
-        'storage': 'Use SQLite for persistent data',
-        'ml': 'Use TensorFlow Lite with hardware acceleration',
-        'performance': 'Optimize for battery life',
-        'security': 'Full encryption and security features',
-      };
-    } else if (PlatformDetector.isDesktop) {
-      return {
-        'storage': 'Use file system for large data',
-        'ml': 'Use TensorFlow Lite with full resources',
-        'performance': 'Maximum performance available',
-        'security': 'Full encryption and security features',
-      };
-    } else {
-      return {
-        'storage': 'Use fallback storage implementation',
-        'ml': 'Limited ML capabilities',
-        'performance': 'Basic performance',
-        'security': 'Basic security features',
-      };
     }
   }
 
@@ -282,17 +182,13 @@ class RAGify {
   /// Get context for a query with full feature integration
   Future<ContextResponse> getContext({
     required String query,
-    String? userId,
-    String? sessionId,
-    int? maxTokens,
     int? maxChunks,
     double? minRelevance,
-    PrivacyLevel? privacyLevel,
-    bool includeMetadata = true,
-    List<String>? sources,
-    List<String>? excludeSources,
     bool useCache = true,
-    bool useVectorSearch = true,
+    // Optional enterprise features
+    String? userId,
+    String? sessionId,
+    PrivacyLevel? privacyLevel,
   }) async {
     try {
       if (!_isInitialized) {
@@ -325,7 +221,9 @@ class RAGify {
         final cachedResponse = await _cacheManager.get(cacheKey);
         if (cachedResponse != null) {
           logger.d('Returning cached context for query: $query');
-          if (cachedResponse is Map<String, dynamic>) {
+          if (cachedResponse is ContextResponse) {
+            return cachedResponse;
+          } else if (cachedResponse is Map<String, dynamic>) {
             return ContextResponse.fromJson(cachedResponse);
           } else {
             logger.w(
@@ -335,18 +233,14 @@ class RAGify {
         }
       }
 
-      // Get context from orchestrator
+      // Get context from orchestrator (which includes vector search fallback)
       final response = await _orchestrator.getContext(
         query: query,
         userId: userId,
         sessionId: sessionId,
-        maxTokens: maxTokens,
         maxChunks: maxChunks,
         minRelevance: minRelevance,
         privacyLevel: effectivePrivacyLevel,
-        includeMetadata: includeMetadata,
-        sources: sources,
-        excludeSources: excludeSources,
       );
 
       // Cache the response if enabled
@@ -360,7 +254,7 @@ class RAGify {
           );
           await _cacheManager.set(
             cacheKey,
-            response.toJson(),
+            response, // Store the object directly instead of JSON
             ttl: Duration(seconds: config.cacheTtl),
           );
           logger.d('Successfully cached response for query: $query');
@@ -412,7 +306,8 @@ class RAGify {
           chunks: [],
           userId: userId,
           sessionId: sessionId,
-          maxTokens: maxTokens ?? 0,
+          maxTokens: 0,
+          // Use default from config
           privacyLevel: privacyLevel ?? config.privacyLevel,
           metadata: {
             'error': 'Failed to retrieve context',
@@ -498,28 +393,81 @@ class RAGify {
 
   /// Generate simple embedding using hash-based approach
   List<double> _generateSimpleEmbedding(String text) {
-    // Create a simple 384-dimensional embedding based on text characteristics
+    // Create a 384-dimensional embedding based on text characteristics
     final embedding = List<double>.filled(384, 0.0);
 
-    // Use character frequency and position to generate embedding
-    final chars = text.toLowerCase().split('');
-    final charFreq = <String, int>{};
+    if (text.isEmpty) return embedding;
 
+    final normalizedText = text.toLowerCase().trim();
+    final words = normalizedText
+        .split(RegExp(r'\s+'))
+        .where((w) => w.isNotEmpty)
+        .toList();
+    final chars = normalizedText.split('');
+
+    // Word-level analysis with exact matching priority (first 256 dimensions)
+    if (words.isNotEmpty) {
+      final wordFreq = <String, int>{};
+      for (final word in words) {
+        wordFreq[word] = (wordFreq[word] ?? 0) + 1;
+      }
+
+      int index = 0;
+      final uniqueWords = words.toSet().toList();
+
+      // Process each unique word with high priority
+      for (int i = 0; i < uniqueWords.length && index < 200; i++) {
+        final word = uniqueWords[i];
+        final freq = wordFreq[word]!;
+
+        // Create a strong signature for each word
+        final wordHash = word.hashCode;
+        final wordCode = word.codeUnits.fold(0, (a, b) => a + b);
+
+        // Use multiple dimensions per word for better discrimination
+        embedding[index] = (wordHash % 1000) / 1000.0;
+        if (index + 1 < 200) {
+          embedding[index + 1] = (wordCode % 1000) / 1000.0;
+          index += 2;
+        } else {
+          index++;
+        }
+
+        // Add frequency information
+        if (index < 200) {
+          embedding[index] = (freq * 10 % 1000) / 1000.0;
+          index++;
+        }
+
+        // Add word length information
+        if (index < 200) {
+          embedding[index] = (word.length % 100) / 100.0;
+          index++;
+        }
+      }
+
+      // Fill remaining word dimensions with zeros to ensure different words don't match
+      while (index < 200) {
+        embedding[index] = 0.0;
+        index++;
+      }
+    }
+
+    // Character frequency analysis (next 64 dimensions)
+    final charFreq = <String, int>{};
     for (final char in chars) {
       charFreq[char] = (charFreq[char] ?? 0) + 1;
     }
 
-    // Fill embedding based on character frequencies and positions
-    int index = 0;
-    for (final char in charFreq.keys) {
-      if (index >= 384) break;
-
+    int index = 200;
+    final sortedChars = charFreq.keys.toList()..sort();
+    for (int i = 0; i < sortedChars.length && index < 264; i++) {
+      final char = sortedChars[i];
       final freq = charFreq[char]!;
       final charCode = char.codeUnitAt(0);
 
-      // Use character code and frequency to generate embedding values
       embedding[index] = (charCode % 100) / 100.0;
-      if (index + 1 < 384) {
+      if (index + 1 < 264) {
         embedding[index + 1] = (freq % 100) / 100.0;
         index += 2;
       } else {
@@ -527,7 +475,45 @@ class RAGify {
       }
     }
 
-    // Normalize the embedding
+    // Text statistics (next 64 dimensions)
+    index = 264;
+    final textLength = text.length;
+    final wordCount = words.length;
+    final avgWordLength = wordCount > 0 ? textLength / wordCount : 0.0;
+    final uniqueChars = charFreq.length;
+    final uniqueWords = words.toSet().length;
+
+    // Fill with text statistics
+    final stats = [
+      textLength / 1000.0, // Normalized text length
+      wordCount / 100.0, // Normalized word count
+      avgWordLength / 20.0, // Normalized average word length
+      uniqueChars / 50.0, // Normalized unique character count
+      uniqueWords / 50.0, // Normalized unique word count
+    ];
+
+    for (int i = 0; i < stats.length && index < 320; i++) {
+      embedding[index] = stats[i].clamp(0.0, 1.0);
+      index++;
+    }
+
+    // Position-based features (remaining dimensions)
+    index = 320;
+    for (int i = 0; i < chars.length && index < 384; i++) {
+      final char = chars[i];
+      final charCode = char.codeUnitAt(0);
+      final position = i / chars.length; // Normalized position
+
+      embedding[index] = ((charCode + i) % 100) / 100.0;
+      if (index + 1 < 384) {
+        embedding[index + 1] = position;
+        index += 2;
+      } else {
+        index++;
+      }
+    }
+
+    // Normalize the embedding to unit length
     final magnitude = sqrt(embedding.map((x) => x * x).reduce((a, b) => a + b));
     if (magnitude > 0) {
       for (int i = 0; i < embedding.length; i++) {
@@ -542,7 +528,7 @@ class RAGify {
   Future<List<ContextChunk>> searchSimilarChunks(
     String query,
     int maxResults, {
-    double minSimilarity = 0.7,
+    double minSimilarity = 0.1, // Reasonable threshold for vector similarity
     PrivacyLevel? privacyLevel,
     String? userId,
   }) async {
@@ -562,6 +548,13 @@ class RAGify {
 
     try {
       logger.i('Performing vector similarity search for query: $query');
+      logger.d(
+        'Search parameters: maxResults=$maxResults, minSimilarity=$minSimilarity',
+      );
+
+      // Debug: Show what chunks are available
+      final allVectorIds = await _vectorDatabase.getAllVectorIds();
+      logger.d('Available vector IDs: $allVectorIds');
 
       // Skip vector database operations in test mode
       if (_isTestMode) {
@@ -569,8 +562,19 @@ class RAGify {
         return [];
       }
 
+      // First, try exact word matching for better relevance
+      final queryWords = query
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .where((w) => w.isNotEmpty)
+          .toList();
+      logger.d('Query words: $queryWords');
+
       // Generate embedding for the query
       final queryEmbedding = await _generateEmbedding(query);
+      logger.d(
+        'Generated query embedding with ${queryEmbedding.length} dimensions',
+      );
 
       // Search for similar vectors
       final searchResults = await _vectorDatabase.searchVectors(
@@ -579,27 +583,121 @@ class RAGify {
         minScore: minSimilarity,
       );
 
-      // Convert search results back to context chunks
-      final similarChunks = <ContextChunk>[];
+      logger.d('Vector search returned ${searchResults.length} results');
+
+      // Filter results based on relevance
+      final filteredResults = <SearchResult>[];
 
       for (final result in searchResults) {
-        // Get the original chunk from the orchestrator or cache
-        // For now, we'll create a simplified chunk with the search result
-        final chunk = ContextChunk(
-          content:
-              'Similar content found (Score: ${result.score.toStringAsFixed(3)})',
-          source: ContextSource(
-            name: 'vector_search',
-            sourceType: SourceType.vector,
-          ),
-          tags: [
-            'vector_search',
-            'similarity:${result.score.toStringAsFixed(3)}',
-          ],
-          relevanceScore: RelevanceScore(score: result.score),
-        );
+        try {
+          final vectorData = await _vectorDatabase.getVectorData(result.id);
+          if (vectorData != null) {
+            final content = vectorData.metadata['content'] as String? ?? '';
+            final contentLower = content.toLowerCase();
 
-        similarChunks.add(chunk);
+            // Check for exact word matches
+            int exactMatches = 0;
+            for (final word in queryWords) {
+              if (contentLower.contains(word)) {
+                exactMatches++;
+              }
+            }
+
+            // Include results with exact matches OR high similarity scores
+            if (exactMatches > 0 || result.score > 0.5) {
+              filteredResults.add(result);
+              logger.d(
+                '✅ Including result: ${result.id} (exact: $exactMatches, score: ${result.score.toStringAsFixed(3)})',
+              );
+            } else {
+              logger.d(
+                '❌ Filtering out irrelevant result: ${result.id} (score: ${result.score.toStringAsFixed(3)})',
+              );
+            }
+          }
+        } catch (e) {
+          logger.w('Failed to check result ${result.id}: $e');
+          // Include result if we can't check it
+          filteredResults.add(result);
+        }
+      }
+
+      logger.d(
+        'Filtered to ${filteredResults.length} relevant results out of ${searchResults.length} total',
+      );
+      final finalResults = filteredResults;
+
+      // Convert search results back to context chunks using stored metadata
+      final similarChunks = <ContextChunk>[];
+
+      for (final result in finalResults) {
+        try {
+          // Get the full vector data including metadata
+          final vectorData = await _vectorDatabase.getVectorData(result.id);
+          if (vectorData == null) {
+            logger.w('Vector data not found for ID: ${result.id}');
+            continue;
+          }
+
+          // Reconstruct the original chunk from vector metadata
+          final metadata = vectorData.metadata;
+          final content =
+              metadata['content'] as String? ?? 'Content not available';
+          final sourceName = metadata['source'] as String? ?? 'unknown_source';
+          final sourceTypeValue =
+              metadata['sourceType'] as String? ?? 'document';
+          final tags = List<String>.from(metadata['tags'] as List? ?? []);
+          final createdAtMs =
+              metadata['createdAt'] as int? ??
+              DateTime.now().millisecondsSinceEpoch;
+
+          // Create the original source
+          final source = ContextSource(
+            name: sourceName,
+            sourceType: SourceType.fromString(sourceTypeValue),
+            authorityScore: 0.8,
+            // Default authority score
+            lastUpdated: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
+            isActive: true,
+            freshnessScore: 1.0,
+          );
+
+          // Create the reconstructed chunk with the search score
+          final chunk = ContextChunk(
+            id: result.id,
+            content: content,
+            source: source,
+            metadata: {
+              ...metadata,
+              'search_score': result.score,
+              'search_timestamp': DateTime.now().millisecondsSinceEpoch,
+            },
+            tags: [
+              ...tags,
+              'search_result',
+              'similarity:${result.score.toStringAsFixed(3)}',
+            ],
+            relevanceScore: RelevanceScore(score: result.score),
+            createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
+            updatedAt: DateTime.now(),
+          );
+
+          similarChunks.add(chunk);
+        } catch (e) {
+          logger.w('Failed to reconstruct chunk from search result: $e');
+          // Fallback to a basic chunk if reconstruction fails
+          final fallbackChunk = ContextChunk(
+            id: result.id,
+            content: 'Search result (reconstruction failed)',
+            source: ContextSource(
+              name: 'search_fallback',
+              sourceType: SourceType.vector,
+            ),
+            tags: ['search_fallback', 'error'],
+            relevanceScore: RelevanceScore(score: result.score),
+          );
+          similarChunks.add(fallbackChunk);
+        }
       }
 
       logger.i(
@@ -610,36 +708,6 @@ class RAGify {
       logger.e('Vector search failed: $e');
       rethrow;
     }
-  }
-
-  /// Get cache statistics
-  Map<String, dynamic> getCacheStats() {
-    return _cacheManager.getStats().toJson();
-  }
-
-  /// Get privacy manager statistics
-  Map<String, dynamic> getPrivacyStats() {
-    return _privacyManager.getPrivacyStats();
-  }
-
-  /// Get security manager statistics
-  Map<String, dynamic> getSecurityStats() {
-    return _securityManager.getSecurityStats();
-  }
-
-  /// Get vector database statistics
-  Map<String, dynamic> getVectorDatabaseStats() {
-    return _vectorDatabase.getStats();
-  }
-
-  /// Get advanced scoring engine statistics
-  Map<String, dynamic> getAdvancedScoringStats() {
-    return _advancedScoringEngine.getStats();
-  }
-
-  /// Get advanced fusion engine statistics
-  Map<String, dynamic> getAdvancedFusionStats() {
-    return _advancedFusionEngine.getStats();
   }
 
   /// Get the advanced scoring engine instance
@@ -720,43 +788,6 @@ class RAGify {
     } catch (e) {
       logger.e('Failed to perform advanced fusion: $e');
       rethrow;
-    }
-  }
-
-  /// Get overall RAGify statistics
-  Map<String, dynamic> getStats() {
-    return {
-      'is_initialized': _isInitialized,
-      'is_closed': _isClosed,
-      'config': config.toJson(),
-      'orchestrator': _orchestrator.getStats(),
-      'cache': getCacheStats(),
-      'privacy': getPrivacyStats(),
-      'security': getSecurityStats(),
-      'vector_database': getVectorDatabaseStats(),
-      'advanced_scoring': getAdvancedScoringStats(),
-      'advanced_fusion': getAdvancedFusionStats(),
-      'databases': getDatabaseStats(),
-    };
-  }
-
-  /// Check if RAGify is healthy
-  Future<bool> isHealthy() async {
-    if (!_isInitialized || _isClosed) return false;
-
-    try {
-      // Check orchestrator health
-      final orchestratorHealthy = await _orchestrator.isHealthy();
-      if (!orchestratorHealthy) return false;
-
-      // Check vector database health
-      // Vector database health check would be implemented here
-      // Assume healthy for now
-
-      return true;
-    } catch (e) {
-      logger.w('Health check failed: $e');
-      return false;
     }
   }
 
@@ -926,109 +957,5 @@ class RAGify {
     }
 
     return stats;
-  }
-
-  /// Check if current platform supports hardware acceleration
-  bool get supportsHardwareAcceleration {
-    return PlatformDetector.isMobile || PlatformDetector.isDesktop;
-  }
-
-  /// Check if current platform supports advanced features
-  bool get supportsAdvancedFeatures {
-    return PlatformDetector.supportsFeature(PlatformFeature.aiModelApis) ||
-        PlatformDetector.supportsFeature(PlatformFeature.vectorOperations);
-  }
-
-  /// Check if current platform supports persistent storage
-  bool get supportsPersistentStorage {
-    return PlatformDetector.supportsFeature(PlatformFeature.sqlite) ||
-        PlatformDetector.supportsFeature(PlatformFeature.fileSystem);
-  }
-
-  /// Get platform-optimized configuration
-  Map<String, dynamic> getPlatformOptimizedConfig() {
-    final baseConfig = config.toJson();
-
-    // Add platform-specific optimizations
-    if (PlatformDetector.isWeb) {
-      baseConfig['platform_optimizations'] = {
-        'max_context_size': (config.maxContextSize * 0.5)
-            .round(), // Web: Reduce context size
-        'cache_ttl': config.cacheTtl * 2, // Web: Increase cache TTL
-        'vector_db_url': 'memory://vector_db', // Web: Use memory storage
-        'enable_compression': true, // Web: Enable compression
-      };
-    } else if (PlatformDetector.isMobile) {
-      baseConfig['platform_optimizations'] = {
-        'max_context_size':
-            config.maxContextSize, // Mobile: Use full context size
-        'cache_ttl': config.cacheTtl, // Mobile: Use default cache TTL
-        'vector_db_url':
-            config.vectorDbUrl ?? 'faiss://vector_db', // Mobile: Use FAISS
-        'enable_compression': true, // Mobile: Enable compression
-        'battery_optimization': true, // Mobile: Enable battery optimization
-      };
-    } else if (PlatformDetector.isDesktop) {
-      baseConfig['platform_optimizations'] = {
-        'max_context_size': (config.maxContextSize * 1.5)
-            .round(), // Desktop: Increase context size
-        'cache_ttl': config.cacheTtl, // Desktop: Use default cache TTL
-        'vector_db_url':
-            config.vectorDbUrl ?? 'faiss://vector_db', // Desktop: Use FAISS
-        'enable_compression':
-            false, // Desktop: Disable compression for performance
-        'parallel_processing': true, // Desktop: Enable parallel processing
-      };
-    } else {
-      baseConfig['platform_optimizations'] = {
-        'max_context_size':
-            config.maxContextSize, // Other: Use default context size
-        'cache_ttl': config.cacheTtl, // Other: Use default cache TTL
-        'vector_db_url':
-            config.vectorDbUrl ??
-            'memory://vector_db', // Other: Use memory storage
-        'enable_compression': true, // Other: Enable compression
-      };
-    }
-
-    return baseConfig;
-  }
-
-  /// Get comprehensive platform status and health
-  Map<String, dynamic> getPlatformStatus() {
-    return {
-      'platform': PlatformDetector.platformName,
-      'is_initialized': _isInitialized,
-      'is_closed': _isClosed,
-      'capabilities': {
-        'aiModelApis': PlatformDetector.supportsFeature(
-          PlatformFeature.aiModelApis,
-        ),
-        'vectorOperations': PlatformDetector.supportsFeature(
-          PlatformFeature.vectorOperations,
-        ),
-        'sqlite': PlatformDetector.supportsFeature(PlatformFeature.sqlite),
-        'webStorage': PlatformDetector.supportsFeature(
-          PlatformFeature.webStorage,
-        ),
-        'fileSystem': PlatformDetector.supportsFeature(
-          PlatformFeature.fileSystem,
-        ),
-      },
-      'features': {
-        'advanced_features': supportsAdvancedFeatures,
-        'persistent_storage': supportsPersistentStorage,
-        'hardware_acceleration': supportsHardwareAcceleration,
-      },
-      'optimizations': getPlatformOptimizedConfig()['platform_optimizations'],
-      'recommendations': getPlatformRecommendations(),
-      'services': {
-        'cache_manager': _cacheManager.getStats().toJson(),
-        'privacy_manager': 'PrivacyManager (no status method)',
-        'security_manager': 'SecurityManager (no status method)',
-        'vector_database': _vectorDatabase.getStats(),
-        'orchestrator': 'ContextOrchestrator (no status method)',
-      },
-    };
   }
 }
