@@ -9,6 +9,7 @@ import '../models/relevance_score.dart';
 import '../models/privacy_level.dart';
 import '../exceptions/ragify_exceptions.dart';
 import '../config/dynamic_config_manager.dart';
+import '../utils/ragify_logger.dart';
 import 'base_data_source.dart';
 
 /// API Source for retrieving context from HTTP APIs
@@ -40,8 +41,8 @@ class APISource implements BaseDataSource {
   @override
   ContextSource get source => _source;
 
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Base URL for the API
   final String baseUrl;
@@ -78,6 +79,7 @@ class APISource implements BaseDataSource {
     required this.name,
     required this.baseUrl,
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     Map<String, dynamic>? config,
     Map<String, dynamic>? metadata,
     Map<String, String>? authHeaders,
@@ -86,7 +88,11 @@ class APISource implements BaseDataSource {
     AdaptiveTimeoutConfig? adaptiveTimeout,
     http.Client? httpClient,
     this.httpMethod = 'POST',
-  }) : logger = logger ?? Logger(),
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled()),
        config = config ?? {},
        metadata = metadata ?? {},
        authHeaders = authHeaders ?? {},

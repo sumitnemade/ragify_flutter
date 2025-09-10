@@ -20,6 +20,7 @@ import 'exceptions/ragify_exceptions.dart';
 import 'scoring/advanced_scoring_engine.dart';
 import 'fusion/advanced_fusion_engine.dart';
 import 'platform/platform_detector.dart';
+import 'utils/ragify_logger.dart';
 import 'package:uuid/uuid.dart';
 
 /// Main RAGify class that integrates all features
@@ -34,8 +35,8 @@ class RAGify {
   /// Configuration for the RAGify instance
   final RagifyConfig config;
 
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Main context orchestrator
   late final ContextOrchestrator _orchestrator;
@@ -68,10 +69,16 @@ class RAGify {
   final bool _isTestMode;
 
   /// Create a new RAGify instance
-  RAGify({RagifyConfig? config, Logger? logger, bool isTestMode = false})
-    : config = config ?? RagifyConfig.defaultConfig(),
-      logger = logger ?? Logger(),
-      _isTestMode = isTestMode {
+  RAGify({
+    RagifyConfig? config,
+    Logger? logger,
+    bool enableLogging = false,
+    bool isTestMode = false,
+  }) : config = config ?? RagifyConfig.defaultConfig(),
+       logger = enableLogging
+           ? RAGifyLogger.fromLogger(logger ?? Logger())
+           : const RAGifyLogger.disabled(),
+       _isTestMode = isTestMode {
     _initializeComponents(isTestMode);
   }
 

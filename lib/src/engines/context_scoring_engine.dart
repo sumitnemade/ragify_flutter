@@ -7,14 +7,15 @@ import '../models/context_source.dart';
 import '../models/relevance_score.dart';
 import '../models/privacy_level.dart';
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// Context Scoring Engine
 ///
 /// Provides intelligent relevance scoring for context chunks using
 /// multiple scoring algorithms and confidence intervals.
 class ContextScoringEngine {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Scoring algorithms configuration
   final Map<String, double> algorithmWeights;
@@ -29,9 +30,14 @@ class ContextScoringEngine {
   /// Create a new scoring engine
   ContextScoringEngine({
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     Map<String, double>? algorithmWeights,
     this.confidenceLevel = 0.95,
-  }) : logger = logger ?? Logger(),
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled()),
        algorithmWeights =
            algorithmWeights ??
            {

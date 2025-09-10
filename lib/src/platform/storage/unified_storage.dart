@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:logger/logger.dart';
 import 'storage_interface.dart';
+import '../../utils/ragify_logger.dart';
 
 // Conditional imports for platform-specific functionality
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -22,7 +22,7 @@ class UnifiedStorage implements CrossPlatformStorage {
   final Map<String, dynamic> _fallbackStorage = {};
   bool _initialized = false;
   bool _usingHive = false;
-  final Logger logger = Logger();
+  final RAGifyLogger logger = const RAGifyLogger.disabled();
 
   @override
   Future<void> initialize() async {

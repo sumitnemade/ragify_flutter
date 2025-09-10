@@ -6,7 +6,7 @@ import 'dart:math';
 /// Performance benchmark tests for vector operations
 /// Demonstrates the improvement after fixing O(n²) bottlenecks
 void main() {
-  final logger = Logger();
+  final logger = RAGifyLogger.fromLogger(Logger());
 
   group('Vector Operations Performance Benchmark', () {
     late List<List<double>> testVectors;

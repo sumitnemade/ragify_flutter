@@ -5,6 +5,8 @@ import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:math' as math;
 
+import '../utils/ragify_logger.dart';
+
 /// Security levels for different types of operations
 enum SecurityLevel {
   low, // Basic encryption and access control
@@ -262,8 +264,8 @@ class SecurityEvent {
 /// - Security policies and enforcement
 /// - Threat detection and response
 class SecurityManager {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Current security level
   SecurityLevel _currentLevel;
@@ -315,9 +317,14 @@ class SecurityManager {
   /// Create a new security manager
   SecurityManager({
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     SecurityLevel initialLevel = SecurityLevel.medium,
     SecurityParallelConfig? parallelConfig,
-  }) : logger = logger ?? Logger(),
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled()),
        _currentLevel = initialLevel,
        _parallelConfig = parallelConfig ?? const SecurityParallelConfig() {
     _initializeThreatPatterns();

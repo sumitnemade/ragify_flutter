@@ -11,6 +11,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// **NEW: Cache configuration class**
 class _CacheConfig {
@@ -67,8 +68,8 @@ class _CachedVector {
 /// - Pinecone (cloud) - Future implementation
 /// - Weaviate (local/cloud) - Future implementation
 class VectorDatabase {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Vector database connection URL
   final String vectorDbUrl;
@@ -141,8 +142,13 @@ class VectorDatabase {
   VectorDatabase({
     required this.vectorDbUrl,
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     Map<String, dynamic>? config,
-  }) : logger = logger ?? Logger(),
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled()),
        dbType = _parseDbType(vectorDbUrl),
        connectionString = _parseConnectionString(vectorDbUrl),
        config =

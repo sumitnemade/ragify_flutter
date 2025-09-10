@@ -8,14 +8,15 @@ import '../models/context_chunk.dart';
 import '../models/context_source.dart';
 import '../models/privacy_level.dart';
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// Context Updates Engine
 ///
 /// Handles real-time updates, synchronization, and live data processing
 /// from various sources with privacy controls and conflict resolution.
 class ContextUpdatesEngine {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Active WebSocket connections
   final Map<String, WebSocketChannel> _activeConnections = {};
@@ -42,10 +43,15 @@ class ContextUpdatesEngine {
   /// Create a new updates engine
   ContextUpdatesEngine({
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     this.processingInterval = const Duration(seconds: 5),
     this.maxRetryAttempts = 3,
     this.retryDelay = const Duration(seconds: 10),
-  }) : logger = logger ?? Logger();
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled());
 
   /// Start the updates engine
   Future<void> start() async {

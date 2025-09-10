@@ -10,6 +10,7 @@ import '../models/context_chunk.dart';
 import '../models/context_source.dart';
 import '../models/relevance_score.dart';
 import '../models/privacy_level.dart';
+import '../utils/ragify_logger.dart';
 import 'base_data_source.dart';
 
 /// Document Source for processing various document formats
@@ -44,8 +45,8 @@ class DocumentSource implements BaseDataSource {
   @override
   ContextSource get source => _source;
 
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Document path (can be local directory or web URL)
   final String documentPath;
@@ -100,12 +101,17 @@ class DocumentSource implements BaseDataSource {
     required this.name,
     required this.documentPath,
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     Map<String, dynamic>? config,
     Map<String, dynamic>? metadata,
     this.chunkSize = 1000,
     this.chunkOverlap = 200,
     this.includeMetadata = true,
-  }) : logger = logger ?? Logger(),
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled()),
        config = config ?? {},
        metadata = metadata ?? {} {
     _source = ContextSource(

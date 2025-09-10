@@ -1,10 +1,10 @@
 import 'dart:io';
-import 'package:logger/logger.dart';
+import '../utils/ragify_logger.dart';
 
 /// Dynamic Configuration Manager for RAGify Flutter
 /// Provides environment-aware configuration for timeouts, memory limits, and other settings
 class DynamicConfigManager {
-  static final Logger _logger = Logger();
+  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
   static DynamicConfigManager? _instance;
 
   /// Environment detection

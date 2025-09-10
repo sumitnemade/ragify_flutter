@@ -1,15 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ragify_flutter/src/ragify.dart';
-import 'package:ragify_flutter/src/core/ragify_config.dart';
-import 'package:ragify_flutter/src/models/context_chunk.dart';
-import 'package:ragify_flutter/src/models/context_response.dart';
-import 'package:ragify_flutter/src/models/context_source.dart';
-import 'package:ragify_flutter/src/models/privacy_level.dart';
-import 'package:ragify_flutter/src/models/relevance_score.dart';
-import 'package:ragify_flutter/src/sources/base_data_source.dart';
-import 'package:ragify_flutter/src/sources/database_source.dart';
-import 'package:ragify_flutter/src/exceptions/ragify_exceptions.dart';
-import 'package:ragify_flutter/src/cache/cache_manager.dart';
+import 'package:ragify_flutter/ragify_flutter.dart';
 import 'package:logger/logger.dart';
 
 // Mock data source for testing
@@ -129,14 +119,18 @@ void main() {
   group('RAGify Tests', () {
     late RAGify ragify;
     late RagifyConfig config;
-    late Logger logger;
+    late RAGifyLogger logger;
     late ContextSource testSource;
     late ContextChunk testChunk;
 
     setUp(() {
       config = RagifyConfig.defaultConfig();
-      logger = Logger();
-      ragify = RAGify(config: config, logger: logger, isTestMode: true);
+      logger = RAGifyLogger.fromLogger(Logger());
+      ragify = RAGify(
+        config: config,
+        logger: logger.underlyingLogger,
+        isTestMode: true,
+      );
 
       testSource = ContextSource(
         name: 'Test Source',
@@ -177,7 +171,7 @@ void main() {
       test('should create RAGify instance with default config', () {
         final defaultRagify = RAGify();
         expect(defaultRagify.config, isA<RagifyConfig>());
-        expect(defaultRagify.logger, isA<Logger>());
+        expect(defaultRagify.logger, isA<RAGifyLogger>());
       });
 
       test('should create RAGify instance with custom config', () {
@@ -188,8 +182,9 @@ void main() {
 
       test('should create RAGify instance with custom logger', () {
         final customLogger = Logger(level: Level.error);
-        final customRagify = RAGify(logger: customLogger);
-        expect(customRagify.logger, equals(customLogger));
+        final customRagify = RAGify(logger: customLogger, enableLogging: true);
+        expect(customRagify.logger, isA<RAGifyLogger>());
+        expect(customRagify.logger.underlyingLogger, equals(customLogger));
       });
 
       test('should create RAGify instance in test mode', () {
@@ -213,7 +208,7 @@ void main() {
         // This test verifies error handling in initialize method
         final errorRagify = RAGify(
           config: config,
-          logger: logger,
+          logger: logger.underlyingLogger,
           isTestMode: true,
         );
         try {
@@ -227,7 +222,7 @@ void main() {
         // Test the error handling path in initialize method
         final errorRagify = RAGify(
           config: config,
-          logger: logger,
+          logger: logger.underlyingLogger,
           isTestMode: false,
         );
         try {
@@ -653,7 +648,7 @@ void main() {
         // Create a fresh instance for this test to avoid state issues
         final testRagify = RAGify(
           config: config,
-          logger: logger,
+          logger: logger.underlyingLogger,
           isTestMode: true,
         );
         try {
@@ -674,7 +669,7 @@ void main() {
           // Create a fresh instance for this test to avoid state issues
           final testRagify = RAGify(
             config: config,
-            logger: logger,
+            logger: logger.underlyingLogger,
             isTestMode: true,
           );
           try {
@@ -692,7 +687,7 @@ void main() {
         // Create a fresh instance for this test to avoid state issues
         final testRagify = RAGify(
           config: config,
-          logger: logger,
+          logger: logger.underlyingLogger,
           isTestMode: true,
         );
         try {

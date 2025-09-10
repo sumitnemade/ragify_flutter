@@ -5,7 +5,7 @@ import 'package:logger/logger.dart';
 /// Performance benchmark tests for cache manager
 /// Demonstrates the improvement after fixing the memory-intensive operations bottleneck
 void main() {
-  final logger = Logger();
+  final logger = RAGifyLogger.fromLogger(Logger());
 
   group('Cache Manager Performance Benchmark', () {
     late CacheManager cache;

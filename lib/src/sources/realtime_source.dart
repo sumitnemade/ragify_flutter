@@ -6,6 +6,7 @@ import 'package:logger/logger.dart';
 import '../models/context_chunk.dart';
 import '../models/context_source.dart';
 import '../models/privacy_level.dart';
+import '../utils/ragify_logger.dart';
 import '../sources/base_data_source.dart';
 
 /// Realtime connection configuration
@@ -520,7 +521,7 @@ class RealtimeSource extends BaseDataSource {
   final List<RealtimeMessage> _messageBuffer = [];
   final int _maxBufferSize;
   final StreamController<ContextChunk> _chunkController;
-  final Logger _logger = Logger();
+  final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   bool _isInitialized = false;
   bool _isSubscribed = false;

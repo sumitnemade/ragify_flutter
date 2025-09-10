@@ -136,6 +136,7 @@ export 'src/security/security_manager.dart' show SecurityPolicy, SecurityEvent;
 export 'src/utils/context_utils.dart';
 export 'src/utils/embedding_utils.dart';
 export 'src/utils/privacy_utils.dart';
+export 'src/utils/ragify_logger.dart';
 
 // ============================================================================
 // EXCEPTIONS - Error handling and debugging

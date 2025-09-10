@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:logger/logger.dart';
 import '../models/privacy_level.dart';
 import '../models/context_chunk.dart';
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// Privacy Manager for RAGify Flutter
 /// Handles data privacy, anonymization, and compliance
 class PrivacyManager {
-  static final Logger _logger = Logger();
+  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   /// Default privacy level
   static const PrivacyLevel _defaultLevel = PrivacyLevel.private;

@@ -6,7 +6,7 @@ import 'dart:math';
 /// Performance benchmark tests for hybrid vector storage
 /// Demonstrates the improvement after fixing the in-memory storage bottleneck
 void main() {
-  final logger = Logger();
+  final logger = RAGifyLogger.fromLogger(Logger());
 
   group('Hybrid Vector Storage Performance Benchmark', () {
     late VectorDatabase vectorDb;

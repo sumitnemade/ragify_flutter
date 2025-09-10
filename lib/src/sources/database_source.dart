@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:collection';
-import 'package:logger/logger.dart';
 // SQLite only available on mobile and desktop platforms
 import 'package:sqflite/sqflite.dart'
     if (dart.library.html) 'sqflite_web_stub.dart'
@@ -10,6 +9,8 @@ import 'package:postgres/postgres.dart' as postgres;
 import 'package:mysql1/mysql1.dart' as mysql;
 import 'package:mongo_dart/mongo_dart.dart';
 import 'dart:math' as math;
+
+import '../utils/ragify_logger.dart';
 
 import '../models/context_chunk.dart';
 import '../models/context_source.dart';
@@ -135,7 +136,7 @@ class DatabaseConfig {
 /// Database connection pool
 class DatabaseConnectionPool {
   final DatabaseConfig config;
-  final Logger _logger = Logger();
+  final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   final List<dynamic> _connections = [];
   final Queue<dynamic> _availableConnections = Queue();
@@ -298,7 +299,7 @@ class DatabaseSource implements BaseDataSource {
   final DatabaseConfig databaseConfig;
   final String databaseType;
   final CacheManager cacheManager;
-  final Logger _logger = Logger();
+  final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   /// **NEW: Parallel query configuration**
   ParallelQueryConfig _parallelConfig = ParallelQueryConfig();

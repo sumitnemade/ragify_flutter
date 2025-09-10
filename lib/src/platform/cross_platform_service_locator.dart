@@ -1,11 +1,11 @@
 import 'dart:async';
-import 'package:logger/logger.dart';
 
 import 'platform_detector.dart';
 import 'storage/storage_factory.dart';
 import 'storage/storage_interface.dart';
 import 'ml/ml_factory.dart';
 import 'ml/ml_interface.dart';
+import '../utils/ragify_logger.dart';
 
 /// Cross-platform service locator that provides platform-appropriate implementations
 class CrossPlatformServiceLocator {
@@ -14,7 +14,7 @@ class CrossPlatformServiceLocator {
   CrossPlatformServiceLocator._();
 
   /// Logger instance
-  final Logger logger = Logger();
+  final RAGifyLogger logger = const RAGifyLogger.disabled();
 
   /// Get the singleton instance
   static CrossPlatformServiceLocator get instance {

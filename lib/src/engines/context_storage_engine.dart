@@ -13,14 +13,15 @@ import '../models/context_source.dart';
 import '../models/relevance_score.dart';
 import '../models/privacy_level.dart';
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// Context Storage Engine
 ///
 /// Handles persistent storage, caching, and vector database operations
 /// for context chunks and responses with privacy controls.
 class ContextStorageEngine {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Database instance for persistent storage
   Database? _database;
@@ -43,9 +44,14 @@ class ContextStorageEngine {
   /// Create a new storage engine
   ContextStorageEngine({
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     this.cacheTtl = 3600000, // 1 hour in milliseconds
     this.maxCacheSize = 1000,
-  }) : logger = logger ?? Logger();
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled());
 
   /// Initialize the storage engine
   Future<void> initialize() async {

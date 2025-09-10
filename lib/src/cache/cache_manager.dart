@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
-import 'package:logger/logger.dart';
 import '../config/dynamic_config_manager.dart';
+import '../utils/ragify_logger.dart';
 
 /// Cache entry with metadata
 class CacheEntry<T> {
@@ -111,7 +111,7 @@ class CacheStats {
 /// Optimized LRU Cache Manager for RAGify Flutter
 /// Implements O(1) operations with efficient memory management
 class CacheManager {
-  static final Logger _logger = Logger();
+  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   /// LRU cache implementation using LinkedHashMap for O(1) operations
   final LinkedHashMap<String, CacheEntry> _lruCache = LinkedHashMap();

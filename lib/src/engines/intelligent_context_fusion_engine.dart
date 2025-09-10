@@ -5,14 +5,15 @@ import '../models/context_chunk.dart';
 import '../models/context_source.dart';
 import '../models/privacy_level.dart';
 import '../exceptions/ragify_exceptions.dart';
+import '../utils/ragify_logger.dart';
 
 /// Intelligent Context Fusion Engine
 ///
 /// Handles conflict detection and resolution between data sources using
 /// source authority, freshness, and semantic similarity analysis.
 class IntelligentContextFusionEngine {
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Conflict detection threshold (0.0 to 1.0)
   final double conflictThreshold;
@@ -29,11 +30,16 @@ class IntelligentContextFusionEngine {
   /// Create a new fusion engine
   IntelligentContextFusionEngine({
     Logger? logger,
+    RAGifyLogger? ragifyLogger,
     this.conflictThreshold = 0.7,
     this.authorityWeight = 0.4,
     this.freshnessWeight = 0.3,
     this.semanticWeight = 0.3,
-  }) : logger = logger ?? Logger();
+  }) : logger =
+           ragifyLogger ??
+           (logger != null
+               ? RAGifyLogger.fromLogger(logger)
+               : const RAGifyLogger.disabled());
 
   /// Fuse context chunks from multiple sources
   ///

@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'dart:isolate';
-import 'package:logger/logger.dart';
 
 import '../models/context_chunk.dart';
-
+import '../utils/ragify_logger.dart';
 import '../storage/vector_database.dart';
 import '../cache/cache_manager.dart';
 
@@ -218,7 +217,7 @@ class QualityAssessment {
 class AdvancedFusionEngine {
   final CacheManager cacheManager;
   final VectorDatabase vectorDatabase;
-  final Logger _logger = Logger();
+  final RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   /// Fusion strategy configurations
   final Map<String, FusionStrategyConfig> _strategies = {};

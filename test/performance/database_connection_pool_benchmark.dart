@@ -4,7 +4,7 @@ import 'package:logger/logger.dart';
 
 /// Performance benchmark tests for database connection pool
 void main() {
-  final logger = Logger();
+  final logger = RAGifyLogger.fromLogger(Logger());
 
   group('Database Connection Pool Performance Benchmark', () {
     late DatabaseConfig config;

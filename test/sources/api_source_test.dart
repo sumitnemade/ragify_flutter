@@ -2,19 +2,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ragify_flutter/src/sources/api_source.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
+import 'package:ragify_flutter/src/utils/ragify_logger.dart';
 import 'package:logger/logger.dart';
 
 void main() {
   group('APISource Tests', () {
     late APISource apiSource;
-    late Logger mockLogger;
+    late RAGifyLogger mockLogger;
 
     setUp(() {
-      mockLogger = Logger();
+      mockLogger = RAGifyLogger.fromLogger(Logger());
       apiSource = APISource(
         name: 'Test API Source',
         baseUrl: 'https://api.example.com',
-        logger: mockLogger,
+        logger: mockLogger.underlyingLogger,
         authHeaders: {'Authorization': 'Bearer token'},
         timeout: Duration(seconds: 30),
         rateLimit: RateLimitConfig(

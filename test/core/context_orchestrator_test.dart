@@ -639,7 +639,7 @@ void main() {
       mockDataSource = MockDataSource();
       orchestrator = ContextOrchestrator(
         config: config,
-        logger: Logger(level: Level.info),
+        logger: RAGifyLogger.fromLogger(Logger(level: Level.info)),
         isTestMode:
             true, // Enable test mode to skip platform-specific initializations
       );
@@ -662,7 +662,9 @@ void main() {
       });
 
       test('creation with custom logger', () {
-        final customLogger = Logger(level: Level.debug);
+        final customLogger = RAGifyLogger.fromLogger(
+          Logger(level: Level.debug),
+        );
         final customOrchestrator = ContextOrchestrator(
           config: config,
           logger: customLogger,
@@ -673,10 +675,10 @@ void main() {
       test('creation with custom components', () {
         final customOrchestrator = ContextOrchestrator(
           config: config,
-          logger: Logger(level: Level.debug),
+          logger: RAGifyLogger.fromLogger(Logger(level: Level.debug)),
         );
         expect(customOrchestrator.config, equals(config));
-        expect(customOrchestrator.logger, isA<Logger>());
+        expect(customOrchestrator.logger, isA<RAGifyLogger>());
       });
 
       test('initialize method', () async {
@@ -1218,7 +1220,7 @@ void main() {
         // Create orchestrator without calling initialize, but in test mode
         final autoOrchestrator = ContextOrchestrator(
           config: RagifyConfig.defaultConfig(),
-          logger: Logger(level: Level.info),
+          logger: RAGifyLogger.fromLogger(Logger(level: Level.info)),
           isTestMode:
               true, // Enable test mode to avoid platform-specific initializations
         );

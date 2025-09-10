@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math' as math;
-import 'package:logger/logger.dart';
 import 'package:uuid/uuid.dart';
 
 import '../models/context_chunk.dart';
@@ -16,6 +15,7 @@ import '../engines/context_scoring_engine.dart';
 import '../engines/context_storage_engine.dart';
 import '../engines/intelligent_context_fusion_engine.dart';
 import '../engines/context_updates_engine.dart';
+import '../utils/ragify_logger.dart';
 import 'ragify_config.dart';
 
 /// Main orchestrator for intelligent context management
@@ -26,8 +26,8 @@ class ContextOrchestrator {
   /// Configuration for the orchestrator
   final RagifyConfig config;
 
-  /// Logger instance
-  final Logger logger;
+  /// Logger instance (optional)
+  final RAGifyLogger logger;
 
   /// Registered data sources
   final Map<String, BaseDataSource> _sources = {};
@@ -74,23 +74,25 @@ class ContextOrchestrator {
   /// Create a new context orchestrator
   ContextOrchestrator({
     RagifyConfig? config,
-    Logger? logger,
+    RAGifyLogger? logger,
     bool isTestMode = false,
     ParallelProcessingConfig? parallelConfig,
     VectorDatabase? vectorDatabase,
   }) : config = config ?? RagifyConfig.defaultConfig(),
-       logger = logger ?? Logger(),
+       logger = logger ?? const RAGifyLogger.disabled(),
        _isTestMode = isTestMode,
        _parallelConfig = parallelConfig ?? const ParallelProcessingConfig(),
        _vectorDatabase = vectorDatabase {
     // Initialize engines with configuration
-    _scoringEngine = ContextScoringEngine(logger: logger ?? Logger());
+    _scoringEngine = ContextScoringEngine(logger: logger?.underlyingLogger);
 
-    _storageEngine = ContextStorageEngine(logger: logger ?? Logger());
+    _storageEngine = ContextStorageEngine(logger: logger?.underlyingLogger);
 
-    _fusionEngine = IntelligentContextFusionEngine(logger: logger ?? Logger());
+    _fusionEngine = IntelligentContextFusionEngine(
+      logger: logger?.underlyingLogger,
+    );
 
-    _updatesEngine = ContextUpdatesEngine(logger: logger ?? Logger());
+    _updatesEngine = ContextUpdatesEngine(logger: logger?.underlyingLogger);
   }
 
   /// Initialize the orchestrator

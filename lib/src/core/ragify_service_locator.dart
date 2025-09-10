@@ -1,6 +1,5 @@
 import '../platform/cross_platform_service_locator.dart';
 import '../platform/platform_detector.dart';
-import 'package:logger/logger.dart';
 
 import '../cache/cache_manager.dart';
 import '../privacy/privacy_manager.dart';
@@ -11,6 +10,7 @@ import '../engines/context_storage_engine.dart';
 import '../engines/context_updates_engine.dart';
 import '../storage/vector_database.dart';
 import '../models/context_source.dart';
+import '../utils/ragify_logger.dart';
 
 /// Main RAGify service locator that integrates cross-platform capabilities
 class RAGifyServiceLocator {
@@ -19,7 +19,7 @@ class RAGifyServiceLocator {
   RAGifyServiceLocator._();
 
   /// Logger instance
-  final Logger logger = Logger();
+  final RAGifyLogger logger = const RAGifyLogger.disabled();
 
   /// Get the singleton instance
   static RAGifyServiceLocator get instance {

@@ -3,6 +3,7 @@ import 'package:ragify_flutter/src/sources/document_source.dart';
 import 'package:ragify_flutter/src/models/context_source.dart';
 import 'package:ragify_flutter/src/models/privacy_level.dart';
 import 'package:ragify_flutter/src/sources/base_data_source.dart';
+import 'package:ragify_flutter/src/utils/ragify_logger.dart';
 import 'package:logger/logger.dart';
 import 'dart:io';
 
@@ -52,7 +53,8 @@ void main() {
           logger: customLogger,
         );
 
-        expect(source.logger, equals(customLogger));
+        expect(source.logger, isA<RAGifyLogger>());
+        expect(source.logger.underlyingLogger, equals(customLogger));
       });
 
       test('should create DocumentSource with custom config and metadata', () {
