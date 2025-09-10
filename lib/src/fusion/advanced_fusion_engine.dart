@@ -217,7 +217,7 @@ class QualityAssessment {
 class AdvancedFusionEngine {
   final CacheManager cacheManager;
   final VectorDatabase vectorDatabase;
-  final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   /// Fusion strategy configurations
   final Map<String, FusionStrategyConfig> _strategies = {};
@@ -244,7 +244,8 @@ class AdvancedFusionEngine {
     required this.cacheManager,
     required this.vectorDatabase,
     FusionParallelProcessingConfig? parallelConfig,
-  }) {
+    RAGifyLogger? logger,
+  }) : _logger = logger ?? const RAGifyLogger.disabled() {
     if (parallelConfig != null) {
       _parallelConfig = parallelConfig;
     }

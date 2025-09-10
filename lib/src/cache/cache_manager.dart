@@ -111,7 +111,7 @@ class CacheStats {
 /// Optimized LRU Cache Manager for RAGify Flutter
 /// Implements O(1) operations with efficient memory management
 class CacheManager {
-  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   /// LRU cache implementation using LinkedHashMap for O(1) operations
   final LinkedHashMap<String, CacheEntry> _lruCache = LinkedHashMap();
@@ -147,8 +147,9 @@ class CacheManager {
   // Memcached? _memcached;
 
   /// Cache Manager constructor
-  CacheManager({Map<String, dynamic>? config})
-    : _config = _mergeConfig(config ?? {}, _defaultConfig()) {
+  CacheManager({Map<String, dynamic>? config, RAGifyLogger? logger})
+    : _config = _mergeConfig(config ?? {}, _defaultConfig()),
+      _logger = logger ?? const RAGifyLogger.disabled() {
     _initializeCache();
   }
 

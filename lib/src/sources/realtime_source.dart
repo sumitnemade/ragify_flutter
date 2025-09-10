@@ -521,7 +521,7 @@ class RealtimeSource extends BaseDataSource {
   final List<RealtimeMessage> _messageBuffer = [];
   final int _maxBufferSize;
   final StreamController<ContextChunk> _chunkController;
-  final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   bool _isInitialized = false;
   bool _isSubscribed = false;
@@ -546,9 +546,11 @@ class RealtimeSource extends BaseDataSource {
     required this.privacyLevel,
     Map<String, dynamic>? metadata,
     int maxBufferSize = 1000,
+    RAGifyLogger? logger,
   }) : _maxBufferSize = maxBufferSize,
        _metadata = metadata ?? const {},
-       _chunkController = StreamController<ContextChunk>.broadcast() {
+       _chunkController = StreamController<ContextChunk>.broadcast(),
+       _logger = logger ?? const RAGifyLogger.disabled() {
     _connection = _createConnection();
   }
 

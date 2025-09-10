@@ -6,6 +6,7 @@ import '../models/context_chunk.dart';
 import '../models/relevance_score.dart';
 import '../cache/cache_manager.dart';
 import '../storage/vector_database.dart';
+import '../utils/ragify_logger.dart';
 
 /// Scoring algorithm configuration
 class ScoringAlgorithmConfig {
@@ -310,6 +311,7 @@ class MultiAlgorithmScorer {
 class AdvancedScoringEngine {
   final CacheManager cacheManager;
   final VectorDatabase vectorDatabase;
+  final RAGifyLogger _logger;
 
   late MultiAlgorithmScorer _multiAlgorithmScorer;
   late final TemporalDecayFunction _temporalDecay;
@@ -321,7 +323,9 @@ class AdvancedScoringEngine {
   AdvancedScoringEngine({
     required this.cacheManager,
     required this.vectorDatabase,
-  }) {
+    RAGifyLogger? logger,
+  }) : _logger = logger ?? const RAGifyLogger.disabled() {
+    _logger.d('Initializing Advanced Scoring Engine');
     _initializeScoringFunctions();
     _initializeDefaultAlgorithms();
     _multiAlgorithmScorer = MultiAlgorithmScorer(
@@ -330,6 +334,7 @@ class AdvancedScoringEngine {
     );
 
     _temporalDecay = TemporalDecayFunction();
+    _logger.d('Advanced Scoring Engine initialized successfully');
   }
 
   /// Initialize default scoring functions

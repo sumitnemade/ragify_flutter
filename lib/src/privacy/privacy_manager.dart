@@ -8,7 +8,7 @@ import '../utils/ragify_logger.dart';
 /// Privacy Manager for RAGify Flutter
 /// Handles data privacy, anonymization, and compliance
 class PrivacyManager {
-  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   /// Default privacy level
   static const PrivacyLevel _defaultLevel = PrivacyLevel.private;
@@ -29,7 +29,8 @@ class PrivacyManager {
   final List<Map<String, dynamic>> _auditTrail = [];
 
   /// Initialize the Privacy Manager
-  PrivacyManager() {
+  PrivacyManager({RAGifyLogger? logger})
+    : _logger = logger ?? const RAGifyLogger.disabled() {
     _initializeDefaultPolicies();
     _initializeSensitivePatterns();
   }

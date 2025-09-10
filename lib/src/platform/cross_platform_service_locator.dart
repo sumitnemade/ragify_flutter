@@ -10,16 +10,24 @@ import '../utils/ragify_logger.dart';
 /// Cross-platform service locator that provides platform-appropriate implementations
 class CrossPlatformServiceLocator {
   static CrossPlatformServiceLocator? _instance;
+  static RAGifyLogger _logger = const RAGifyLogger.disabled();
 
   CrossPlatformServiceLocator._();
 
   /// Logger instance
-  final RAGifyLogger logger = const RAGifyLogger.disabled();
+  RAGifyLogger get logger => _logger;
 
   /// Get the singleton instance
   static CrossPlatformServiceLocator get instance {
     _instance ??= CrossPlatformServiceLocator._();
     return _instance!;
+  }
+
+  /// Set logger for the singleton instance
+  static void setLogger(RAGifyLogger logger) {
+    _logger = logger;
+    // Also set logger in dependent factories
+    StorageFactory.setLogger(logger);
   }
 
   /// Get the current platform name

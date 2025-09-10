@@ -5,6 +5,7 @@ import 'package:logger/logger.dart';
 
 import 'core/context_orchestrator.dart';
 import 'core/ragify_config.dart';
+import 'core/ragify_service_locator.dart';
 import 'cache/cache_manager.dart';
 import 'privacy/privacy_manager.dart';
 import 'security/security_manager.dart';
@@ -78,7 +79,7 @@ class RAGify {
        logger = enableLogging
            ? RAGifyLogger.fromLogger(logger ?? Logger())
            : const RAGifyLogger.disabled(),
-       _isTestMode = isTestMode {
+      _isTestMode = isTestMode {
     _initializeComponents(isTestMode);
   }
 
@@ -92,6 +93,9 @@ class RAGify {
     try {
       logger.i('Initializing RAGify...');
       logger.i('Platform: ${PlatformDetector.platformName}');
+
+      // Set logger in service locators
+      RAGifyServiceLocator.setLogger(logger);
 
       // Initialize orchestrator
       await _orchestrator.initialize();
@@ -412,7 +416,7 @@ class RAGify {
           );
 
           // Create the reconstructed chunk with the search score
-          final chunk = ContextChunk(
+        final chunk = ContextChunk(
             id: result.id,
             content: content,
             source: source,
@@ -421,17 +425,17 @@ class RAGify {
               'search_score': result.score,
               'search_timestamp': DateTime.now().millisecondsSinceEpoch,
             },
-            tags: [
+          tags: [
               ...tags,
               'search_result',
-              'similarity:${result.score.toStringAsFixed(3)}',
-            ],
-            relevanceScore: RelevanceScore(score: result.score),
+            'similarity:${result.score.toStringAsFixed(3)}',
+          ],
+          relevanceScore: RelevanceScore(score: result.score),
             createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
             updatedAt: DateTime.now(),
-          );
+        );
 
-          similarChunks.add(chunk);
+        similarChunks.add(chunk);
         } catch (e) {
           logger.w('Failed to reconstruct chunk from search result: $e');
           // Fallback to a basic chunk if reconstruction fails
@@ -757,6 +761,7 @@ class RAGify {
     // Initialize vector database first
     _vectorDatabase = VectorDatabase(
       vectorDbUrl: config.vectorDbUrl ?? 'memory://',
+      ragifyLogger: logger,
     );
 
     // Initialize context orchestrator with vector database
@@ -776,24 +781,30 @@ class RAGify {
         'enable_redis': config.cacheUrl != null,
         'redis_url': config.cacheUrl,
       },
+      logger: logger,
     );
 
     // Initialize privacy manager
-    _privacyManager = PrivacyManager();
+    _privacyManager = PrivacyManager(logger: logger);
 
     // Initialize security manager
-    _securityManager = SecurityManager(initialLevel: SecurityLevel.medium);
+    _securityManager = SecurityManager(
+      initialLevel: SecurityLevel.medium,
+      ragifyLogger: logger,
+    );
 
     // Initialize advanced scoring engine
     _advancedScoringEngine = AdvancedScoringEngine(
       cacheManager: _cacheManager,
       vectorDatabase: _vectorDatabase,
+      logger: logger,
     );
 
     // Initialize advanced fusion engine
     _advancedFusionEngine = AdvancedFusionEngine(
       cacheManager: _cacheManager,
       vectorDatabase: _vectorDatabase,
+      logger: logger,
     );
   }
 
@@ -893,7 +904,7 @@ class RAGify {
       if (index + 1 < 264) {
         embedding[index + 1] = (freq % 100) / 100.0;
         index += 2;
-      } else {
+    } else {
         index++;
       }
     }

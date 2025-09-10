@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:ragify_flutter/ragify_flutter.dart';
 
 void main() {
@@ -95,13 +98,39 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
   /// Holds the last fetched document chunks for rendering in UI
   List<ContextChunk> _documentChunks = [];
 
+  // Database testing variables
+  String _selectedDatabaseType = 'postgresql';
+  final TextEditingController _dbHostController = TextEditingController(
+    text: '192.168.1.16', // Use host machine IP for mobile emulator
+  );
+  final TextEditingController _dbPortController = TextEditingController(
+    text: '5432',
+  );
+  final TextEditingController _dbNameController = TextEditingController(
+    text: 'test_db',
+  );
+  final TextEditingController _dbUsernameController = TextEditingController(
+    text: 'test_user',
+  );
+  final TextEditingController _dbPasswordController = TextEditingController(
+    text: 'test_pass',
+  );
+  final TextEditingController _dbQueryController = TextEditingController();
+  final TextEditingController _dbQueryParamsController = TextEditingController(
+    text: '%john%',
+  );
+  bool _isTestingDatabase = false;
+  String _databaseTestResult = '';
+  List<ContextChunk> _databaseChunks = [];
+
   late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _initializeRAGify();
+    _updateDefaultQuery();
   }
 
   @override
@@ -129,7 +158,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
       });
 
       // Create RAGify instance
-      _ragify = RAGify();
+      _ragify = RAGify(enableLogging: true);
 
       // Initialize all components
       await _ragify.initialize();
@@ -138,6 +167,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
       final documentSource = DocumentSource(
         name: 'sample_documents',
         documentPath: '/sample_docs',
+        ragifyLogger: _ragify.logger,
       );
       _ragify.addDataSource(documentSource);
 
@@ -335,6 +365,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
             Tab(icon: Icon(Icons.psychology), text: 'Context'),
             Tab(icon: Icon(Icons.storage), text: 'Data Sources'),
             Tab(icon: Icon(Icons.description), text: 'Documents'),
+            Tab(icon: Icon(Icons.storage), text: 'Database'),
           ],
         ),
       ),
@@ -349,6 +380,8 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
           _buildDataSourcesTab(),
           // Document Sources Tab
           _buildDocumentSourcesTab(),
+          // Database Tab
+          _buildDatabaseTab(),
         ],
       ),
     );
@@ -356,111 +389,111 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
 
   Widget _buildSearchTab() {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Status Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Status: $_status',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: _isInitialized ? Colors.green : Colors.orange,
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Status: $_status',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: _isInitialized ? Colors.green : Colors.orange,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text('Logs: ${_logs.length} entries'),
-                ],
+                    const SizedBox(height: 8),
+                    Text('Logs: ${_logs.length} entries'),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          // Search Section
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Search Context',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _queryController,
-                          decoration: const InputDecoration(
-                            hintText: 'Enter your search query...',
-                            border: OutlineInputBorder(),
+            // Search Section
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Search Context',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _queryController,
+                            decoration: const InputDecoration(
+                              hintText: 'Enter your search query...',
+                              border: OutlineInputBorder(),
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: _isInitialized ? _performSearch : null,
-                        child: const Text('Search'),
-                      ),
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: _isInitialized ? _performSearch : null,
+                          child: const Text('Search'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
           // Results and Logs Section - Use Expanded to prevent overflow
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Results Section
-                if (_searchResults.isNotEmpty) ...[
-                  Text(
-                    'Search Results (${_searchResults.length})',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: _searchResults.length,
-                      itemBuilder: (context, index) {
-                        final result = _searchResults[index];
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          child: ListTile(
-                            title: Text(
-                              result.content,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            subtitle: Text(
-                              'Source: ${result.source.name} | Tags: ${result.tags.join(', ')}',
-                            ),
-                            trailing: Text(
+            // Results Section
+            if (_searchResults.isNotEmpty) ...[
+              Text(
+                'Search Results (${_searchResults.length})',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: _searchResults.length,
+                  itemBuilder: (context, index) {
+                    final result = _searchResults[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(
+                          result.content,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          'Source: ${result.source.name} | Tags: ${result.tags.join(', ')}',
+                        ),
+                        trailing: Text(
                               'Score: ${result.relevanceScore?.score.toStringAsFixed(3) ?? 'N/A'}',
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
 
-                // Logs Section
-                if (_logs.isNotEmpty) ...[
-                  const SizedBox(height: 16),
+            // Logs Section
+            if (_logs.isNotEmpty) ...[
+              const SizedBox(height: 16),
                   Text(
                     'System Logs',
                     style: Theme.of(context).textTheme.titleMedium,
@@ -810,29 +843,29 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
 
                   // Logs Section
                   if (_logs.isNotEmpty) ...[
-                    Text(
-                      'System Logs',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      height: 200,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: ListView.builder(
-                        padding: const EdgeInsets.all(8),
-                        itemCount: _logs.length,
-                        itemBuilder: (context, index) {
-                          final log =
+              Text(
+                'System Logs',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: _logs.length,
+                  itemBuilder: (context, index) {
+                    final log =
                               _logs[_logs.length -
                                   1 -
                                   index]; // Show newest first
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Text(
-                              log,
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Text(
+                        log,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(fontFamily: 'monospace'),
                             ),
@@ -1425,12 +1458,12 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                             // Show newest first
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(fontFamily: 'monospace'),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
               ),
             ),
           ),
@@ -2109,6 +2142,639 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
       _logs.add('🔄 Next search will process documents fresh');
     } catch (e) {
       _logs.add('❌ Error clearing document cache: $e');
+    }
+  }
+
+  /// Build the Database testing tab
+  Widget _buildDatabaseTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Database Source Testing',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 16),
+
+          // Database Type Selection
+          const Text(
+            'Database Type:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+          DropdownButton<String>(
+            value: _selectedDatabaseType,
+            isExpanded: true,
+            items: const [
+              DropdownMenuItem(value: 'sqlite', child: Text('SQLite')),
+              DropdownMenuItem(value: 'postgresql', child: Text('PostgreSQL')),
+              DropdownMenuItem(value: 'mysql', child: Text('MySQL')),
+              DropdownMenuItem(value: 'mongodb', child: Text('MongoDB')),
+            ],
+            onChanged: (value) {
+              setState(() {
+                _selectedDatabaseType = value!;
+                // Update default port and database name based on database type
+                switch (value) {
+                  case 'postgresql':
+                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbPortController.text = '5432';
+                    _dbNameController.text = 'test_db';
+                    break;
+                  case 'mysql':
+                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbPortController.text = '3306';
+                    _dbNameController.text = 'test_db';
+                    break;
+                  case 'mongodb':
+                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbPortController.text = '27017';
+                    _dbNameController.text = 'test_db';
+                    break;
+                  case 'sqlite':
+                    _dbHostController.text = 'localhost'; // SQLite doesn't need network
+                    _dbPortController.text = '';
+                    _dbNameController.text = 'assets/test.db';
+                    break;
+                }
+                // Update default query syntax based on database type
+                _updateDefaultQuery();
+              });
+            },
+          ),
+          const SizedBox(height: 16),
+
+          // SQLite Assets Database Note
+          if (_selectedDatabaseType == 'sqlite') ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.shade200),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '📁 Assets Database Ready!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.blue,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    'The app includes a pre-loaded SQLite database with sample data:\n'
+                    '• 8 users with departments and salaries\n'
+                    '• 8 products with categories and prices\n'
+                    '• 9 orders with user-product relationships\n'
+                    '• Ready-to-test queries and parameters',
+                    style: TextStyle(fontSize: 12, color: Colors.blue),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Connection Configuration
+          const Text(
+            'Connection Configuration:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+
+          if (_selectedDatabaseType != 'sqlite') ...[
+            TextField(
+              controller: _dbHostController,
+              decoration: const InputDecoration(
+                labelText: 'Host',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _dbPortController,
+              decoration: const InputDecoration(
+                labelText: 'Port',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          TextField(
+            controller: _dbNameController,
+            decoration: const InputDecoration(
+              labelText: 'Database Name/Path',
+              hintText: 'assets/test.db for SQLite',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          if (_selectedDatabaseType != 'sqlite') ...[
+            TextField(
+              controller: _dbUsernameController,
+              decoration: const InputDecoration(
+                labelText: 'Username',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _dbPasswordController,
+              decoration: const InputDecoration(
+                labelText: 'Password',
+                border: OutlineInputBorder(),
+              ),
+              obscureText: true,
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Query Configuration
+          const Text(
+            'Query Configuration:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: _dbQueryController,
+            decoration: const InputDecoration(
+              labelText: 'SQL Query',
+              border: OutlineInputBorder(),
+              hintText: 'SELECT * FROM table WHERE column = ?',
+            ),
+            maxLines: 2,
+          ),
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: _dbQueryParamsController,
+            decoration: const InputDecoration(
+              labelText: 'Query Parameters (comma-separated)',
+              border: OutlineInputBorder(),
+              hintText: 'value1, value2, value3',
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Sample Query Buttons (only for SQLite)
+          if (_selectedDatabaseType == 'sqlite') ...[
+            const Text(
+              'Sample Queries:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (_selectedDatabaseType == 'mongodb') {
+                      _setSampleQuery(
+                        '{"name": {"\$regex": ?, "\$options": "i"}}',
+                        'john',
+                      );
+                    } else {
+                      _setSampleQuery(
+                        'SELECT * FROM users WHERE name ${_selectedDatabaseType == 'postgresql' ? 'ILIKE' : 'LIKE'} ${_getParameterPlaceholder(0)}',
+                        '%john%',
+                      );
+                    }
+                  },
+                  child: const Text('Find John'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_selectedDatabaseType == 'mongodb') {
+                      _setSampleQuery(
+                        '{"department": ?}',
+                        'Engineering',
+                      );
+                    } else {
+                      _setSampleQuery(
+                        'SELECT * FROM users WHERE department = ${_getParameterPlaceholder(0)}',
+                        'Engineering',
+                      );
+                    }
+                  },
+                  child: const Text('Engineering Users'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_selectedDatabaseType == 'mongodb') {
+                      _setSampleQuery(
+                        '{"category": ?}',
+                        'Electronics',
+                      );
+                    } else {
+                      _setSampleQuery(
+                        'SELECT * FROM products WHERE category = ${_getParameterPlaceholder(0)}',
+                        'Electronics',
+                      );
+                    }
+                  },
+                  child: const Text('Electronics'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_selectedDatabaseType == 'mongodb') {
+                      _setSampleQuery(
+                        '{"status": ?}',
+                        'completed',
+                      );
+                    } else {
+                      _setSampleQuery(
+                        'SELECT * FROM orders WHERE status = ${_getParameterPlaceholder(0)}',
+                        'completed',
+                      );
+                    }
+                  },
+                  child: const Text('Completed Orders'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_selectedDatabaseType == 'mongodb') {
+                      _setSampleQuery(
+                        '{"status": ?}',
+                        'completed',
+                      );
+                    } else {
+                      _setSampleQuery(
+                        'SELECT u.name, p.name, o.quantity, o.total_amount FROM orders o JOIN users u ON o.user_id = u.id JOIN products p ON o.product_id = p.id WHERE o.status = ${_getParameterPlaceholder(0)}',
+                        'completed',
+                      );
+                    }
+                  },
+                  child: const Text('Order Details'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Test Database Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isTestingDatabase
+                  ? null
+                  : () {
+                      print(
+                        '🔴 Button pressed! _isTestingDatabase: $_isTestingDatabase',
+                      );
+                      _testDatabaseConnection();
+                    },
+              child: _isTestingDatabase
+                  ? const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 8),
+                        Text('Testing Database...'),
+                      ],
+                    )
+                  : const Text('Test Database Connection'),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Database Test Results
+          if (_databaseTestResult.isNotEmpty) ...[
+            const Text(
+              'Test Results:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _databaseTestResult.contains('✅')
+                    ? Colors.green.shade50
+                    : Colors.red.shade50,
+                border: Border.all(
+                  color: _databaseTestResult.contains('✅')
+                      ? Colors.green.shade300
+                      : Colors.red.shade300,
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                _databaseTestResult,
+                style: TextStyle(
+                  color: _databaseTestResult.contains('✅')
+                      ? Colors.green.shade800
+                      : Colors.red.shade800,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+
+          // Database Chunks Display
+          if (_databaseChunks.isNotEmpty) ...[
+            const Text(
+              'Retrieved Data:',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            ..._databaseChunks.map(
+              (chunk) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Source: ${chunk.source.name}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Text('Content: ${chunk.content}'),
+                      if (chunk.metadata.isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Metadata: ${chunk.metadata}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                      if (chunk.relevanceScore != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Relevance: ${chunk.relevanceScore!.score.toStringAsFixed(3)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue.shade600,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 20),
+
+          // Help Text
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.shade50,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Database Testing Help:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  '• SQLite: Uses assets/test.db by default (no host/port needed)',
+                ),
+                const Text('• PostgreSQL: Default port 5432'),
+                const Text('• MySQL: Default port 3306'),
+                const Text('• MongoDB: Default port 27017'),
+                const Text('• Use ? placeholders for parameterized queries'),
+                const Text('• Separate multiple parameters with commas'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Copy assets database to writable location
+  Future<String> _copyAssetsDatabase(String assetsPath) async {
+    try {
+      // Get the documents directory
+      final documentsDir = await getApplicationDocumentsDirectory();
+      final dbName = assetsPath.split('/').last;
+      final dbPath = '${documentsDir.path}/$dbName';
+
+      // Check if database already exists
+      final dbFile = File(dbPath);
+      if (await dbFile.exists()) {
+        _logs.add('📁 Database already exists at $dbPath');
+        return dbPath;
+      }
+
+      // Copy from assets
+      final data = await rootBundle.load(assetsPath);
+      final bytes = data.buffer.asUint8List();
+      await dbFile.writeAsBytes(bytes);
+
+      _logs.add('📁 Copied assets database from $assetsPath to $dbPath');
+      return dbPath;
+    } catch (e) {
+      _logs.add('❌ Failed to copy assets database: $e');
+      // Fallback to original path
+      return assetsPath;
+    }
+  }
+
+  /// Test database connection and query
+  /// Helper method to get the correct parameter placeholder based on database type
+  String _getParameterPlaceholder(int index) {
+    if (_selectedDatabaseType == 'sqlite') {
+      return '?';
+    } else if (_selectedDatabaseType == 'postgresql') {
+      return '\$${index + 1}';
+    } else if (_selectedDatabaseType == 'mysql') {
+      return '?';
+    } else if (_selectedDatabaseType == 'mongodb') {
+      return '?';
+    }
+    return '?';
+  }
+
+  /// Helper method to set a sample query with correct syntax
+  void _setSampleQuery(String query, String params) {
+    _dbQueryController.text = query;
+    _dbQueryParamsController.text = params;
+  }
+
+  /// Update the default query based on selected database type
+  void _updateDefaultQuery() {
+    if (_selectedDatabaseType == 'postgresql') {
+      _dbQueryController.text = 'SELECT * FROM users WHERE name ILIKE \$1';
+    } else if (_selectedDatabaseType == 'sqlite') {
+      _dbQueryController.text = 'SELECT * FROM users WHERE name LIKE ?';
+    } else if (_selectedDatabaseType == 'mysql') {
+      _dbQueryController.text = 'SELECT * FROM users WHERE name LIKE ?';
+    } else if (_selectedDatabaseType == 'mongodb') {
+      _dbQueryController.text = '{"name": {"\$regex": "john", "\$options": "i"}}';
+    }
+  }
+
+  Future<void> _testDatabaseConnection() async {
+    print('🔴 _testDatabaseConnection() method called');
+    _logs.add('🚀 _testDatabaseConnection() called');
+
+    if (!_isInitialized) {
+      _logs.add('❌ RAGify not initialized');
+      setState(() {
+        _databaseTestResult = '❌ RAGify not initialized';
+      });
+      return;
+    }
+
+    _logs.add('✅ RAGify is initialized, starting database test');
+
+    setState(() {
+      _isTestingDatabase = true;
+      _databaseTestResult = '';
+      _databaseChunks = [];
+    });
+
+    try {
+      _logs.add(
+        '🔌 Testing ${_selectedDatabaseType.toUpperCase()} database connection...',
+      );
+
+      // Handle assets database for SQLite
+      String databasePath = _dbNameController.text;
+      if (_selectedDatabaseType == 'sqlite' &&
+          databasePath.startsWith('assets/')) {
+        try {
+          _logs.add('📁 Copying assets database...');
+          databasePath = await _copyAssetsDatabase(databasePath);
+          _logs.add('📁 Copied assets database to: $databasePath');
+        } catch (e) {
+          _logs.add('❌ Failed to copy assets database: $e');
+          throw e;
+        }
+      }
+
+      // Create database configuration
+      final dbConfig = DatabaseConfig(
+        host: _selectedDatabaseType == 'sqlite'
+            ? 'localhost'
+            : _dbHostController.text,
+        port: _selectedDatabaseType == 'sqlite'
+            ? 0
+            : int.tryParse(_dbPortController.text) ?? 5432,
+        database: databasePath,
+        username: _selectedDatabaseType == 'sqlite'
+            ? 'user'
+            : _dbUsernameController.text,
+        password: _selectedDatabaseType == 'sqlite'
+            ? 'pass'
+            : _dbPasswordController.text,
+        maxConnections: 5,
+        connectionTimeout: const Duration(seconds: 10),
+        queryTimeout: const Duration(seconds: 30),
+      );
+
+      // Create database source
+      final dbSource = DatabaseSource(
+        name: 'Test Database',
+        sourceType: SourceType.database,
+        databaseConfig: dbConfig,
+        databaseType: _selectedDatabaseType,
+        cacheManager: CacheManager(logger: _ragify.logger),
+        logger: _ragify.logger,
+      );
+
+      // Add source to RAGify
+      _ragify.addDataSource(dbSource);
+      _logs.add('✅ Database source added successfully');
+
+      // Initialize database source first
+      _logs.add('🔧 Initializing database source...');
+      try {
+        await dbSource.initialize();
+        _logs.add('✅ Database source initialized successfully');
+      } catch (e) {
+        _logs.add('❌ Database source initialization failed: $e');
+        throw e;
+      }
+
+      // Handle parameter substitution based on database type
+      String finalQuery = _dbQueryController.text;
+      if (_dbQueryParamsController.text.isNotEmpty) {
+        final params = _dbQueryParamsController.text
+            .split(',')
+            .map((param) => param.trim())
+            .where((param) => param.isNotEmpty)
+            .toList();
+
+        if (_selectedDatabaseType == 'sqlite') {
+          // SQLite uses ? placeholders
+          for (int i = 0; i < params.length; i++) {
+            finalQuery = finalQuery.replaceFirst('?', "'${params[i]}'");
+          }
+        } else if (_selectedDatabaseType == 'postgresql') {
+          // PostgreSQL uses $1, $2, $3... placeholders
+          for (int i = 0; i < params.length; i++) {
+            finalQuery = finalQuery.replaceFirst('\$${i + 1}', "'${params[i]}'");
+          }
+        } else if (_selectedDatabaseType == 'mysql') {
+          // MySQL uses ? placeholders (same as SQLite)
+          for (int i = 0; i < params.length; i++) {
+            finalQuery = finalQuery.replaceFirst('?', "'${params[i]}'");
+          }
+        } else if (_selectedDatabaseType == 'mongodb') {
+          // MongoDB uses JSON queries - replace placeholders with actual values
+          for (int i = 0; i < params.length; i++) {
+            finalQuery = finalQuery.replaceFirst('?', '"${params[i]}"');
+          }
+        }
+      }
+
+      _logs.add('🔍 Executing query: $finalQuery');
+      _logs.add('📊 Database path: $databasePath');
+
+      // Test query execution
+      _logs.add('🚀 Calling dbSource.getChunks()...');
+      final chunks = await dbSource.getChunks(
+        query: finalQuery,
+        maxChunks: 10,
+        minRelevance: 0.1,
+      );
+      _logs.add('✅ dbSource.getChunks() completed');
+
+      _logs.add('📈 Query returned ${chunks.length} chunks');
+
+      setState(() {
+        _databaseChunks = chunks;
+        _databaseTestResult =
+            '✅ Database connection successful! Retrieved ${chunks.length} chunks.';
+      });
+
+      _logs.add('✅ Database query executed successfully');
+      _logs.add('📊 Retrieved ${chunks.length} data chunks');
+    } catch (e) {
+      setState(() {
+        _databaseTestResult = '❌ Database connection failed: $e';
+      });
+      _logs.add('❌ Database test failed: $e');
+    } finally {
+      setState(() {
+        _isTestingDatabase = false;
+      });
     }
   }
 }

@@ -735,20 +735,28 @@ class DocumentSource implements BaseDataSource {
       // DOC files are complex binary format, so we'll attempt basic text extraction
       // This is a simplified approach - for production use, consider using a specialized library
       final bytes = await document.readAsBytes();
-      
+
       // Basic attempt to extract readable text from DOC file
       // DOC files contain text in UTF-16LE encoding within the binary structure
-      final text = String.fromCharCodes(bytes.where((byte) => 
-        byte >= 32 && byte <= 126 || // Printable ASCII
-        byte == 9 || byte == 10 || byte == 13 // Tab, LF, CR
-      ));
-      
+      final text = String.fromCharCodes(
+        bytes.where(
+          (byte) =>
+              byte >= 32 && byte <= 126 || // Printable ASCII
+              byte == 9 ||
+              byte == 10 ||
+              byte == 13, // Tab, LF, CR
+        ),
+      );
+
       // Clean up the extracted text
       final cleanedText = text
-          .replaceAll(RegExp(r'[^\x20-\x7E\s]'), '') // Remove non-printable chars
+          .replaceAll(
+            RegExp(r'[^\x20-\x7E\s]'),
+            '',
+          ) // Remove non-printable chars
           .replaceAll(RegExp(r'\s+'), ' ') // Normalize whitespace
           .trim();
-      
+
       if (cleanedText.isNotEmpty && cleanedText.length > 10) {
         return 'DOC Document: ${path.basename(document.path)}\n\n$cleanedText';
       } else {

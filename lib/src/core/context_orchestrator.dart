@@ -84,15 +84,15 @@ class ContextOrchestrator {
        _parallelConfig = parallelConfig ?? const ParallelProcessingConfig(),
        _vectorDatabase = vectorDatabase {
     // Initialize engines with configuration
-    _scoringEngine = ContextScoringEngine(logger: logger?.underlyingLogger);
+    _scoringEngine = ContextScoringEngine(ragifyLogger: logger);
 
-    _storageEngine = ContextStorageEngine(logger: logger?.underlyingLogger);
+    _storageEngine = ContextStorageEngine(ragifyLogger: logger);
 
     _fusionEngine = IntelligentContextFusionEngine(
-      logger: logger?.underlyingLogger,
+      ragifyLogger: logger,
     );
 
-    _updatesEngine = ContextUpdatesEngine(logger: logger?.underlyingLogger);
+    _updatesEngine = ContextUpdatesEngine(ragifyLogger: logger);
   }
 
   /// Initialize the orchestrator

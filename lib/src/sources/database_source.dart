@@ -136,7 +136,7 @@ class DatabaseConfig {
 /// Database connection pool
 class DatabaseConnectionPool {
   final DatabaseConfig config;
-  final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   final List<dynamic> _connections = [];
   final Queue<dynamic> _availableConnections = Queue();
@@ -152,7 +152,11 @@ class DatabaseConnectionPool {
     'batch_queries': 0,
   };
 
-  DatabaseConnectionPool(this.config, {List<dynamic>? initialConnections}) {
+  DatabaseConnectionPool(
+    this.config, {
+    List<dynamic>? initialConnections,
+    RAGifyLogger? logger,
+  }) : _logger = logger ?? const RAGifyLogger.disabled() {
     if (initialConnections != null) {
       _connections.addAll(initialConnections);
       _availableConnections.addAll(initialConnections);
@@ -299,7 +303,7 @@ class DatabaseSource implements BaseDataSource {
   final DatabaseConfig databaseConfig;
   final String databaseType;
   final CacheManager cacheManager;
-  final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  final RAGifyLogger _logger;
 
   /// **NEW: Parallel query configuration**
   ParallelQueryConfig _parallelConfig = ParallelQueryConfig();
@@ -318,7 +322,8 @@ class DatabaseSource implements BaseDataSource {
     ParallelQueryConfig? parallelConfig,
     DatabaseConnectionPool? connectionPool, // Inject for testing
     Map<String, dynamic>? metadata,
-  }) {
+    RAGifyLogger? logger,
+  }) : _logger = logger ?? const RAGifyLogger.disabled() {
     if (parallelConfig != null) {
       _parallelConfig = parallelConfig;
     }
@@ -327,7 +332,9 @@ class DatabaseSource implements BaseDataSource {
       _metadata.addAll(metadata);
     }
 
-    _connectionPool = connectionPool ?? DatabaseConnectionPool(databaseConfig);
+    _connectionPool =
+        connectionPool ??
+        DatabaseConnectionPool(databaseConfig, logger: _logger);
   }
 
   /// **NEW: Set parallel query configuration**
@@ -470,6 +477,9 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Initialize connection pool**
   Future<void> _initializeConnectionPool() async {
+    _logger.d('Initializing connection pool for database type: $databaseType');
+    _logger.d('Database config: host=${databaseConfig.host}, port=${databaseConfig.port}, database=${databaseConfig.database}');
+    
     // Skip if connections are already injected (for testing)
     if (_connectionPool._connections.isNotEmpty) {
       _logger.i(
@@ -481,10 +491,12 @@ class DatabaseSource implements BaseDataSource {
     // Create initial connections
     for (int i = 0; i < databaseConfig.maxConnections; i++) {
       try {
+        _logger.d('Creating connection $i of ${databaseConfig.maxConnections}');
         final connection = await _createConnection();
         _connectionPool._connections.add(connection);
         _connectionPool._availableConnections.add(connection);
         _connectionPool._connectionTimestamps[connection] = DateTime.now();
+        _logger.d('Successfully created connection $i');
       } catch (e) {
         _logger.w('Failed to create connection $i: $e');
       }
@@ -501,6 +513,9 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Create database connection based on type**
   Future<dynamic> _createConnection() async {
+    _logger.d('Creating connection for database type: $databaseType');
+    _logger.d('Host: ${databaseConfig.host}, Port: ${databaseConfig.port}, Database: ${databaseConfig.database}');
+    
     switch (databaseType.toLowerCase()) {
       case 'sqlite':
         return await sqflite_stub.openDatabase(
@@ -509,6 +524,7 @@ class DatabaseSource implements BaseDataSource {
           onCreate: _onCreateSQLite,
         );
       case 'postgresql':
+        _logger.d('Opening PostgreSQL connection to ${databaseConfig.host}:${databaseConfig.port}');
         return postgres.Connection.open(
           postgres.Endpoint(
             host: databaseConfig.host,
@@ -519,6 +535,7 @@ class DatabaseSource implements BaseDataSource {
           ),
         );
       case 'mysql':
+        _logger.d('Opening MySQL connection to ${databaseConfig.host}:${databaseConfig.port}');
         return await mysql.MySqlConnection.connect(
           mysql.ConnectionSettings(
             host: databaseConfig.host,
@@ -529,9 +546,12 @@ class DatabaseSource implements BaseDataSource {
           ),
         );
       case 'mongodb':
-        return await Db.create(
-          'mongodb://${databaseConfig.host}:${databaseConfig.port}/${databaseConfig.database}',
-        );
+        // Create MongoDB connection with authentication
+        final connectionString = 'mongodb://${databaseConfig.username}:${databaseConfig.password}@${databaseConfig.host}:${databaseConfig.port}/${databaseConfig.database}?authSource=${databaseConfig.database}';
+        _logger.d('MongoDB connection string: $connectionString');
+        final db = await Db.create(connectionString);
+        await db.open();
+        return db;
       default:
         throw ArgumentError('Unsupported database type: $databaseType');
     }
@@ -661,16 +681,33 @@ class DatabaseSource implements BaseDataSource {
       )
     ''');
 
-    // Create indexes for better performance
-    await db.query(
-      'CREATE INDEX IF NOT EXISTS idx_content ON context_chunks(content(100))',
-    );
-    await db.query(
-      'CREATE INDEX IF NOT EXISTS idx_source_name ON context_chunks(source_name)',
-    );
-    await db.query(
-      'CREATE INDEX IF NOT EXISTS idx_created_at ON context_chunks(created_at)',
-    );
+    // Create indexes for better performance (MySQL doesn't support IF NOT EXISTS for indexes)
+    try {
+      await db.query(
+        'CREATE INDEX idx_content ON context_chunks(content(100))',
+      );
+    } catch (e) {
+      // Index might already exist, ignore error
+      _logger.d('Index idx_content might already exist: $e');
+    }
+    
+    try {
+      await db.query(
+        'CREATE INDEX idx_source_name ON context_chunks(source_name)',
+      );
+    } catch (e) {
+      // Index might already exist, ignore error
+      _logger.d('Index idx_source_name might already exist: $e');
+    }
+    
+    try {
+      await db.query(
+        'CREATE INDEX idx_created_at ON context_chunks(created_at)',
+      );
+    } catch (e) {
+      // Index might already exist, ignore error
+      _logger.d('Index idx_created_at might already exist: $e');
+    }
   }
 
   /// **NEW: Initialize MongoDB tables**
@@ -692,10 +729,87 @@ class DatabaseSource implements BaseDataSource {
     String? sessionId,
   }) async {
     if (!_isInitialized) {
+      _logger.w('Database source not initialized');
       return []; // Return empty list when not initialized
     }
 
+    _logger.i('getChunks called with query: $query');
+
+    // Check if this looks like a SQL query or MongoDB JSON query
+    if (query.trim().toUpperCase().startsWith('SELECT') || 
+        (query.trim().startsWith('{') && query.trim().endsWith('}'))) {
+      _logger.i('Detected custom query (SQL or MongoDB JSON), using custom query execution');
+      return await executeCustomQuery(query, maxChunks);
+    }
+
+    _logger.i('Using default search approach');
+    // Otherwise, use the default search approach
     return await fetchData(query: query, limit: maxChunks);
+  }
+
+  /// **NEW: Execute custom SQL query**
+  Future<List<ContextChunk>> executeCustomQuery(
+    String sqlQuery,
+    int? limit,
+  ) async {
+    if (!_isInitialized) {
+      throw StateError('Database source not initialized');
+    }
+
+    _logger.i('executeCustomQuery called with: $sqlQuery, limit: $limit');
+
+    try {
+      final connection = await _connectionPool.getConnection();
+      _logger.i('Got database connection for type: $databaseType');
+
+      try {
+        switch (databaseType.toLowerCase()) {
+          case 'sqlite':
+            _logger.i('Executing SQLite custom query');
+            return await _executeCustomSQLiteQuery(
+              connection,
+              sqlQuery,
+              null,
+              limit,
+              null,
+            );
+          case 'postgresql':
+            _logger.i('Executing PostgreSQL custom query');
+            return await _executeCustomPostgreSQLQuery(
+              connection,
+              sqlQuery,
+              null,
+              limit,
+              null,
+            );
+          case 'mysql':
+            _logger.i('Executing MySQL custom query');
+            return await _executeCustomMySQLQuery(
+              connection,
+              sqlQuery,
+              null,
+              limit,
+              null,
+            );
+          case 'mongodb':
+            _logger.i('Executing MongoDB custom query');
+            return await _executeCustomMongoDBQuery(
+              connection,
+              sqlQuery,
+              null,
+              limit,
+              null,
+            );
+          default:
+            throw ArgumentError('Unsupported database type: $databaseType');
+        }
+      } finally {
+        _connectionPool.returnConnection(connection);
+      }
+    } catch (e) {
+      _logger.e('Error executing custom query: $e');
+      return [];
+    }
   }
 
   /// **ENHANCED: Fetch data with parallel processing support**
@@ -1031,13 +1145,14 @@ class DatabaseSource implements BaseDataSource {
     int? limit,
     int? offset,
   ) async {
+    // If query is provided, use it directly (for custom SQL queries)
+    if (query != null && query.isNotEmpty) {
+      return await _executeCustomSQLiteQuery(db, query, filters, limit, offset);
+    }
+
+    // Otherwise, use the default context_chunks table approach
     String sql = 'SELECT * FROM context_chunks WHERE 1=1';
     final List<dynamic> args = [];
-
-    if (query != null && query.isNotEmpty) {
-      sql += ' AND content LIKE ?';
-      args.add('%$query%');
-    }
 
     if (filters != null) {
       if (filters['source_name'] != null) {
@@ -1066,6 +1181,183 @@ class DatabaseSource implements BaseDataSource {
     final results = await db.rawQuery(sql, args);
 
     return results.map((row) => _mapSQLiteRowToContextChunk(row)).toList();
+  }
+
+  /// **NEW: Execute custom SQLite query and map to ContextChunk**
+  Future<List<ContextChunk>> _executeCustomSQLiteQuery(
+    Database db,
+    String sqlQuery,
+    Map<String, dynamic>? filters,
+    int? limit,
+    int? offset,
+  ) async {
+    try {
+      _logger.i('Executing SQLite query: $sqlQuery');
+
+      // For now, we'll execute the query as-is
+      // In a real implementation, you'd want to handle parameter substitution
+      final results = await db.rawQuery(sqlQuery, []);
+
+      _logger.i('Query returned ${results.length} raw results');
+
+      // Map results to ContextChunk objects
+      final chunks = results
+          .map<ContextChunk>((row) => _mapGenericSQLiteRowToContextChunk(row))
+          .toList();
+
+      _logger.i('Mapped to ${chunks.length} ContextChunk objects');
+
+      return chunks;
+    } catch (e) {
+      _logger.e('Error executing custom SQLite query: $e');
+      return [];
+    }
+  }
+
+  /// **NEW: Map generic SQLite row to ContextChunk**
+  ContextChunk _mapGenericSQLiteRowToContextChunk(Map<String, dynamic> row) {
+    // Try to find content in common column names
+    String content = '';
+    Map<String, dynamic> metadata = {};
+
+    // Look for common content fields
+    if (row.containsKey('content')) {
+      content = row['content']?.toString() ?? '';
+    } else if (row.containsKey('name')) {
+      content = row['name']?.toString() ?? '';
+    } else if (row.containsKey('description')) {
+      content = row['description']?.toString() ?? '';
+    } else {
+      // Use all fields as content
+      content = row.entries
+          .where((e) => e.value != null)
+          .map((e) => '${e.key}: ${e.value}')
+          .join(', ');
+    }
+
+    // Build metadata from all fields
+    metadata = Map<String, dynamic>.from(row);
+
+    // Generate a unique ID
+    final id = '${DateTime.now().millisecondsSinceEpoch}_${row.hashCode}';
+
+    return ContextChunk(
+      id: id,
+      content: content,
+      metadata: metadata,
+      source: ContextSource(
+        id: 'database_$name',
+        name: name,
+        sourceType: SourceType.database,
+        url: null,
+        metadata: {},
+        lastUpdated: DateTime.now(),
+        isActive: true,
+        privacyLevel: PrivacyLevel.public,
+        authorityScore: 1.0,
+        freshnessScore: 1.0,
+      ),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+      relevanceScore: RelevanceScore(score: 1.0),
+    );
+  }
+
+  /// **NEW: Execute custom PostgreSQL query**
+  Future<List<ContextChunk>> _executeCustomPostgreSQLQuery(
+    postgres.Connection db,
+    String sqlQuery,
+    Map<String, dynamic>? filters,
+    int? limit,
+    int? offset,
+  ) async {
+    try {
+      final results = await db.execute(sqlQuery);
+      return results
+          .map((row) => _mapGenericSQLiteRowToContextChunk(row.toColumnMap()))
+          .toList();
+    } catch (e) {
+      _logger.e('Error executing custom PostgreSQL query: $e');
+      return [];
+    }
+  }
+
+  /// **NEW: Execute custom MySQL query**
+  Future<List<ContextChunk>> _executeCustomMySQLQuery(
+    mysql.MySqlConnection db,
+    String sqlQuery,
+    Map<String, dynamic>? filters,
+    int? limit,
+    int? offset,
+  ) async {
+    try {
+      final results = await db.query(sqlQuery);
+      return results
+          .map<ContextChunk>((row) => _mapGenericSQLiteRowToContextChunk(row.fields))
+          .toList();
+    } catch (e) {
+      _logger.e('Error executing custom MySQL query: $e');
+      return [];
+    }
+  }
+
+  /// **NEW: Execute custom MongoDB query**
+  Future<List<ContextChunk>> _executeCustomMongoDBQuery(
+    Db db,
+    String jsonQuery,
+    Map<String, dynamic>? filters,
+    int? limit,
+    int? offset,
+  ) async {
+    try {
+      _logger.d('Executing MongoDB query: $jsonQuery');
+      
+      // Parse the JSON query
+      final Map<String, dynamic> query = jsonDecode(jsonQuery);
+      
+      // Determine which collection to query based on the query content
+      String collectionName = 'users'; // default
+      if (jsonQuery.contains('products') || jsonQuery.contains('category')) {
+        collectionName = 'products';
+      } else if (jsonQuery.contains('orders') || jsonQuery.contains('status')) {
+        collectionName = 'orders';
+      }
+      
+      final collection = db.collection(collectionName);
+      _logger.d('Querying collection: $collectionName');
+      
+      // Execute the query
+      final results = await collection.find(query).toList();
+      _logger.d('Found ${results.length} documents');
+      
+      // Debug: Log the first few results
+      if (results.isNotEmpty) {
+        _logger.d('First result: ${results.first}');
+      } else {
+        _logger.w('No documents found for query: $query');
+        // Let's try a simple query to see if there's any data
+        final allDocs = await collection.find({}).toList();
+        _logger.d('Total documents in collection: ${allDocs.length}');
+        if (allDocs.isNotEmpty) {
+          _logger.d('Sample document: ${allDocs.first}');
+        }
+      }
+      
+      // Apply limit and offset
+      var finalResults = results;
+      if (offset != null && offset > 0) {
+        finalResults = finalResults.skip(offset).toList();
+      }
+      if (limit != null && limit > 0) {
+        finalResults = finalResults.take(limit).toList();
+      }
+      
+      // Convert to ContextChunks
+      return finalResults.map((doc) => _mapMongoDBDocToContextChunk(doc)).toList();
+    } catch (e) {
+      _logger.e('Error executing custom MongoDB query: $e');
+      return [];
+    }
   }
 
   /// **NEW: Fetch data from PostgreSQL**
@@ -1404,17 +1696,33 @@ class DatabaseSource implements BaseDataSource {
 
   /// **NEW: Map MongoDB document to ContextChunk**
   ContextChunk _mapMongoDBDocToContextChunk(Map<String, dynamic> doc) {
+    // Generate a unique ID if not present
+    final String id = doc['_id']?.toString() ?? doc['id']?.toString() ?? DateTime.now().millisecondsSinceEpoch.toString();
+    
+    // Create content from the document fields
+    final List<String> contentParts = [];
+    doc.forEach((key, value) {
+      if (key != '_id' && value != null) {
+        contentParts.add('$key: $value');
+      }
+    });
+    final String content = contentParts.join(', ');
+    
+    // Extract metadata
+    final Map<String, dynamic> metadata = Map<String, dynamic>.from(doc);
+    metadata.remove('_id');
+    
     return ContextChunk(
-      id: doc['id'] as String,
-      content: doc['content'] as String,
-      metadata: doc['metadata'] ?? {},
+      id: id,
+      content: content,
+      metadata: metadata,
       source: ContextSource(
-        name: doc['source_name'] as String,
+        name: 'MongoDB Database',
         sourceType: SourceType.database,
-        privacyLevel: PrivacyLevel.fromString(doc['privacy_level'] as String),
+        privacyLevel: PrivacyLevel.public,
       ),
-      createdAt: doc['created_at'] as DateTime,
-      updatedAt: doc['updated_at'] as DateTime,
+      createdAt: doc['created_at'] is DateTime ? doc['created_at'] as DateTime : DateTime.now(),
+      updatedAt: DateTime.now(),
       relevanceScore: RelevanceScore(score: 1.0),
     );
   }

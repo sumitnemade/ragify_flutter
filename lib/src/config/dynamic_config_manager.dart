@@ -4,7 +4,7 @@ import '../utils/ragify_logger.dart';
 /// Dynamic Configuration Manager for RAGify Flutter
 /// Provides environment-aware configuration for timeouts, memory limits, and other settings
 class DynamicConfigManager {
-  static final RAGifyLogger _logger = const RAGifyLogger.disabled();
+  static RAGifyLogger _logger = const RAGifyLogger.disabled();
   static DynamicConfigManager? _instance;
 
   /// Environment detection
@@ -37,6 +37,11 @@ class DynamicConfigManager {
   static DynamicConfigManager get instance {
     _instance ??= DynamicConfigManager._();
     return _instance!;
+  }
+
+  /// Set logger for the singleton instance
+  static void setLogger(RAGifyLogger logger) {
+    _logger = logger;
   }
 
   /// Detect current environment

@@ -22,7 +22,10 @@ class UnifiedStorage implements CrossPlatformStorage {
   final Map<String, dynamic> _fallbackStorage = {};
   bool _initialized = false;
   bool _usingHive = false;
-  final RAGifyLogger logger = const RAGifyLogger.disabled();
+  final RAGifyLogger logger;
+
+  UnifiedStorage({RAGifyLogger? logger})
+    : logger = logger ?? const RAGifyLogger.disabled();
 
   @override
   Future<void> initialize() async {
