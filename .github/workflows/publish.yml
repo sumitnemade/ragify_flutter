@@ -22,10 +22,11 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for tags
           
-      - name: Setup Dart SDK
-        uses: dart-lang/setup-dart@v1
+      - name: Setup Flutter SDK
+        uses: subosito/flutter-action@v2
         with:
-          sdk: stable
+          flutter-version: '3.24.0'
+          channel: 'stable'
           
       - name: Get version from pubspec
         id: version
@@ -63,13 +64,13 @@ jobs:
           exit 0
           
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
         
       - name: Run tests
-        run: dart test
+        run: flutter test
         
       - name: Verify package
-        run: dart pub publish --dry-run
+        run: flutter pub publish --dry-run
         
       - name: Authenticate with pub.dev using OIDC
         uses: dart-lang/setup-dart@v1
@@ -78,4 +79,4 @@ jobs:
           oidc: true
         
       - name: Publish to pub.dev
-        run: dart pub publish --force
+        run: flutter pub publish --force
