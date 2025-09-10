@@ -75,8 +75,29 @@ void main() {
 
     group('Initialization Failure', () {
       test('initialize throws when connections cannot be created', () async {
-        await expectLater(source.initialize(), throwsA(isA<StateError>()));
-        expect(source.isActive, isFalse);
+        // Create a source with invalid database type to force failure
+        final invalidSource = DatabaseSource(
+          name: 'invalid_source',
+          sourceType: SourceType.database,
+          databaseConfig: config,
+          databaseType:
+              'invalid_db_type', // This will cause connection creation to fail
+          cacheManager: cache,
+        );
+
+        await expectLater(
+          invalidSource.initialize(),
+          throwsA(
+            isA<StateError>().having(
+              (e) => e.toString(),
+              'message',
+              contains('Failed to create any database connections'),
+            ),
+          ),
+        );
+        expect(invalidSource.isActive, isFalse);
+
+        await invalidSource.close();
       });
     });
 

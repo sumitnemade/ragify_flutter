@@ -79,7 +79,7 @@ class RAGify {
        logger = enableLogging
            ? RAGifyLogger.fromLogger(logger ?? Logger())
            : const RAGifyLogger.disabled(),
-      _isTestMode = isTestMode {
+       _isTestMode = isTestMode {
     _initializeComponents(isTestMode);
   }
 
@@ -416,7 +416,7 @@ class RAGify {
           );
 
           // Create the reconstructed chunk with the search score
-        final chunk = ContextChunk(
+          final chunk = ContextChunk(
             id: result.id,
             content: content,
             source: source,
@@ -425,17 +425,17 @@ class RAGify {
               'search_score': result.score,
               'search_timestamp': DateTime.now().millisecondsSinceEpoch,
             },
-          tags: [
+            tags: [
               ...tags,
               'search_result',
-            'similarity:${result.score.toStringAsFixed(3)}',
-          ],
-          relevanceScore: RelevanceScore(score: result.score),
+              'similarity:${result.score.toStringAsFixed(3)}',
+            ],
+            relevanceScore: RelevanceScore(score: result.score),
             createdAt: DateTime.fromMillisecondsSinceEpoch(createdAtMs),
             updatedAt: DateTime.now(),
-        );
+          );
 
-        similarChunks.add(chunk);
+          similarChunks.add(chunk);
         } catch (e) {
           logger.w('Failed to reconstruct chunk from search result: $e');
           // Fallback to a basic chunk if reconstruction fails
@@ -904,7 +904,7 @@ class RAGify {
       if (index + 1 < 264) {
         embedding[index + 1] = (freq % 100) / 100.0;
         index += 2;
-    } else {
+      } else {
         index++;
       }
     }

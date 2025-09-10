@@ -1,3 +1,19 @@
+## 0.0.5
+
+* **MongoDB Integration**: Complete MongoDB support with JSON query parsing and document mapping
+* **Database Testing Framework**: Comprehensive testing setup for SQLite, PostgreSQL, MySQL, and MongoDB
+* **Automated Publishing**: GitHub Actions workflow for automated pub.dev publishing with OIDC authentication
+* **Platform-Specific Scripts**: Database setup scripts for Android, iOS, and Web platforms
+* **Test Databases**: Ready-to-use test databases with sample data for all supported database types
+* **Dynamic Database Selection**: Easy switching between different database types in the example app
+* **MongoDB Query Execution**: Proper JSON query parsing, parameter substitution, and document mapping
+* **Connection Pooling**: Efficient database connection management for all database types
+* **Debug Logging**: Extensive logging for troubleshooting database operations
+* **Error Handling**: Robust error handling for all database operations
+* **Network Configuration**: Proper setup for remote database access
+* **Version Management**: Automated version tagging and publishing workflow
+* **Documentation**: Comprehensive guides for database testing and automated publishing
+
 ## 0.0.4
 
 * **Code Quality**: Resolve all Flutter analysis issues (0 warnings, 0 errors)

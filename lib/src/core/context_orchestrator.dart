@@ -88,9 +88,7 @@ class ContextOrchestrator {
 
     _storageEngine = ContextStorageEngine(ragifyLogger: logger);
 
-    _fusionEngine = IntelligentContextFusionEngine(
-      ragifyLogger: logger,
-    );
+    _fusionEngine = IntelligentContextFusionEngine(ragifyLogger: logger);
 
     _updatesEngine = ContextUpdatesEngine(ragifyLogger: logger);
   }

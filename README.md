@@ -5,27 +5,27 @@
 
 **Intelligent Context Orchestration Framework for Flutter - Smart Context for LLM-Powered Applications**
 
-A Flutter package that combines data from multiple sources (documents, APIs, databases, real-time) and resolves conflicts intelligently. Built specifically for **LLM-powered Flutter applications** that need accurate, current information.
+A Flutter package that combines data from multiple sources (documents, APIs, databases, real-time) and provides intelligent context management. Built specifically for **LLM-powered Flutter applications** that need to retrieve and manage contextual information from various data sources.
 
 ## 🎯 Why RAGify Flutter?
 
 Building AI-powered Flutter apps is challenging because:
 - **Multiple data sources** need to be combined intelligently
-- **Conflicting information** between sources must be resolved
-- **Real-time updates** require efficient context management
-- **Privacy and security** need to be built-in, not bolted-on
+- **Context management** requires efficient data retrieval and processing
+- **Cross-platform compatibility** needs to work on all Flutter platforms
 - **Performance** must be optimized for mobile and web
+- **Easy integration** with existing Flutter applications
 
-RAGify Flutter solves these problems with a unified, production-ready framework.
+RAGify Flutter provides a unified framework for context management and data source integration.
 
 ## 🌟 What You Get
 
 ### **Core Capabilities**
-- **Multi-Source Context Fusion** - Combine data from documents, APIs, databases, and real-time sources
-- **Intelligent Conflict Resolution** - Detect and resolve contradictions using source authority and freshness
-- **Privacy Management** - 4-tier privacy levels (Public, Private, Enterprise, Restricted)
+- **Multi-Source Data Integration** - Connect to documents, APIs, databases, and real-time sources
+- **Context Management** - Organize and retrieve contextual information efficiently
+- **Privacy Management** - Configurable privacy levels for different data sources
 - **Concurrent Processing** - Process multiple sources simultaneously for better performance
-- **Relevance Scoring** - Multi-factor assessment of context relevance
+- **Relevance Scoring** - Basic relevance assessment for context chunks
 
 ### **Flutter-Specific Features**
 - **Cross-Platform Support** - Works on iOS, Android, Web, and Desktop
@@ -39,7 +39,7 @@ RAGify Flutter solves these problems with a unified, production-ready framework.
 
 ```yaml
 dependencies:
-  ragify_flutter: ^0.0.4
+  ragify_flutter: ^0.0.5
 ```
 
 ### **2. Import Package**
@@ -110,13 +110,13 @@ for (final chunk in context.chunks) {
 
 ## 📱 Examples
 
-The package includes complete example applications:
+The package includes a comprehensive example application:
 
-- **Basic Usage** - Simple context retrieval
-- **Advanced Features** - Complex integration patterns
-- **Full Integration** - Complete application examples
+- **Basic Usage** - Complete example with all data source types (API, Document, Database)
+- **Database Testing** - SQLite, PostgreSQL, MySQL, and MongoDB integration examples
+- **Real-time Features** - WebSocket and real-time data source examples
 
-Run examples:
+Run the example:
 ```bash
 cd example/basic_usage
 flutter run
@@ -148,34 +148,33 @@ flutter test
 # Run with coverage
 flutter test --coverage
 
-# Current coverage: 40.92%
 ```
 
 ## 🔒 Privacy & Security
 
-- **4 Privacy Levels**: Public, Private, Enterprise, Restricted
-- **Encryption**: AES-256, RSA-2048, ChaCha20 support
-- **Access Control**: Role-based permissions (Guest to Superuser)
-- **Audit Logging**: Complete operation tracking
-- **Compliance**: GDPR, HIPAA, SOX ready
+- **Privacy Levels**: Configurable privacy levels for different data sources
+- **Basic Encryption**: Support for data encryption (implementation in progress)
+- **Access Control**: Basic access control mechanisms
+- **Logging**: Comprehensive logging for debugging and monitoring
+- **Data Protection**: Basic data protection features
 
 ## 🚀 Performance
 
-- **Response Time**: Optimized for <200ms typical queries
-- **Concurrent Processing**: Multi-isolate parallel processing
-- **Memory Efficient**: Intelligent caching and chunking
-- **Cross-Platform**: Platform-specific optimizations
+- **Response Time**: Optimized for reasonable query response times
+- **Concurrent Processing**: Async processing for better performance
+- **Memory Efficient**: Basic caching and chunking mechanisms
+- **Cross-Platform**: Works across all Flutter platforms
 
 ## 🔌 Data Sources
 
-- **Documents**: PDF, DOCX, TXT, Markdown
-- **APIs**: REST, GraphQL with rate limiting
-- **Databases**: PostgreSQL, MySQL, MongoDB, SQLite
-- **Real-time**: WebSocket, MQTT, Redis, Kafka
+- **Documents**: PDF, DOCX, TXT, HTML, CSV, JSON, YAML, XML, INI, DOC
+- **APIs**: REST APIs with GET/POST support and query inclusion
+- **Databases**: SQLite, PostgreSQL, MySQL, MongoDB
+- **Real-time**: WebSocket support (basic implementation)
 
 ## 🤝 Contributing
 
-We welcome contributions! See [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions! This is an active project with ongoing development.
 
 ```bash
 # Development setup

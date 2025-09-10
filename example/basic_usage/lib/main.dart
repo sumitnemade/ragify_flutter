@@ -389,111 +389,111 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
 
   Widget _buildSearchTab() {
     return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Status: $_status',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: _isInitialized ? Colors.green : Colors.orange,
-                      ),
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Status: $_status',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: _isInitialized ? Colors.green : Colors.orange,
                     ),
-                    const SizedBox(height: 8),
-                    Text('Logs: ${_logs.length} entries'),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Logs: ${_logs.length} entries'),
+                ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            // Search Section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Search Context',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _queryController,
-                            decoration: const InputDecoration(
-                              hintText: 'Enter your search query...',
-                              border: OutlineInputBorder(),
-                            ),
+          // Search Section
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Search Context',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _queryController,
+                          decoration: const InputDecoration(
+                            hintText: 'Enter your search query...',
+                            border: OutlineInputBorder(),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        ElevatedButton(
-                          onPressed: _isInitialized ? _performSearch : null,
-                          child: const Text('Search'),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: _isInitialized ? _performSearch : null,
+                        child: const Text('Search'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
           // Results and Logs Section - Use Expanded to prevent overflow
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-            // Results Section
-            if (_searchResults.isNotEmpty) ...[
-              Text(
-                'Search Results (${_searchResults.length})',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _searchResults.length,
-                  itemBuilder: (context, index) {
-                    final result = _searchResults[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        title: Text(
-                          result.content,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          'Source: ${result.source.name} | Tags: ${result.tags.join(', ')}',
-                        ),
-                        trailing: Text(
+                // Results Section
+                if (_searchResults.isNotEmpty) ...[
+                  Text(
+                    'Search Results (${_searchResults.length})',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final result = _searchResults[index];
+                        return Card(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          child: ListTile(
+                            title: Text(
+                              result.content,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            subtitle: Text(
+                              'Source: ${result.source.name} | Tags: ${result.tags.join(', ')}',
+                            ),
+                            trailing: Text(
                               'Score: ${result.relevanceScore?.score.toStringAsFixed(3) ?? 'N/A'}',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
 
-            // Logs Section
-            if (_logs.isNotEmpty) ...[
-              const SizedBox(height: 16),
+                // Logs Section
+                if (_logs.isNotEmpty) ...[
+                  const SizedBox(height: 16),
                   Text(
                     'System Logs',
                     style: Theme.of(context).textTheme.titleMedium,
@@ -843,29 +843,29 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
 
                   // Logs Section
                   if (_logs.isNotEmpty) ...[
-              Text(
-                'System Logs',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              const SizedBox(height: 8),
-              Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: _logs.length,
-                  itemBuilder: (context, index) {
-                    final log =
+                    Text(
+                      'System Logs',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 200,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: ListView.builder(
+                        padding: const EdgeInsets.all(8),
+                        itemCount: _logs.length,
+                        itemBuilder: (context, index) {
+                          final log =
                               _logs[_logs.length -
                                   1 -
                                   index]; // Show newest first
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
-                      child: Text(
-                        log,
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Text(
+                              log,
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(fontFamily: 'monospace'),
                             ),
@@ -1458,12 +1458,12 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                             // Show newest first
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(fontFamily: 'monospace'),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -2179,22 +2179,26 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                 // Update default port and database name based on database type
                 switch (value) {
                   case 'postgresql':
-                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbHostController.text =
+                        '192.168.1.16'; // Use host machine IP for mobile
                     _dbPortController.text = '5432';
                     _dbNameController.text = 'test_db';
                     break;
                   case 'mysql':
-                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbHostController.text =
+                        '192.168.1.16'; // Use host machine IP for mobile
                     _dbPortController.text = '3306';
                     _dbNameController.text = 'test_db';
                     break;
                   case 'mongodb':
-                    _dbHostController.text = '192.168.1.16'; // Use host machine IP for mobile
+                    _dbHostController.text =
+                        '192.168.1.16'; // Use host machine IP for mobile
                     _dbPortController.text = '27017';
                     _dbNameController.text = 'test_db';
                     break;
                   case 'sqlite':
-                    _dbHostController.text = 'localhost'; // SQLite doesn't need network
+                    _dbHostController.text =
+                        'localhost'; // SQLite doesn't need network
                     _dbPortController.text = '';
                     _dbNameController.text = 'assets/test.db';
                     break;
@@ -2355,10 +2359,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedDatabaseType == 'mongodb') {
-                      _setSampleQuery(
-                        '{"department": ?}',
-                        'Engineering',
-                      );
+                      _setSampleQuery('{"department": ?}', 'Engineering');
                     } else {
                       _setSampleQuery(
                         'SELECT * FROM users WHERE department = ${_getParameterPlaceholder(0)}',
@@ -2371,10 +2372,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedDatabaseType == 'mongodb') {
-                      _setSampleQuery(
-                        '{"category": ?}',
-                        'Electronics',
-                      );
+                      _setSampleQuery('{"category": ?}', 'Electronics');
                     } else {
                       _setSampleQuery(
                         'SELECT * FROM products WHERE category = ${_getParameterPlaceholder(0)}',
@@ -2387,10 +2385,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedDatabaseType == 'mongodb') {
-                      _setSampleQuery(
-                        '{"status": ?}',
-                        'completed',
-                      );
+                      _setSampleQuery('{"status": ?}', 'completed');
                     } else {
                       _setSampleQuery(
                         'SELECT * FROM orders WHERE status = ${_getParameterPlaceholder(0)}',
@@ -2403,10 +2398,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
                 ElevatedButton(
                   onPressed: () {
                     if (_selectedDatabaseType == 'mongodb') {
-                      _setSampleQuery(
-                        '{"status": ?}',
-                        'completed',
-                      );
+                      _setSampleQuery('{"status": ?}', 'completed');
                     } else {
                       _setSampleQuery(
                         'SELECT u.name, p.name, o.quantity, o.total_amount FROM orders o JOIN users u ON o.user_id = u.id JOIN products p ON o.product_id = p.id WHERE o.status = ${_getParameterPlaceholder(0)}',
@@ -2428,9 +2420,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
               onPressed: _isTestingDatabase
                   ? null
                   : () {
-                      print(
-                        '🔴 Button pressed! _isTestingDatabase: $_isTestingDatabase',
-                      );
+                      // Debug: Button pressed! _isTestingDatabase: $_isTestingDatabase
                       _testDatabaseConnection();
                     },
               child: _isTestingDatabase
@@ -2625,12 +2615,13 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
     } else if (_selectedDatabaseType == 'mysql') {
       _dbQueryController.text = 'SELECT * FROM users WHERE name LIKE ?';
     } else if (_selectedDatabaseType == 'mongodb') {
-      _dbQueryController.text = '{"name": {"\$regex": "john", "\$options": "i"}}';
+      _dbQueryController.text =
+          '{"name": {"\$regex": "john", "\$options": "i"}}';
     }
   }
 
   Future<void> _testDatabaseConnection() async {
-    print('🔴 _testDatabaseConnection() method called');
+    // Debug: _testDatabaseConnection() method called
     _logs.add('🚀 _testDatabaseConnection() called');
 
     if (!_isInitialized) {
@@ -2664,7 +2655,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
           _logs.add('📁 Copied assets database to: $databasePath');
         } catch (e) {
           _logs.add('❌ Failed to copy assets database: $e');
-          throw e;
+          rethrow;
         }
       }
 
@@ -2709,7 +2700,7 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
         _logs.add('✅ Database source initialized successfully');
       } catch (e) {
         _logs.add('❌ Database source initialization failed: $e');
-        throw e;
+        rethrow;
       }
 
       // Handle parameter substitution based on database type
@@ -2729,7 +2720,10 @@ class _RAGifyBasicUsagePageState extends State<RAGifyBasicUsagePage>
         } else if (_selectedDatabaseType == 'postgresql') {
           // PostgreSQL uses $1, $2, $3... placeholders
           for (int i = 0; i < params.length; i++) {
-            finalQuery = finalQuery.replaceFirst('\$${i + 1}', "'${params[i]}'");
+            finalQuery = finalQuery.replaceFirst(
+              '\$${i + 1}',
+              "'${params[i]}'",
+            );
           }
         } else if (_selectedDatabaseType == 'mysql') {
           // MySQL uses ? placeholders (same as SQLite)
