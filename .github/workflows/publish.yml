@@ -48,7 +48,7 @@ jobs:
           fi
           
       - name: Create Git Tag
-        if: steps.check-tag.outputs.exists == 'false' && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: steps.check-tag.outputs.exists == 'false' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
@@ -62,9 +62,6 @@ jobs:
           echo "⏭️  Skipping publish - tag already exists"
           exit 0
           
-      - name: Authenticate with pub.dev using OIDC
-        uses: dart-lang/setup-pubdev-credentials@v1
-          
       - name: Install dependencies
         run: dart pub get
         
@@ -73,6 +70,12 @@ jobs:
         
       - name: Verify package
         run: dart pub publish --dry-run
+        
+      - name: Authenticate with pub.dev using OIDC
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+          oidc: true
         
       - name: Publish to pub.dev
         run: dart pub publish --force
