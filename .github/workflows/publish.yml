@@ -63,6 +63,7 @@ jobs:
           exit 0
           
       - name: Checkout to tag for publishing
+        if: steps.check-tag.outputs.exists == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         run: |
           git checkout "v${{ steps.version.outputs.version }}"
           echo "✅ Checked out tag v${{ steps.version.outputs.version }} for publishing"
@@ -77,16 +78,12 @@ jobs:
         run: flutter pub publish --dry-run
         
       - name: Authenticate with pub.dev using OIDC
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-          oidc: true
-        
-      - name: Authenticate with pub.dev using OIDC (branch with tag)
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || steps.check-tag.outputs.exists == 'true')
         uses: dart-lang/setup-dart@v1
         with:
           sdk: stable
           oidc: true
         
       - name: Publish to pub.dev
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/') || steps.check-tag.outputs.exists == 'true')
         run: flutter pub publish --force
