@@ -1,3 +1,14 @@
+## 0.0.6
+
+* **Package Examples**: Added comprehensive example files following Dart package layout guidelines
+* **Example Documentation**: Created detailed README.md for examples with usage patterns
+* **Code Quality**: Fixed all linter errors and ensured Flutter analyze passes with 0 issues
+* **API Compliance**: Updated examples to use correct RAGify Flutter API methods and constructors
+* **Flutter Integration**: Improved example code with proper Flutter debugging practices
+* **Package Scoring**: Resolved pub.dev scoring issues for missing example files
+* **Documentation**: Enhanced example documentation with real, functional code examples
+* **Developer Experience**: Clear usage patterns for both basic and advanced RAGify features
+
 ## 0.0.5
 
 * **MongoDB Integration**: Complete MongoDB support with JSON query parsing and document mapping
