@@ -18,12 +18,17 @@ jobs:
 
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
 
       - name: Install dependencies
         run: dart pub get
 
-      # Optional: Generate code, run build, tests, etc.
-      # - run: dart run build_runner build
+      - name: Authenticate with pub.dev
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+          oidc: true
 
       - name: Publish to pub.dev
         run: dart pub publish --force
