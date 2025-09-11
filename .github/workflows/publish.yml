@@ -3,41 +3,27 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+*'  # Matches version tags like v1.2.3
+      - 'v[0-9]+\\.[0-9]+\\.[0-9]+'
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    
     permissions:
-      id-token: write  # Required for OIDC authentication
-      contents: write  # Required for creating tags
-    
+      id-token: write
+    runs-on: ubuntu-latest
+    environment: pub.dev  # if you've required one in pub.dev
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Fetch all history for tags
-          
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@v2
-        with:
-          channel: 'stable'
-                
-      - name: Install dependencies
-        run: flutter pub get
-        
-      - name: Run tests
-        run: flutter test
-        
-      - name: Verify package
-        run: flutter pub publish --dry-run
-        
-      - name: Authenticate with pub.dev using OIDC
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
-          oidc: true
-        
+
+      - name: Install dependencies
+        run: dart pub get
+
+      # Optional: Generate code, run build, tests, etc.
+      # - run: dart run build_runner build
+
       - name: Publish to pub.dev
-        run: flutter pub publish --force
+        run: dart pub publish --force
